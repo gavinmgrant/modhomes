@@ -2,12 +2,9 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import NavBar from "../components/navbar";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import Button from "@mui/material/Button";
+import { CardContent } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import { Box } from "@mui/material";
 import MODELS from "../lib/models";
 
 export default function Home() {
@@ -21,7 +18,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Box minHeight="100vh" padding="1rem" color="#01257D">
+      <div style={{ minHeight: "100vh", padding: "1rem", color: "#01257D" }}>
         <NavBar />
         <Typography
           variant="h2"
@@ -56,7 +53,7 @@ export default function Home() {
             </Grid>
           ))}
         </Grid>
-      </Box>
+      </div>
     </>
   );
 }
