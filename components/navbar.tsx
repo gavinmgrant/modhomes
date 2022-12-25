@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import MenuIcon from "@mui/icons-material/Menu";
+import MODELS from "../lib/models";
 
 const NavBar = () => {
   const router = useRouter();
@@ -26,7 +27,6 @@ const NavBar = () => {
 
   return (
     <AppBar
-      position="absolute"
       sx={{
         width: "calc(100% - 2rem)",
         top: "1rem",
@@ -35,7 +35,7 @@ const NavBar = () => {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        borderRadius: "10rem",
+        borderRadius: "0.5rem",
         backgroundColor: "#01257D",
         color: "#ffffff",
       }}
@@ -54,13 +54,15 @@ const NavBar = () => {
           <MenuIcon />
         </IconButton>
         <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-          <MenuItem onClick={() => handleItemClick("mod1x1")}>Mod 1x1</MenuItem>
-          <MenuItem onClick={() => handleItemClick("mod2x1")}>Mod 2x1</MenuItem>
-          <MenuItem onClick={() => handleItemClick("mod3x1")}>Mod 3x1</MenuItem>
-          <MenuItem onClick={() => handleItemClick("mod4x1")}>Mod 4x1</MenuItem>
-          <MenuItem onClick={() => handleItemClick("mod2x2")}>Mod 2x2</MenuItem>
-          <MenuItem onClick={() => handleItemClick("mod3x2")}>Mod 3x2</MenuItem>
-          <MenuItem onClick={() => handleItemClick("mod4x2")}>Mod 4x2</MenuItem>
+          {MODELS.map((model) => (
+            <MenuItem
+              key={model.slug}
+              onClick={() => handleItemClick(model.slug)}
+              sx={{ color: "#01257D" }}
+            >
+              {model.name}
+            </MenuItem>
+          ))}
         </Menu>
       </Toolbar>
     </AppBar>
