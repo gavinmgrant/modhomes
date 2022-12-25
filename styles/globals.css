@@ -81,6 +81,7 @@
 
 html,
 body {
+  font-family: "Hanken Grotesk", sans-serif;
   max-width: 100vw;
   overflow-x: hidden;
 }
