@@ -28,6 +28,7 @@ const Homes: FC = () => {
 
   const colorStyle = {
     borderRadius: "10rem",
+    outlineRadius: "10rem",
     cursor: "pointer",
     width: 32,
     height: 32,

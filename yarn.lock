@@ -471,6 +471,26 @@
     "@react-spring/shared" "~9.6.1"
     "@react-spring/types" "~9.6.1"
 
+"@react-spring/konva@~9.6.1":
+  version "9.6.1"
+  resolved "https://registry.npmjs.org/@react-spring/konva/-/konva-9.6.1.tgz#66e63da0e9681e42395e995402a7e73ba6892461"
+  integrity sha512-MevnU+tnG1LPsmMRpfJfevfLtI0ObIvrwYc+Xg+kmYJe00vwMRSdulQOztKANKalFXBewwk72XrQCeRLXFaUIg==
+  dependencies:
+    "@react-spring/animated" "~9.6.1"
+    "@react-spring/core" "~9.6.1"
+    "@react-spring/shared" "~9.6.1"
+    "@react-spring/types" "~9.6.1"
+
+"@react-spring/native@~9.6.1":
+  version "9.6.1"
+  resolved "https://registry.npmjs.org/@react-spring/native/-/native-9.6.1.tgz#b66e237f2faaa4f88569d5a03b6fb0136bcdf2b9"
+  integrity sha512-ZIfSytxFGLw4gYOb8gsmwG0+JZYxuM/Y1XPCXCkhuoMn+RmOYrr0kQ4gLczbmf+TRxth7OT1c8vBYz0+SCGcIQ==
+  dependencies:
+    "@react-spring/animated" "~9.6.1"
+    "@react-spring/core" "~9.6.1"
+    "@react-spring/shared" "~9.6.1"
+    "@react-spring/types" "~9.6.1"
+
 "@react-spring/rafz@~9.6.1":
   version "9.6.1"
   resolved "https://registry.npmjs.org/@react-spring/rafz/-/rafz-9.6.1.tgz#d71aafb92b78b24e4ff84639f52745afc285c38d"
@@ -484,7 +504,7 @@
     "@react-spring/rafz" "~9.6.1"
     "@react-spring/types" "~9.6.1"
 
-"@react-spring/three@^9.3.1":
+"@react-spring/three@^9.3.1", "@react-spring/three@~9.6.1":
   version "9.6.1"
   resolved "https://registry.npmjs.org/@react-spring/three/-/three-9.6.1.tgz#095fcd1dc6509127c33c14486d88289b89baeb9d"
   integrity sha512-Tyw2YhZPKJAX3t2FcqvpLRb71CyTe1GvT3V+i+xJzfALgpk10uPGdGaQQ5Xrzmok1340DAeg2pR/MCfaW7b8AA==
@@ -499,10 +519,20 @@
   resolved "https://registry.npmjs.org/@react-spring/types/-/types-9.6.1.tgz#913d3a68c5cbc1124fdb18eff919432f7b6abdde"
   integrity sha512-POu8Mk0hIU3lRXB3bGIGe4VHIwwDsQyoD1F394OK7STTiX9w4dG3cTLljjYswkQN+hDSHRrj4O36kuVa7KPU8Q==
 
-"@react-spring/web@^9.6.1":
+"@react-spring/web@^9.6.1", "@react-spring/web@~9.6.1":
   version "9.6.1"
   resolved "https://registry.npmjs.org/@react-spring/web/-/web-9.6.1.tgz#3e4c03b724d2b545dc2fa2649eb6109318ab9178"
   integrity sha512-X2zR6q2Z+FjsWfGAmAXlQaoUHbPmfuCaXpuM6TcwXPpLE1ZD4A1eys/wpXboFQmDkjnrlTmKvpVna1MjWpZ5Hw==
+  dependencies:
+    "@react-spring/animated" "~9.6.1"
+    "@react-spring/core" "~9.6.1"
+    "@react-spring/shared" "~9.6.1"
+    "@react-spring/types" "~9.6.1"
+
+"@react-spring/zdog@~9.6.1":
+  version "9.6.1"
+  resolved "https://registry.npmjs.org/@react-spring/zdog/-/zdog-9.6.1.tgz#5292c374e23e3846db3eb9d7557ed5a7bb40dada"
+  integrity sha512-0jSGm2OFW/+/+4dkRp46KzEkcLVfzV2k6DO1om0dLDtQ4q6FpX4dmDTlRc7Apzin6VtfQONMFIGITtbqoS28MQ==
   dependencies:
     "@react-spring/animated" "~9.6.1"
     "@react-spring/core" "~9.6.1"
@@ -682,7 +712,7 @@
   resolved "https://registry.npmjs.org/@use-gesture/core/-/core-10.2.23.tgz#ed5892e86b4ad537613b6ab83111ca58341e40c0"
   integrity sha512-Ynap/Uh6RX1Vgn3zNmFTyKapapdf7Av+GzAe6h+RsBZaxMF1z3cK6aohHPJP6T1hLrPyH/yehxa7RBqyESG9RA==
 
-"@use-gesture/react@^10.2.0":
+"@use-gesture/react@^10.2.0", "@use-gesture/react@^10.2.11":
   version "10.2.23"
   resolved "https://registry.npmjs.org/@use-gesture/react/-/react-10.2.23.tgz#744f7fb68e904721a2bf3d8bffd40e446b86c82a"
   integrity sha512-anj9j3Lm4l+/s60Jv1FD2m13r+T+aYstSHUT62hTugojM64LPe9XatfEVHRyWOrGjRU2buQhlm03xN8oxkg/OQ==
@@ -2244,6 +2274,27 @@ react-reconciler@^0.27.0:
     loose-envify "^1.1.0"
     scheduler "^0.21.0"
 
+react-spring-carousel@^2.0.19:
+  version "2.0.19"
+  resolved "https://registry.npmjs.org/react-spring-carousel/-/react-spring-carousel-2.0.19.tgz#a110bc51f7fb036cc1c68f6378155a8490f7ddc6"
+  integrity sha512-OiSTuxjLv0whsjLWnZFkhCZXfaNFgBOZHr8EmggZqVZ5z+78zB87C0gTwyBA86Vo/Uljlvez6ELwLszj8fDa9A==
+  dependencies:
+    "@use-gesture/react" "^10.2.11"
+    rxjs "^7.5.4"
+    screenfull "^5.2.0"
+
+react-spring@^9.6.1:
+  version "9.6.1"
+  resolved "https://registry.npmjs.org/react-spring/-/react-spring-9.6.1.tgz#e715b2fa523c1a3acfdcf1aaa93e081620b8cc8e"
+  integrity sha512-BeP80R4SLb1bZHW/Q62nECoScHw/fH+jzGkD7dc892HNGa+lbGIJXURc6U7N8JfZ8peEO46nPxR57aUMuYzquQ==
+  dependencies:
+    "@react-spring/core" "~9.6.1"
+    "@react-spring/konva" "~9.6.1"
+    "@react-spring/native" "~9.6.1"
+    "@react-spring/three" "~9.6.1"
+    "@react-spring/web" "~9.6.1"
+    "@react-spring/zdog" "~9.6.1"
+
 react-transition-group@^4.4.5:
   version "4.4.5"
   resolved "https://registry.npmjs.org/react-transition-group/-/react-transition-group-4.4.5.tgz#e53d4e3f3344da8521489fbef8f2581d42becdd1"
@@ -2339,6 +2390,13 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
+rxjs@^7.5.4:
+  version "7.8.0"
+  resolved "https://registry.npmjs.org/rxjs/-/rxjs-7.8.0.tgz#90a938862a82888ff4c7359811a595e14e1e09a4"
+  integrity sha512-F2+gxDshqmIub1KdvZkaEfGDwLNpPvk9Fs6LD/MyQxNgMds/WH9OdDDXOmxUZpME+iSK3rQCctkL0DYyytUqMg==
+  dependencies:
+    tslib "^2.1.0"
+
 safe-regex-test@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/safe-regex-test/-/safe-regex-test-1.0.0.tgz#793b874d524eb3640d1873aad03596db2d4f2295"
@@ -2361,6 +2419,11 @@ scheduler@^0.23.0:
   integrity sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==
   dependencies:
     loose-envify "^1.1.0"
+
+screenfull@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.npmjs.org/screenfull/-/screenfull-5.2.0.tgz#6533d524d30621fc1283b9692146f3f13a93d1ba"
+  integrity sha512-9BakfsO2aUQN2K9Fdbj87RJIEZ82Q9IGim7FqM5OsebfoFC6ZHXgDq/KvniuLTPdeM8wY2o6Dj3WQ7KeQCj3cA==
 
 semver@^6.3.0:
   version "6.3.0"
@@ -2615,7 +2678,7 @@ tslib@^1.8.1:
   resolved "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
 
-tslib@^2.4.0:
+tslib@^2.1.0, tslib@^2.4.0:
   version "2.4.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-2.4.1.tgz#0d0bfbaac2880b91e22df0768e55be9753a5b17e"
   integrity sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==

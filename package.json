@@ -27,6 +27,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-intersection-observer": "^9.4.1",
+    "react-spring": "^9.6.1",
+    "react-spring-carousel": "^2.0.19",
     "three": "^0.148.0",
     "typescript": "4.9.4"
   }
