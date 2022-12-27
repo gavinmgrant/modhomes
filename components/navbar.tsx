@@ -5,8 +5,8 @@ import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import Drawer from "@mui/material/Drawer";
 import MenuIcon from "@mui/icons-material/Menu";
 import MODELS from "../lib/models";
 
@@ -53,17 +53,17 @@ const NavBar = () => {
         >
           <MenuIcon />
         </IconButton>
-        <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+        <Drawer anchor="right" open={open} onClose={handleMenuClose}>
           {MODELS.map((model) => (
             <MenuItem
               key={model.slug}
               onClick={() => handleItemClick(model.slug)}
-              sx={{ color: "#01257D" }}
+              sx={{ color: "#01257D", padding: "1rem 2rem 0 2rem" }}
             >
               {model.name}
             </MenuItem>
           ))}
-        </Menu>
+        </Drawer>
       </Toolbar>
     </AppBar>
   );
