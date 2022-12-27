@@ -116,7 +116,7 @@ const Homes: FC = () => {
   const floorArea = useSpring({
     val: currentArea,
     from: 0,
-    config: config.gentle,
+    config: config.molasses,
     clamp: true,
   }) as any;
 
