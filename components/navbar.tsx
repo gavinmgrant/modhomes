@@ -58,7 +58,7 @@ const NavBar = () => {
             <MenuItem
               key={model.slug}
               onClick={() => handleItemClick(model.slug)}
-              sx={{ color: "#01257D", padding: "1rem 2rem 0 2rem" }}
+              sx={{ color: "#01257D", padding: "1rem 3rem" }}
             >
               {model.name}
             </MenuItem>

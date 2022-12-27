@@ -22,9 +22,16 @@ const Homes: FC = () => {
 
   const router = useRouter();
   const [currentArea, setCurrentArea] = useState(0);
-  const [homeColor, setHomeColor] = useState(colorCopper);
+  const [homeColor, setHomeColor] = useState(colorWhite);
   const isMobile = useMediaQuery("(max-width:900px)");
   const colorGround = "#b5b2b0";
+
+  const colorStyle = {
+    borderRadius: "10rem",
+    cursor: "pointer",
+    width: 32,
+    height: 32,
+  };
 
   let foundationWidth;
   const w = router.query.home?.slice(3, 4);
@@ -146,7 +153,7 @@ const Homes: FC = () => {
       {/* <animated.div>{currentArea}</animated.div> */}
       <div style={{ height: "100vh" }}>
         <Canvas
-          camera={{ position: [60, 60, 90], fov: isMobile ? 50 : 30 }}
+          camera={{ position: [60, 40, 90], fov: isMobile ? 50 : 40 }}
           shadows
         >
           <OrbitControls maxPolarAngle={Math.PI / 2} enableZoom={false} />
@@ -263,18 +270,17 @@ const Homes: FC = () => {
         </Canvas>
         <Stack
           direction="row"
-          spacing={1}
-          style={{ position: "absolute", left: 16, bottom: 16 }}
+          spacing={1.5}
+          style={{ position: "absolute", left: 20, bottom: 20 }}
         >
           <Tooltip title="White">
             <Avatar
               onClick={() => setHomeColor(colorWhite)}
               style={{
+                ...colorStyle,
                 backgroundColor: colorWhite,
-                borderRadius: "10rem",
-                cursor: "pointer",
-                width: 40,
-                height: 40,
+                outline:
+                  homeColor === colorWhite ? "0.25rem solid #01257D" : "",
               }}
             >
               {" "}
@@ -284,11 +290,10 @@ const Homes: FC = () => {
             <Avatar
               onClick={() => setHomeColor(colorTaupe)}
               style={{
+                ...colorStyle,
                 backgroundColor: colorTaupe,
-                borderRadius: "10rem",
-                cursor: "pointer",
-                width: 40,
-                height: 40,
+                outline:
+                  homeColor === colorTaupe ? "0.25rem solid #01257D" : "",
               }}
             >
               {" "}
@@ -298,11 +303,10 @@ const Homes: FC = () => {
             <Avatar
               onClick={() => setHomeColor(colorCopper)}
               style={{
+                ...colorStyle,
                 backgroundColor: colorCopper,
-                borderRadius: "10rem",
-                cursor: "pointer",
-                width: 40,
-                height: 40,
+                outline:
+                  homeColor === colorCopper ? "0.25rem solid #01257D" : "",
               }}
             >
               {" "}
@@ -312,11 +316,9 @@ const Homes: FC = () => {
             <Avatar
               onClick={() => setHomeColor(colorGrey)}
               style={{
+                ...colorStyle,
                 backgroundColor: colorGrey,
-                borderRadius: "10rem",
-                cursor: "pointer",
-                width: 40,
-                height: 40,
+                outline: homeColor === colorGrey ? "0.25rem solid #01257D" : "",
               }}
             >
               {" "}
@@ -327,7 +329,14 @@ const Homes: FC = () => {
           variant="h6"
           position="absolute"
           color="#ffffff"
-          style={{ right: 16, bottom: 16, margin: 0, padding: "0.25rem 1rem", backgroundColor: "#01257D", borderRadius: "10rem" }}
+          style={{
+            right: 16,
+            bottom: 16,
+            margin: 0,
+            padding: "0.25rem 1rem",
+            backgroundColor: "#01257D",
+            borderRadius: "10rem",
+          }}
         >
           <animated.span>
             {floorArea.val.to((val: number) =>
