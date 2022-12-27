@@ -6,13 +6,25 @@ import Foundation from "../../components/foundation";
 import NavBar from "../../components/navbar";
 import { OrbitControls, Sky, Cylinder } from "@react-three/drei";
 import { useSpring, animated, config } from "@react-spring/web";
-import { Typography, useMediaQuery } from "@mui/material";
+import {
+  Typography,
+  useMediaQuery,
+  Stack,
+  Tooltip,
+  Avatar,
+} from "@mui/material";
 
 const Homes: FC = () => {
+  const colorWhite = "#e3d7c4";
+  const colorTaupe = "#a19b87";
+  const colorCopper = "#554a3d";
+  const colorGrey = "#94948b";
+
   const router = useRouter();
-  const taupeColor = "#B5B2B0";
   const [currentArea, setCurrentArea] = useState(0);
+  const [homeColor, setHomeColor] = useState(colorCopper);
   const isMobile = useMediaQuery("(max-width:900px)");
+  const colorGround = "#b5b2b0";
 
   let foundationWidth;
   const w = router.query.home?.slice(3, 4);
@@ -34,68 +46,68 @@ const Homes: FC = () => {
   let home;
   switch (router.query.home) {
     case "mod1x1":
-      home = <Module position={[4, 0, 0]} color={taupeColor}></Module>;
+      home = <Module position={[4, 0, 0]} color={homeColor}></Module>;
       break;
     case "mod2x1":
       home = (
         <>
-          <Module position={[0, 0, 0]} color={taupeColor}></Module>
-          <Module position={[8, 0, 0]} color={taupeColor}></Module>
+          <Module position={[0, 0, 0]} color={homeColor}></Module>
+          <Module position={[8, 0, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod3x1":
       home = (
         <>
-          <Module position={[-4, 0, 0]} color={taupeColor}></Module>
-          <Module position={[4, 0, 0]} color={taupeColor}></Module>
-          <Module position={[12, 0, 0]} color={taupeColor}></Module>
+          <Module position={[-4, 0, 0]} color={homeColor}></Module>
+          <Module position={[4, 0, 0]} color={homeColor}></Module>
+          <Module position={[12, 0, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod4x1":
       home = (
         <>
-          <Module position={[-8, 0, 0]} color={taupeColor}></Module>
-          <Module position={[0, 0, 0]} color={taupeColor}></Module>
-          <Module position={[8, 0, 0]} color={taupeColor}></Module>
-          <Module position={[16, 0, 0]} color={taupeColor}></Module>
+          <Module position={[-8, 0, 0]} color={homeColor}></Module>
+          <Module position={[0, 0, 0]} color={homeColor}></Module>
+          <Module position={[8, 0, 0]} color={homeColor}></Module>
+          <Module position={[16, 0, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod2x2":
       home = (
         <>
-          <Module position={[0, 0, 0]} color={taupeColor}></Module>
-          <Module position={[8, 0, 0]} color={taupeColor}></Module>
-          <Module position={[0, 10, 0]} color={taupeColor}></Module>
-          <Module position={[8, 10, 0]} color={taupeColor}></Module>
+          <Module position={[0, 0, 0]} color={homeColor}></Module>
+          <Module position={[8, 0, 0]} color={homeColor}></Module>
+          <Module position={[0, 10, 0]} color={homeColor}></Module>
+          <Module position={[8, 10, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod3x2":
       home = (
         <>
-          <Module position={[-4, 0, 0]} color={taupeColor}></Module>
-          <Module position={[4, 0, 0]} color={taupeColor}></Module>
-          <Module position={[12, 0, 0]} color={taupeColor}></Module>
-          <Module position={[-4, 10, 0]} color={taupeColor}></Module>
-          <Module position={[4, 10, 0]} color={taupeColor}></Module>
-          <Module position={[12, 10, 0]} color={taupeColor}></Module>
+          <Module position={[-4, 0, 0]} color={homeColor}></Module>
+          <Module position={[4, 0, 0]} color={homeColor}></Module>
+          <Module position={[12, 0, 0]} color={homeColor}></Module>
+          <Module position={[-4, 10, 0]} color={homeColor}></Module>
+          <Module position={[4, 10, 0]} color={homeColor}></Module>
+          <Module position={[12, 10, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod4x2":
       home = (
         <>
-          <Module position={[-8, 0, 0]} color={taupeColor}></Module>
-          <Module position={[0, 0, 0]} color={taupeColor}></Module>
-          <Module position={[8, 0, 0]} color={taupeColor}></Module>
-          <Module position={[16, 0, 0]} color={taupeColor}></Module>
-          <Module position={[-8, 10, 0]} color={taupeColor}></Module>
-          <Module position={[0, 10, 0]} color={taupeColor}></Module>
-          <Module position={[8, 10, 0]} color={taupeColor}></Module>
-          <Module position={[16, 10, 0]} color={taupeColor}></Module>
+          <Module position={[-8, 0, 0]} color={homeColor}></Module>
+          <Module position={[0, 0, 0]} color={homeColor}></Module>
+          <Module position={[8, 0, 0]} color={homeColor}></Module>
+          <Module position={[16, 0, 0]} color={homeColor}></Module>
+          <Module position={[-8, 10, 0]} color={homeColor}></Module>
+          <Module position={[0, 10, 0]} color={homeColor}></Module>
+          <Module position={[8, 10, 0]} color={homeColor}></Module>
+          <Module position={[16, 10, 0]} color={homeColor}></Module>
         </>
       );
       break;
@@ -104,9 +116,8 @@ const Homes: FC = () => {
   const floorArea = useSpring({
     val: currentArea,
     from: 0,
-    config: config.molasses,
+    config: config.gentle,
     clamp: true,
-    duration: 500,
   }) as any;
 
   useEffect(() => {
@@ -141,11 +152,12 @@ const Homes: FC = () => {
           <OrbitControls maxPolarAngle={Math.PI / 2} enableZoom={false} />
           <pointLight position={[20, 40, 40]} />
           <pointLight position={[-40, -80, -80]} />
+          <ambientLight intensity={0.3} />
           <Sky sunPosition={[100, 100, 20]} />
           {home}
           <Foundation
             position={[4, -5.7, 0]}
-            color={taupeColor}
+            color={colorGround}
             width={foundationWidth}
           />
           <Cylinder
@@ -246,21 +258,83 @@ const Homes: FC = () => {
             isMesh={undefined}
             updateMorphTargets={undefined}
           >
-            <meshBasicMaterial color={taupeColor} />
+            <meshBasicMaterial color={colorGround} />
           </Cylinder>
         </Canvas>
+        <Stack
+          direction="row"
+          spacing={1}
+          style={{ position: "absolute", left: 16, bottom: 16 }}
+        >
+          <Tooltip title="White">
+            <Avatar
+              onClick={() => setHomeColor(colorWhite)}
+              style={{
+                backgroundColor: colorWhite,
+                borderRadius: "10rem",
+                cursor: "pointer",
+                width: 40,
+                height: 40,
+              }}
+            >
+              {" "}
+            </Avatar>
+          </Tooltip>
+          <Tooltip title="Taupe">
+            <Avatar
+              onClick={() => setHomeColor(colorTaupe)}
+              style={{
+                backgroundColor: colorTaupe,
+                borderRadius: "10rem",
+                cursor: "pointer",
+                width: 40,
+                height: 40,
+              }}
+            >
+              {" "}
+            </Avatar>
+          </Tooltip>
+          <Tooltip title="Copper">
+            <Avatar
+              onClick={() => setHomeColor(colorCopper)}
+              style={{
+                backgroundColor: colorCopper,
+                borderRadius: "10rem",
+                cursor: "pointer",
+                width: 40,
+                height: 40,
+              }}
+            >
+              {" "}
+            </Avatar>
+          </Tooltip>
+          <Tooltip title="Grey">
+            <Avatar
+              onClick={() => setHomeColor(colorGrey)}
+              style={{
+                backgroundColor: colorGrey,
+                borderRadius: "10rem",
+                cursor: "pointer",
+                width: 40,
+                height: 40,
+              }}
+            >
+              {" "}
+            </Avatar>
+          </Tooltip>
+        </Stack>
         <Typography
           variant="h6"
           position="absolute"
-          color="#01257D"
-          style={{ right: 16, bottom: 12 }}
+          color="#ffffff"
+          style={{ right: 16, bottom: 16, margin: 0, padding: "0.25rem 1rem", backgroundColor: "#01257D", borderRadius: "10rem" }}
         >
           <animated.span>
             {floorArea.val.to((val: number) =>
               new Intl.NumberFormat().format(Math.floor(val))
             )}
           </animated.span>{" "}
-          SF
+          sf
         </Typography>
       </div>
     </div>
