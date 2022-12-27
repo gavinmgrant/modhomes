@@ -28,10 +28,9 @@ const Homes: FC = () => {
 
   const colorStyle = {
     borderRadius: "10rem",
-    outlineRadius: "10rem",
     cursor: "pointer",
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
   };
 
   let foundationWidth;
@@ -271,8 +270,8 @@ const Homes: FC = () => {
         </Canvas>
         <Stack
           direction="row"
-          spacing={1.5}
-          style={{ position: "absolute", left: 20, bottom: 20 }}
+          spacing={1}
+          style={{ position: "absolute", left: 16, bottom: 16 }}
         >
           <Tooltip title="White">
             <Avatar
@@ -280,7 +279,7 @@ const Homes: FC = () => {
               style={{
                 ...colorStyle,
                 backgroundColor: colorWhite,
-                outline:
+                border:
                   homeColor === colorWhite ? "0.25rem solid #01257D" : "",
               }}
             >
@@ -293,7 +292,7 @@ const Homes: FC = () => {
               style={{
                 ...colorStyle,
                 backgroundColor: colorTaupe,
-                outline:
+                border:
                   homeColor === colorTaupe ? "0.25rem solid #01257D" : "",
               }}
             >
@@ -306,7 +305,7 @@ const Homes: FC = () => {
               style={{
                 ...colorStyle,
                 backgroundColor: colorCopper,
-                outline:
+                border:
                   homeColor === colorCopper ? "0.25rem solid #01257D" : "",
               }}
             >
@@ -319,7 +318,7 @@ const Homes: FC = () => {
               style={{
                 ...colorStyle,
                 backgroundColor: colorGrey,
-                outline: homeColor === colorGrey ? "0.25rem solid #01257D" : "",
+                border: homeColor === colorGrey ? "0.25rem solid #01257D" : "",
               }}
             >
               {" "}
