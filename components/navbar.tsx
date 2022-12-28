@@ -45,6 +45,7 @@ const NavBar = () => {
       </Typography>
       <Toolbar>
         <IconButton
+          role="button"
           size="large"
           edge="start"
           color="inherit"
