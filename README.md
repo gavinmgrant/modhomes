@@ -2,6 +2,8 @@
 
 This app leverages React Three Fiber to render 3d models of modular homes.
 
+![User flow GIF of ModHomes](./modhomes-animation.gif)
+
 ## Technology
 
 * TypeScript - strongly typed programming language
