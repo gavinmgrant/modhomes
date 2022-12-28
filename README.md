@@ -2,7 +2,7 @@
 
 This app leverages React Three Fiber to render 3d models of modular homes.
 
-![User flow GIF of ModHomes](./modhomes-animation.gif)
+![User flow GIF of ModHomes](./public/modhomes-animation.gif)
 
 ## Technology
 

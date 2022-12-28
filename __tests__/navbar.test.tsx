@@ -1,5 +1,5 @@
 import * as React from "react";
-import NavBar from "./navbar";
+import NavBar from "../components/navbar";
 import singletonRouter from "next/router";
 import { render, cleanup, fireEvent, screen } from "@testing-library/react";
 import mockRouter from "next-router-mock";
