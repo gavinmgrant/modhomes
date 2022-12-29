@@ -1,11 +1,8 @@
 import Head from "next/head";
-import { useRouter } from "next/router";
 import NavBar from "../components/navbar";
 import LandingHero from "../components/landinghero";
 
 const Home = () => {
-  const router = useRouter();
-
   return (
     <>
       <Head>
