@@ -4,34 +4,17 @@ import { Canvas } from "@react-three/fiber";
 import Module from "../../components/module";
 import Foundation from "../../components/foundation";
 import NavBar from "../../components/navbar";
+import Colors, { COLORS } from "../../components/colors";
 import { OrbitControls, Sky, Cylinder } from "@react-three/drei";
 import { useSpring, animated, config } from "@react-spring/web";
-import {
-  Typography,
-  useMediaQuery,
-  Stack,
-  Tooltip,
-  Avatar,
-} from "@mui/material";
+import { Typography, useMediaQuery } from "@mui/material";
 
 const Homes: FC = () => {
-  const colorWhite = "#e3d7c4";
-  const colorTaupe = "#a19b87";
-  const colorCopper = "#554a3d";
-  const colorGrey = "#94948b";
-
   const router = useRouter();
   const [currentArea, setCurrentArea] = useState(0);
-  const [homeColor, setHomeColor] = useState(colorWhite);
+  const [homeColor, setHomeColor] = useState(COLORS.white);
   const isMobile = useMediaQuery("(max-width:900px)");
-  const colorGround = "#b5b2b0";
-
-  const colorStyle = {
-    borderRadius: "10rem",
-    cursor: "pointer",
-    width: 40,
-    height: 40,
-  };
+  const colorGround = "#dbd9d9";
 
   let foundationWidth;
   const w = router.query.home?.slice(3, 4);
@@ -147,13 +130,20 @@ const Homes: FC = () => {
     }
   }, [router.query.home]);
 
+  const handleColorChange = (color: string) => {
+    setHomeColor(color);
+  };
+
   return (
-    <div>
-      <NavBar />
-      {/* <animated.div>{currentArea}</animated.div> */}
-      <div style={{ height: "100vh" }}>
+    <>
+      <div
+        style={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}
+      >
+        <NavBar />
+      </div>
+      <div style={{ height: "100vh", width: "100vw", margin: 0 }}>
         <Canvas
-          camera={{ position: [60, 40, 90], fov: isMobile ? 50 : 40 }}
+          camera={{ position: [60, 60, 60], fov: isMobile ? 60 : 40 }}
           shadows
         >
           <OrbitControls maxPolarAngle={Math.PI / 2} enableZoom={false} />
@@ -268,85 +258,34 @@ const Homes: FC = () => {
             <meshBasicMaterial color={colorGround} />
           </Cylinder>
         </Canvas>
-        <Stack
-          direction="row"
-          spacing={1}
-          style={{ position: "absolute", left: 16, bottom: 16 }}
+        <div
+          style={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}
         >
-          <Tooltip title="White">
-            <Avatar
-              onClick={() => setHomeColor(colorWhite)}
-              style={{
-                ...colorStyle,
-                backgroundColor: colorWhite,
-                border:
-                  homeColor === colorWhite ? "0.25rem solid #01257D" : "",
-              }}
-            >
-              {" "}
-            </Avatar>
-          </Tooltip>
-          <Tooltip title="Taupe">
-            <Avatar
-              onClick={() => setHomeColor(colorTaupe)}
-              style={{
-                ...colorStyle,
-                backgroundColor: colorTaupe,
-                border:
-                  homeColor === colorTaupe ? "0.25rem solid #01257D" : "",
-              }}
-            >
-              {" "}
-            </Avatar>
-          </Tooltip>
-          <Tooltip title="Copper">
-            <Avatar
-              onClick={() => setHomeColor(colorCopper)}
-              style={{
-                ...colorStyle,
-                backgroundColor: colorCopper,
-                border:
-                  homeColor === colorCopper ? "0.25rem solid #01257D" : "",
-              }}
-            >
-              {" "}
-            </Avatar>
-          </Tooltip>
-          <Tooltip title="Grey">
-            <Avatar
-              onClick={() => setHomeColor(colorGrey)}
-              style={{
-                ...colorStyle,
-                backgroundColor: colorGrey,
-                border: homeColor === colorGrey ? "0.25rem solid #01257D" : "",
-              }}
-            >
-              {" "}
-            </Avatar>
-          </Tooltip>
-        </Stack>
-        <Typography
-          variant="h6"
-          position="absolute"
-          color="#ffffff"
-          style={{
-            right: 16,
-            bottom: 16,
-            margin: 0,
-            padding: "0.25rem 1rem",
-            backgroundColor: "#01257D",
-            borderRadius: "10rem",
-          }}
-        >
-          <animated.span>
-            {floorArea.val.to((val: number) =>
-              new Intl.NumberFormat().format(Math.floor(val))
-            )}
-          </animated.span>{" "}
-          sf
-        </Typography>
+          <Colors homeColor={homeColor} handleColor={handleColorChange} />
+          <Typography
+            variant="h6"
+            position="absolute"
+            color="#01257D"
+            style={{
+              right: 16,
+              bottom: 16,
+              margin: 0,
+              padding: "0.25rem 1rem",
+              border: "1px dashed #01257D",
+              background: "none",
+              borderRadius: "10rem",
+            }}
+          >
+            <animated.span>
+              {floorArea.val.to((val: number) =>
+                new Intl.NumberFormat().format(Math.floor(val))
+              )}
+            </animated.span>{" "}
+            sf
+          </Typography>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

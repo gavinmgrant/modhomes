@@ -1,4 +1,9 @@
-const Module = ({ color, position }: any) => {
+interface ModuleProps {
+  color: string;
+  position: number[];
+}
+
+const Module = ({ color, position }: ModuleProps) => {
   return (
     <mesh position={position}>
       <boxGeometry args={[7.75, 9.75, 40]} />

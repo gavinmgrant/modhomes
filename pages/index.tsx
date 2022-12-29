@@ -11,7 +11,17 @@ const Home = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div style={{ minHeight: "100vh", padding: "1rem", color: "#01257D" }}>
+      <div
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          maxWidth: "1200px",
+          margin: "0 auto",
+          padding: "1rem",
+          color: "#01257D",
+          backgroundColor: "#d0cfcf",
+        }}
+      >
         <NavBar />
         <LandingHero />
       </div>

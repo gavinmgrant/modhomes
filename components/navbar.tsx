@@ -28,6 +28,7 @@ const NavBar = () => {
   return (
     <AppBar
       sx={{
+        position: "absolute",
         width: "calc(100% - 2rem)",
         top: "1rem",
         left: "1rem",
@@ -36,11 +37,17 @@ const NavBar = () => {
         justifyContent: "space-between",
         alignItems: "center",
         borderRadius: "0.5rem",
-        backgroundColor: "#01257D",
-        color: "#ffffff",
+        border: "1px dashed #01257D",
+        background: router.pathname === "/" ? "#d0cfcf" : "none",
+        color: "#01257D",
+        boxShadow: "none",
       }}
     >
-      <Typography variant="h6" fontWeight={500} sx={{ ml: "2rem" }}>
+      <Typography
+        variant="h6"
+        fontWeight={500}
+        marginLeft={{ xs: "1rem", sm: "1.5rem" }}
+      >
         <Link href="/">ModHomes</Link>
       </Typography>
       <Toolbar>
@@ -51,6 +58,7 @@ const NavBar = () => {
           color="inherit"
           aria-label="menu"
           onClick={handleMenuClick}
+          sx={{ margin: 0, padding: 0 }}
         >
           <MenuIcon />
         </IconButton>
@@ -59,7 +67,10 @@ const NavBar = () => {
             <MenuItem
               key={model.slug}
               onClick={() => handleItemClick(model.slug)}
-              sx={{ color: "#01257D", padding: "1rem 3rem" }}
+              sx={{
+                color: "#01257D",
+                padding: "1rem 3rem",
+              }}
             >
               {model.name}
             </MenuItem>
