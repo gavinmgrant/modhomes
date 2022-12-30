@@ -16,6 +16,7 @@ See a live version of this app here: [modhomes.vercel.app](https://modhomes.verc
 * Material UI - React components
 * React Three Fiber - React renderer for three.js
 * Vercel - platform for deploying and hosting
+* Framer Motion - React motion libary
 
 ## Setup
 

@@ -39,6 +39,9 @@ const LandingHero = () => {
           >
             <CardContent style={{ padding: 0, margin: 0 }}>
               <Typography variant="h4">{model.name}</Typography>
+              <Typography variant="body1" margin="0.25rem 0">
+                Floor Area: {model.area} sf
+              </Typography>
             </CardContent>
           </Card>
         </motion.div>
