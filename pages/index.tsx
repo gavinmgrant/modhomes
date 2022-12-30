@@ -1,8 +1,12 @@
 import Head from "next/head";
 import NavBar from "../components/navbar";
 import LandingHero from "../components/landinghero";
+import Footer from "../components/footer";
+import { useMediaQuery } from "@mui/material";
 
 const Home = () => {
+  const isMobile = useMediaQuery("(max-width:900px)");
+
   return (
     <>
       <Head>
@@ -18,12 +22,14 @@ const Home = () => {
           maxWidth: "1200px",
           margin: "0 auto",
           padding: "1rem",
+          paddingBottom: isMobile ? "1rem" : "4rem",
           color: "#131414",
           backgroundColor: "#f9f7f1",
         }}
       >
         <NavBar />
         <LandingHero />
+        <Footer />
       </div>
     </>
   );
