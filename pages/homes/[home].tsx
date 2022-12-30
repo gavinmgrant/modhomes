@@ -31,6 +31,9 @@ const Homes: FC = () => {
     case "4":
       foundationWidth = 31;
       break;
+    case "5":
+      foundationWidth = 39;
+      break;
   }
 
   let home;
@@ -62,6 +65,17 @@ const Homes: FC = () => {
           <Module position={[0, 0, 0]} color={homeColor}></Module>
           <Module position={[8, 0, 0]} color={homeColor}></Module>
           <Module position={[16, 0, 0]} color={homeColor}></Module>
+        </>
+      );
+      break;
+    case "mod5x1":
+      home = (
+        <>
+          <Module position={[-12, 0, 0]} color={homeColor}></Module>
+          <Module position={[-4, 0, 0]} color={homeColor}></Module>
+          <Module position={[4, 0, 0]} color={homeColor}></Module>
+          <Module position={[12, 0, 0]} color={homeColor}></Module>
+          <Module position={[20, 0, 0]} color={homeColor}></Module>
         </>
       );
       break;
@@ -121,6 +135,8 @@ const Homes: FC = () => {
       setCurrentArea(320 * 3);
     } else if (router.query.home === "mod4x1") {
       setCurrentArea(320 * 4);
+    } else if (router.query.home === "mod5x1") {
+      setCurrentArea(320 * 5);
     } else if (router.query.home === "mod2x2") {
       setCurrentArea(320 * 4);
     } else if (router.query.home === "mod3x2") {
@@ -143,7 +159,7 @@ const Homes: FC = () => {
       </div>
       <div style={{ height: "100vh", width: "100vw", margin: 0 }}>
         <Canvas
-          camera={{ position: [60, 0, 60], fov: isMobile ? 60 : 40 }}
+          camera={{ position: [60, 0, 60], fov: isMobile ? 70 : 40 }}
           shadows
         >
           <OrbitControls maxPolarAngle={Math.PI / 2} enableZoom={false} />
