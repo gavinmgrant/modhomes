@@ -26,13 +26,13 @@ const LandingHero = () => {
               alignItems: "center",
               background: "none",
               boxShadow: "none",
-              color: "#01257D",
+              color: "#131414",
               borderRadius: "0.5rem",
               cursor: "pointer",
               height: "8rem",
-              border: "1px dashed #01257D",
+              border: "1px dashed #131414",
               "&:hover": {
-                border: "1.5px dashed #01257D",
+                border: "1.5px dashed #131414",
               },
             }}
             onClick={() => router.push(`/homes/${model.slug}`)}

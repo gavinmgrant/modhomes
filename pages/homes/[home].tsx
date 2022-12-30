@@ -265,13 +265,13 @@ const Homes: FC = () => {
           <Typography
             variant="h6"
             position="absolute"
-            color="#01257D"
+            color="#131414"
             padding={{ xs: "0.75rem", sm: "1rem" }}
             style={{
               right: 16,
               bottom: 16,
               margin: 0,
-              border: "1px dashed #01257D",
+              border: "1px dashed #131414",
               background: "none",
               borderRadius: "0.5rem",
             }}

@@ -18,8 +18,8 @@ const Home = () => {
           maxWidth: "1200px",
           margin: "0 auto",
           padding: "1rem",
-          color: "#01257D",
-          backgroundColor: "#d0cfcf",
+          color: "#131414",
+          backgroundColor: "#f9f7f1",
         }}
       >
         <NavBar />

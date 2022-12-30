@@ -23,7 +23,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
     height: isMobile ? 36 : 40,
   };
 
-  const borderStyle = "3px solid #01257D";
+  const borderStyle = "3px solid #131414";
 
   return (
     <Stack
@@ -33,7 +33,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
       direction="row"
       spacing={1}
       borderRadius="0.5rem"
-      border="1px dashed #01257D"
+      border="1px dashed #131414"
       padding={{ xs: "10px", sm: "13px" }}
     >
       <Tooltip title="White">

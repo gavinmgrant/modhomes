@@ -37,9 +37,9 @@ const NavBar = () => {
         justifyContent: "space-between",
         alignItems: "center",
         borderRadius: "0.5rem",
-        border: "1px dashed #01257D",
-        background: router.pathname === "/" ? "#d0cfcf" : "none",
-        color: "#01257D",
+        border: "1px dashed #131414",
+        background: router.pathname === "/" ? "#f9f7f1" : "none",
+        color: "#131414",
         boxShadow: "none",
       }}
     >
@@ -68,7 +68,7 @@ const NavBar = () => {
               key={model.slug}
               onClick={() => handleItemClick(model.slug)}
               sx={{
-                color: "#01257D",
+                color: "#131414",
                 padding: "1rem 3rem",
               }}
             >
