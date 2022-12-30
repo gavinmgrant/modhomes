@@ -1,5 +1,5 @@
 import React from "react";
-import { Stack, Tooltip, Avatar } from "@mui/material";
+import { Stack, Tooltip, Avatar, useMediaQuery } from "@mui/material";
 
 export const COLORS = {
   white: "#e3d7c4",
@@ -14,18 +14,27 @@ interface ColorProps {
 }
 
 const Colors = ({ homeColor, handleColor }: ColorProps) => {
+  const isMobile = useMediaQuery("(max-width:900px)");
+
   const colorStyle = {
     borderRadius: "10rem",
     cursor: "pointer",
-    width: 40,
-    height: 40,
+    width: isMobile ? 36 : 40,
+    height: isMobile ? 36 : 40,
   };
+
+  const borderStyle = "3px solid #01257D";
 
   return (
     <Stack
+      position="absolute"
+      left={16}
+      bottom={16}
       direction="row"
       spacing={1}
-      style={{ position: "absolute", left: 16, bottom: 16 }}
+      borderRadius="0.5rem"
+      border="1px dashed #01257D"
+      padding={{ xs: "10px", sm: "13px" }}
     >
       <Tooltip title="White">
         <Avatar
@@ -33,7 +42,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
           style={{
             ...colorStyle,
             backgroundColor: COLORS.white,
-            border: homeColor === COLORS.white ? "2px solid #01257D" : "",
+            border: homeColor === COLORS.white ? borderStyle : "",
           }}
         >
           {" "}
@@ -45,7 +54,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
           style={{
             ...colorStyle,
             backgroundColor: COLORS.taupe,
-            border: homeColor === COLORS.taupe ? "2px solid #01257D" : "",
+            border: homeColor === COLORS.taupe ? borderStyle : "",
           }}
         >
           {" "}
@@ -57,7 +66,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
           style={{
             ...colorStyle,
             backgroundColor: COLORS.copper,
-            border: homeColor === COLORS.copper ? "2px solid #01257D" : "",
+            border: homeColor === COLORS.copper ? borderStyle : "",
           }}
         >
           {" "}
@@ -69,7 +78,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
           style={{
             ...colorStyle,
             backgroundColor: COLORS.grey,
-            border: homeColor === COLORS.grey ? "2px solid #01257D" : "",
+            border: homeColor === COLORS.grey ? borderStyle : "",
           }}
         >
           {" "}

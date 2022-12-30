@@ -5,53 +5,73 @@ import { CardContent } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import MODELS from "../lib/models";
+import { AnimatePresence, motion } from "framer-motion";
 
 const LandingHero = () => {
   const router = useRouter();
 
   const cards = MODELS.map((model) => (
     <Grid item key={model.slug} xs={12} sm={6} md={4} lg={3}>
-      <Card
-        key={model.slug}
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "none",
-          boxShadow: "none",
-          color: "#01257D",
-          borderRadius: "0.5rem",
-          cursor: "pointer",
-          height: "8rem",
-          border: "1px dashed #01257D",
-          "&:hover": {
-            border: "1.5px dashed #01257D",
-          },
-        }}
-        onClick={() => router.push(`/homes/${model.slug}`)}
-      >
-        <CardContent style={{ padding: 0, margin: 0 }}>
-          <Typography variant="h4">{model.name}</Typography>
-        </CardContent>
-      </Card>
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card
+            key={model.slug}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              background: "none",
+              boxShadow: "none",
+              color: "#01257D",
+              borderRadius: "0.5rem",
+              cursor: "pointer",
+              height: "8rem",
+              border: "1px dashed #01257D",
+              "&:hover": {
+                border: "1.5px dashed #01257D",
+              },
+            }}
+            onClick={() => router.push(`/homes/${model.slug}`)}
+          >
+            <CardContent style={{ padding: 0, margin: 0 }}>
+              <Typography variant="h4">{model.name}</Typography>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
     </Grid>
   ));
 
   return (
     <>
-      <Typography
-        variant="h2"
-        fontWeight={700}
-        textAlign="center"
-        marginTop={{ xs: "5rem", sm: "6rem" }}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
       >
-        Models
-      </Typography>
-      <Typography textAlign="center" marginBottom="2rem">
-        Select a model home.
-      </Typography>
+        <Typography
+          variant="h2"
+          fontWeight={700}
+          textAlign="center"
+          marginTop={{ xs: "5rem", sm: "6rem" }}
+        >
+          Models
+        </Typography>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Typography textAlign="center" marginBottom="2rem">
+          Select a model home.
+        </Typography>
+      </motion.div>
       <Grid container spacing={2} columns={12}>
-        {cards}
+        <AnimatePresence>{cards}</AnimatePresence>
       </Grid>
     </>
   );

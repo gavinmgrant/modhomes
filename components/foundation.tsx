@@ -1,7 +1,7 @@
 interface FoundationProps {
   color: string;
   position: number[];
-  width: number;
+  width: number | undefined;
 }
 
 const Foundation = ({ color, position, width }: FoundationProps) => {

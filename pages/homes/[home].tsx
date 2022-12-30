@@ -143,7 +143,7 @@ const Homes: FC = () => {
       </div>
       <div style={{ height: "100vh", width: "100vw", margin: 0 }}>
         <Canvas
-          camera={{ position: [60, 60, 60], fov: isMobile ? 60 : 40 }}
+          camera={{ position: [60, 0, 60], fov: isMobile ? 60 : 40 }}
           shadows
         >
           <OrbitControls maxPolarAngle={Math.PI / 2} enableZoom={false} />
@@ -266,14 +266,14 @@ const Homes: FC = () => {
             variant="h6"
             position="absolute"
             color="#01257D"
+            padding={{ xs: "0.75rem", sm: "1rem" }}
             style={{
               right: 16,
               bottom: 16,
               margin: 0,
-              padding: "0.25rem 1rem",
               border: "1px dashed #01257D",
               background: "none",
-              borderRadius: "10rem",
+              borderRadius: "0.5rem",
             }}
           >
             <animated.span>
