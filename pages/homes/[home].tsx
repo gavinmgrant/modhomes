@@ -39,79 +39,79 @@ const Homes: FC = () => {
   let home;
   switch (router.query.home) {
     case "mod1x1":
-      home = <Module position={[4, 0, 0]} color={homeColor}></Module>;
+      home = <Module position={[0, 0, 0]} color={homeColor}></Module>;
       break;
     case "mod2x1":
       home = (
         <>
-          <Module position={[0, 0, 0]} color={homeColor}></Module>
-          <Module position={[8, 0, 0]} color={homeColor}></Module>
+          <Module position={[-4, 0, 0]} color={homeColor}></Module>
+          <Module position={[4, 0, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod3x1":
       home = (
         <>
-          <Module position={[-4, 0, 0]} color={homeColor}></Module>
-          <Module position={[4, 0, 0]} color={homeColor}></Module>
-          <Module position={[12, 0, 0]} color={homeColor}></Module>
+          <Module position={[-8, 0, 0]} color={homeColor}></Module>
+          <Module position={[0, 0, 0]} color={homeColor}></Module>
+          <Module position={[8, 0, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod4x1":
       home = (
         <>
-          <Module position={[-8, 0, 0]} color={homeColor}></Module>
-          <Module position={[0, 0, 0]} color={homeColor}></Module>
-          <Module position={[8, 0, 0]} color={homeColor}></Module>
-          <Module position={[16, 0, 0]} color={homeColor}></Module>
+          <Module position={[-12, 0, 0]} color={homeColor}></Module>
+          <Module position={[-4, 0, 0]} color={homeColor}></Module>
+          <Module position={[4, 0, 0]} color={homeColor}></Module>
+          <Module position={[12, 0, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod5x1":
       home = (
         <>
-          <Module position={[-12, 0, 0]} color={homeColor}></Module>
-          <Module position={[-4, 0, 0]} color={homeColor}></Module>
-          <Module position={[4, 0, 0]} color={homeColor}></Module>
-          <Module position={[12, 0, 0]} color={homeColor}></Module>
-          <Module position={[20, 0, 0]} color={homeColor}></Module>
+          <Module position={[-16, 0, 0]} color={homeColor}></Module>
+          <Module position={[-8, 0, 0]} color={homeColor}></Module>
+          <Module position={[0, 0, 0]} color={homeColor}></Module>
+          <Module position={[8, 0, 0]} color={homeColor}></Module>
+          <Module position={[16, 0, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod2x2":
       home = (
         <>
-          <Module position={[0, 0, 0]} color={homeColor}></Module>
-          <Module position={[8, 0, 0]} color={homeColor}></Module>
-          <Module position={[0, 10, 0]} color={homeColor}></Module>
-          <Module position={[8, 10, 0]} color={homeColor}></Module>
+          <Module position={[-4, 0, 0]} color={homeColor}></Module>
+          <Module position={[4, 0, 0]} color={homeColor}></Module>
+          <Module position={[-4, 10, 0]} color={homeColor}></Module>
+          <Module position={[4, 10, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod3x2":
       home = (
         <>
-          <Module position={[-4, 0, 0]} color={homeColor}></Module>
-          <Module position={[4, 0, 0]} color={homeColor}></Module>
-          <Module position={[12, 0, 0]} color={homeColor}></Module>
-          <Module position={[-4, 10, 0]} color={homeColor}></Module>
-          <Module position={[4, 10, 0]} color={homeColor}></Module>
-          <Module position={[12, 10, 0]} color={homeColor}></Module>
+          <Module position={[-8, 0, 0]} color={homeColor}></Module>
+          <Module position={[0, 0, 0]} color={homeColor}></Module>
+          <Module position={[8, 0, 0]} color={homeColor}></Module>
+          <Module position={[-8, 10, 0]} color={homeColor}></Module>
+          <Module position={[0, 10, 0]} color={homeColor}></Module>
+          <Module position={[8, 10, 0]} color={homeColor}></Module>
         </>
       );
       break;
     case "mod4x2":
       home = (
         <>
-          <Module position={[-8, 0, 0]} color={homeColor}></Module>
-          <Module position={[0, 0, 0]} color={homeColor}></Module>
-          <Module position={[8, 0, 0]} color={homeColor}></Module>
-          <Module position={[16, 0, 0]} color={homeColor}></Module>
-          <Module position={[-8, 10, 0]} color={homeColor}></Module>
-          <Module position={[0, 10, 0]} color={homeColor}></Module>
-          <Module position={[8, 10, 0]} color={homeColor}></Module>
-          <Module position={[16, 10, 0]} color={homeColor}></Module>
+          <Module position={[-12, 0, 0]} color={homeColor}></Module>
+          <Module position={[-4, 0, 0]} color={homeColor}></Module>
+          <Module position={[4, 0, 0]} color={homeColor}></Module>
+          <Module position={[12, 0, 0]} color={homeColor}></Module>
+          <Module position={[-12, 10, 0]} color={homeColor}></Module>
+          <Module position={[-4, 10, 0]} color={homeColor}></Module>
+          <Module position={[4, 10, 0]} color={homeColor}></Module>
+          <Module position={[12, 10, 0]} color={homeColor}></Module>
         </>
       );
       break;
@@ -169,7 +169,7 @@ const Homes: FC = () => {
           <Sky sunPosition={[100, 100, 20]} />
           {home}
           <Foundation
-            position={[4, -5.7, 0]}
+            position={[0, -5.7, 0]}
             color={colorGround}
             width={foundationWidth}
           />
