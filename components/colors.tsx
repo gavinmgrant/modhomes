@@ -6,6 +6,7 @@ export const COLORS = {
   taupe: "#a19b87",
   copper: "#554a3d",
   grey: "#94948b",
+  roof: "#faf9f6",
 };
 
 interface ColorProps {

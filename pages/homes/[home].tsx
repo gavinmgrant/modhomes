@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { Canvas } from "@react-three/fiber";
 import Module from "../../components/module";
 import Foundation from "../../components/foundation";
+import Roof from "../../components/roof";
 import NavBar from "../../components/navbar";
 import Colors, { COLORS } from "../../components/colors";
 import { OrbitControls, Sky, Cylinder } from "@react-three/drei";
@@ -33,6 +34,17 @@ const Homes: FC = () => {
       break;
     case "5":
       foundationWidth = 39;
+      break;
+  }
+
+  let roofHeight;
+  const stories = router.query.home?.slice(5);
+  switch (stories) {
+    case "1":
+      roofHeight = 5.25;
+      break;
+    case "2":
+      roofHeight = 15.25;
       break;
   }
 
@@ -171,6 +183,11 @@ const Homes: FC = () => {
           <Foundation
             position={[0, -5.7, 0]}
             color={colorGround}
+            width={foundationWidth}
+          />
+          <Roof
+            position={[0, roofHeight, 0]}
+            color={COLORS.roof}
             width={foundationWidth}
           />
           <Cylinder
