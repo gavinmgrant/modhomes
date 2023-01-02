@@ -185,11 +185,13 @@ const Homes: FC = () => {
             color={colorGround}
             width={foundationWidth}
           />
-          <Roof
-            position={[0, roofHeight, 0]}
-            color={COLORS.roof}
-            width={foundationWidth}
-          />
+          {roofHeight && (
+            <Roof
+              position={[0, roofHeight, 0]}
+              color={COLORS.roof}
+              width={foundationWidth}
+            />
+          )}
           <Cylinder
             args={[1000, 1000, -1]}
             position={[0, -7, 0]}
