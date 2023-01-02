@@ -36,7 +36,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
       border="1px dashed #131414"
       padding={{ xs: "10px", sm: "13px" }}
     >
-      <Tooltip title="White">
+      <Tooltip title="White" role="tooltip">
         <Avatar
           onClick={() => handleColor(COLORS.white)}
           style={{
@@ -48,7 +48,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
           {" "}
         </Avatar>
       </Tooltip>
-      <Tooltip title="Taupe">
+      <Tooltip title="Taupe" role="tooltip">
         <Avatar
           onClick={() => handleColor(COLORS.taupe)}
           style={{
@@ -57,10 +57,10 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
             border: homeColor === COLORS.taupe ? borderStyle : "",
           }}
         >
-          {" "}
+          <span data-testid="taupe-option"> </span>
         </Avatar>
       </Tooltip>
-      <Tooltip title="Copper">
+      <Tooltip title="Copper" role="tooltip">
         <Avatar
           onClick={() => handleColor(COLORS.copper)}
           style={{
@@ -72,7 +72,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
           {" "}
         </Avatar>
       </Tooltip>
-      <Tooltip title="Grey">
+      <Tooltip title="Grey" role="tooltip">
         <Avatar
           onClick={() => handleColor(COLORS.grey)}
           style={{
