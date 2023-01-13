@@ -174,7 +174,7 @@ const Homes: FC = () => {
           camera={{ position: [60, 0, 60], fov: isMobile ? 70 : 40 }}
           shadows
         >
-          <OrbitControls maxPolarAngle={Math.PI / 2} enableZoom={false} />
+          <OrbitControls maxPolarAngle={Math.PI / 2} maxDistance={100} />
           <pointLight position={[20, 40, 40]} />
           <pointLight position={[-40, -80, -80]} />
           <ambientLight intensity={0.3} />
