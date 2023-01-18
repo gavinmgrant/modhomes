@@ -1,16 +1,20 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import MenuItem from "@mui/material/MenuItem";
-import Drawer from "@mui/material/Drawer";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  MenuItem,
+  Drawer,
+  useMediaQuery,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import MODELS from "../lib/models";
 
 const NavBar = () => {
+  const isMobile = useMediaQuery("(max-width:900px)");
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -58,9 +62,9 @@ const NavBar = () => {
           color="inherit"
           aria-label="menu"
           onClick={handleMenuClick}
-          sx={{ margin: 0, padding: 0 }}
+          sx={{ margin: 0, padding: "0.5rem" }}
         >
-          <MenuIcon />
+          {isMobile ? <MenuIcon /> : <Typography>Models</Typography>}
         </IconButton>
         <Drawer anchor="right" open={open} onClose={handleMenuClose}>
           {MODELS.map((model) => (

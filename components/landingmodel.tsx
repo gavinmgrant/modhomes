@@ -46,7 +46,7 @@ const LandingModel = () => {
           viewport={{ once: true }}
           style={{ height: isMobile ? "40vh" : "60vh" }}
         >
-          <Canvas camera={{ position: [60, 0, 60], fov: isMobile ? 40 : 30 }}>
+          <Canvas camera={{ position: [60, 0, 60], fov: 30 }}>
             <OrbitControls
               autoRotate
               maxPolarAngle={Math.PI / 2}
