@@ -1,6 +1,7 @@
 import Head from "next/head";
 import NavBar from "../components/navbar";
 import LandingHero from "../components/landinghero";
+import LandingModel from "../components/landingmodel";
 import Footer from "../components/footer";
 import { useMediaQuery } from "@mui/material";
 
@@ -28,6 +29,7 @@ const Home = () => {
         }}
       >
         <NavBar />
+        <LandingModel />
         <LandingHero />
         <Footer />
       </div>

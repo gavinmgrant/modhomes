@@ -15,8 +15,9 @@ const LandingHero = () => {
       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
+          viewport={{ once: true }}
         >
           <Card
             key={model.slug}
@@ -50,10 +51,11 @@ const LandingHero = () => {
   ));
 
   return (
-    <>
+    <div style={{ minHeight: "75vh" }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
       >
         <Typography
           variant="h2"
@@ -66,8 +68,9 @@ const LandingHero = () => {
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        viewport={{ once: true }}
       >
         <Typography textAlign="center" marginBottom="2rem">
           Select a model home.
@@ -76,7 +79,7 @@ const LandingHero = () => {
       <Grid container spacing={2} columns={12}>
         <AnimatePresence>{cards}</AnimatePresence>
       </Grid>
-    </>
+    </div>
   );
 };
 
