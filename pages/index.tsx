@@ -1,3 +1,4 @@
+import { createRef } from "react";
 import Head from "next/head";
 import NavBar from "../components/navbar";
 import LandingModels from "../components/landingmodels";
@@ -6,7 +7,11 @@ import Footer from "../components/footer";
 import { useMediaQuery } from "@mui/material";
 
 const Home = () => {
+  const ref = createRef<HTMLDivElement>();
   const isMobile = useMediaQuery("(max-width:900px)");
+
+  const handleScroll = () =>
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
     <>
@@ -29,8 +34,8 @@ const Home = () => {
         }}
       >
         <NavBar />
-        <LandingHero />
-        <LandingModels />
+        <LandingHero handleScroll={handleScroll} />
+        <LandingModels ref={ref} />
         <Footer />
       </div>
     </>

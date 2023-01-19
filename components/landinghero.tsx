@@ -1,16 +1,20 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { Typography, useMediaQuery } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import { Typography, useMediaQuery, Grid, Button } from "@mui/material";
 import Roof from "./roof";
 import Module from "./module";
 import Foundation from "./foundation";
 import { COLORS } from "./colors";
 import { motion } from "framer-motion";
 
-const LandingHero = () => {
+type LandingHeroProps = {
+  handleScroll: () => void;
+};
+
+const LandingHero = ({ handleScroll }: LandingHeroProps) => {
   const isMobile = useMediaQuery("(max-width:900px)");
+  const borderStyle = "1px dashed #131414";
 
   return (
     <Grid
@@ -26,16 +30,28 @@ const LandingHero = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          style={{ margin: "1rem", textAlign: isMobile ? "center" : "left" }}
         >
-          <Typography
-            variant="h2"
-            fontWeight={700}
-            margin="1rem"
-            textAlign={isMobile ? "center" : "left"}
-          >
+          <Typography variant="h2" fontWeight={700}>
             Modern, modular homes.
           </Typography>
+          <Button
+            variant="outlined"
+            onClick={handleScroll}
+            style={{
+              marginTop: "1rem",
+              color: "#131414",
+              border: borderStyle,
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+            >
+              Select a model
+            </motion.div>
+          </Button>
         </motion.div>
       </Grid>
       <Grid item xs={12} md={6} alignSelf={isMobile ? "flex-start" : "center"}>
@@ -43,7 +59,6 @@ const LandingHero = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          viewport={{ once: true }}
           style={{ height: isMobile ? "40vh" : "60vh" }}
         >
           <Canvas camera={{ position: [60, 0, 60], fov: 30 }}>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef } from "react";
 import { useRouter } from "next/router";
 import Card from "@mui/material/Card";
 import { CardContent } from "@mui/material";
@@ -7,7 +7,7 @@ import Grid from "@mui/material/Grid";
 import MODELS from "../lib/models";
 import { AnimatePresence, motion } from "framer-motion";
 
-const LandingModels = () => {
+const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   const router = useRouter();
 
   const cards = MODELS.map((model) => (
@@ -51,7 +51,7 @@ const LandingModels = () => {
   ));
 
   return (
-    <div style={{ minHeight: "75vh" }}>
+    <div ref={ref} style={{ minHeight: "75vh" }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -81,6 +81,8 @@ const LandingModels = () => {
       </Grid>
     </div>
   );
-};
+});
+
+LandingModels.displayName = "LandingModels"
 
 export default LandingModels;
