@@ -1,85 +1,67 @@
 import React from "react";
-import { useRouter } from "next/router";
-import Card from "@mui/material/Card";
-import { CardContent } from "@mui/material";
-import Typography from "@mui/material/Typography";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import { Typography, useMediaQuery } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import MODELS from "../lib/models";
-import { AnimatePresence, motion } from "framer-motion";
+import Roof from "./roof";
+import Module from "./module";
+import Foundation from "./foundation";
+import { COLORS } from "./colors";
+import { motion } from "framer-motion";
 
 const LandingHero = () => {
-  const router = useRouter();
-
-  const cards = MODELS.map((model) => (
-    <Grid item key={model.slug} xs={12} sm={6} md={4} lg={3}>
-      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          viewport={{ once: true }}
-        >
-          <Card
-            key={model.slug}
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              background: "none",
-              boxShadow: "none",
-              color: "#131414",
-              borderRadius: "0.5rem",
-              cursor: "pointer",
-              height: "8rem",
-              border: "1px dashed #131414",
-              "&:hover": {
-                border: "1.5px dashed #131414",
-              },
-            }}
-            onClick={() => router.push(`/homes/${model.slug}`)}
-          >
-            <CardContent style={{ padding: 0, margin: 0 }}>
-              <Typography variant="h4">{model.name}</Typography>
-              <Typography variant="body1" margin="0.25rem 0">
-                Floor Area: {model.area} sf
-              </Typography>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </motion.div>
-    </Grid>
-  ));
+  const isMobile = useMediaQuery("(max-width:900px)");
 
   return (
-    <div style={{ minHeight: "75vh" }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <Typography
-          variant="h2"
-          fontWeight={700}
-          textAlign="center"
-          marginTop={{ xs: "5rem", sm: "6rem" }}
+    <Grid
+      container
+      spacing={0}
+      columns={12}
+      alignItems={isMobile ? "flex-end" : "center"}
+      width="100%"
+      height="100vh"
+      margin="0 auto"
+    >
+      <Grid item xs={12} md={6}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
         >
-          Models
-        </Typography>
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        viewport={{ once: true }}
-      >
-        <Typography textAlign="center" marginBottom="2rem">
-          Select a model home.
-        </Typography>
-      </motion.div>
-      <Grid container spacing={2} columns={12}>
-        <AnimatePresence>{cards}</AnimatePresence>
+          <Typography
+            variant="h2"
+            fontWeight={700}
+            margin="1rem"
+            textAlign={isMobile ? "center" : "left"}
+          >
+            Modern, modular homes.
+          </Typography>
+        </motion.div>
       </Grid>
-    </div>
+      <Grid item xs={12} md={6} alignSelf={isMobile ? "flex-start" : "center"}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
+          viewport={{ once: true }}
+          style={{ height: isMobile ? "40vh" : "60vh" }}
+        >
+          <Canvas camera={{ position: [60, 0, 60], fov: 30 }}>
+            <OrbitControls
+              autoRotate
+              maxPolarAngle={Math.PI / 2}
+              enableZoom={false}
+            />
+            <pointLight position={[20, 40, 40]} />
+            <pointLight position={[-40, -80, -80]} />
+            <ambientLight intensity={0.3} />
+            <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
+            <Module position={[0, 0, 0]} color={COLORS.grey}></Module>;
+            <Foundation position={[0, -5.7, 0]} color="#dbd9d9" width={7} />
+          </Canvas>
+        </motion.div>
+      </Grid>
+    </Grid>
   );
 };
 
