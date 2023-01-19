@@ -30,7 +30,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ margin: "1rem", textAlign: isMobile ? "center" : "left" }}
+          style={{ margin: "2rem", textAlign: isMobile ? "center" : "left" }}
         >
           <Typography variant="h2" fontWeight={700}>
             Modern, modular homes.
@@ -59,7 +59,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          style={{ height: isMobile ? "40vh" : "60vh" }}
+          style={{ height: isMobile ? "30vh" : "60vh" }}
         >
           <Canvas camera={{ position: [60, 0, 60], fov: 30 }}>
             <OrbitControls
