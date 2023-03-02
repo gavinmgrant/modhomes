@@ -36,6 +36,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
             Modern, modular homes.
           </Typography>
           <Button
+            size="large"
             variant="outlined"
             onClick={handleScroll}
             style={{
