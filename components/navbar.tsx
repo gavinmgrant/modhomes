@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import {
   AppBar,
+  Button,
   Toolbar,
   Typography,
   IconButton,
@@ -55,17 +56,28 @@ const NavBar = () => {
         <Link href="/">ModHomes</Link>
       </Typography>
       <Toolbar>
-        <IconButton
-          role="button"
-          size="large"
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          onClick={handleMenuClick}
-          sx={{ margin: 0, padding: "0.5rem" }}
-        >
-          {isMobile ? <MenuIcon /> : <Typography>Models</Typography>}
-        </IconButton>
+        {isMobile ? (
+          <IconButton
+            role="button"
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={handleMenuClick}
+            sx={{ margin: 0, padding: "0.5rem" }}
+          >
+            <MenuIcon />
+          </IconButton>
+        ) : (
+          <Button
+            size="large"
+            color="inherit"
+            aria-label="menu"
+            onClick={handleMenuClick}
+          >
+            Models
+          </Button>
+        )}
         <Drawer anchor="right" open={open} onClose={handleMenuClose}>
           {MODELS.map((model) => (
             <MenuItem
