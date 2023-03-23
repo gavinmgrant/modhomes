@@ -1,3 +1,5 @@
+import { Edges } from "@react-three/drei"
+
 interface FoundationProps {
   color: string;
   position: number[];
@@ -9,6 +11,7 @@ const Foundation = ({ color, position, width }: FoundationProps) => {
     <mesh position={position} castShadow receiveShadow>
       <boxGeometry args={[width, 1.5, 39]} />
       <meshStandardMaterial color={color} />
+      <Edges />
     </mesh>
   );
 };

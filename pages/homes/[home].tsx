@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import Module from "../../components/module";
 import Foundation from "../../components/foundation";
 import Roof from "../../components/roof";
+import EndWall from "../../components/endwall";
 import NavBar from "../../components/navbar";
 import Colors, { COLORS } from "../../components/colors";
 import { OrbitControls, Sky, Cylinder, Stage } from "@react-three/drei";
@@ -12,6 +13,7 @@ import { Typography, useMediaQuery } from "@mui/material";
 
 const Homes: FC = () => {
   const router = useRouter();
+  const envelopeOn = true;
   const [currentArea, setCurrentArea] = useState(0);
   const [homeColor, setHomeColor] = useState(COLORS.white);
   const isMobile = useMediaQuery("(max-width:900px)");
@@ -40,89 +42,348 @@ const Homes: FC = () => {
   const stories = router.query.home?.slice(5);
   switch (stories) {
     case "1":
-      roofHeight = 5.25;
+      roofHeight = 5.3;
       break;
     case "2":
-      roofHeight = 15.25;
+      roofHeight = 15.3;
       break;
   }
 
   let home;
   switch (router.query.home) {
     case "mod1x1":
-      home = <Module position={[0, 0, 0]} color={homeColor}></Module>;
+      home = (
+        <>
+          {envelopeOn && (
+            <EndWall
+              position={[-3.5, 0, 0]}
+              color={homeColor}
+              rotate={false}
+              twoStory={false}
+            />
+          )}
+          <Module
+            position={[0, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[3.5, 0, 0]}
+              color={homeColor}
+              rotate
+              twoStory={false}
+            />
+          )}
+        </>
+      );
       break;
     case "mod2x1":
       home = (
         <>
-          <Module position={[-4, 0, 0]} color={homeColor}></Module>
-          <Module position={[4, 0, 0]} color={homeColor}></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[-7.5, 0, 0]}
+              color={homeColor}
+              rotate={false}
+              twoStory={false}
+            />
+          )}
+          <Module
+            position={[-4, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[4, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[7.5, 0, 0]}
+              color={homeColor}
+              rotate
+              twoStory={false}
+            />
+          )}
         </>
       );
       break;
     case "mod3x1":
       home = (
         <>
-          <Module position={[-8, 0, 0]} color={homeColor}></Module>
-          <Module position={[0, 0, 0]} color={homeColor}></Module>
-          <Module position={[8, 0, 0]} color={homeColor}></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[-11.5, 0, 0]}
+              color={homeColor}
+              rotate={false}
+              twoStory={false}
+            />
+          )}
+          <Module
+            position={[-8, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[0, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[8, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[11.5, 0, 0]}
+              color={homeColor}
+              rotate
+              twoStory={false}
+            />
+          )}
         </>
       );
       break;
     case "mod4x1":
       home = (
         <>
-          <Module position={[-12, 0, 0]} color={homeColor}></Module>
-          <Module position={[-4, 0, 0]} color={homeColor}></Module>
-          <Module position={[4, 0, 0]} color={homeColor}></Module>
-          <Module position={[12, 0, 0]} color={homeColor}></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[-15.5, 0, 0]}
+              color={homeColor}
+              rotate={false}
+              twoStory={false}
+            />
+          )}
+          <Module
+            position={[-12, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[-4, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[4, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[12, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[15.5, 0, 0]}
+              color={homeColor}
+              rotate
+              twoStory={false}
+            />
+          )}
         </>
       );
       break;
     case "mod5x1":
       home = (
         <>
-          <Module position={[-16, 0, 0]} color={homeColor}></Module>
-          <Module position={[-8, 0, 0]} color={homeColor}></Module>
-          <Module position={[0, 0, 0]} color={homeColor}></Module>
-          <Module position={[8, 0, 0]} color={homeColor}></Module>
-          <Module position={[16, 0, 0]} color={homeColor}></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[-19.5, 0, 0]}
+              color={homeColor}
+              rotate={false}
+              twoStory={false}
+            />
+          )}
+          <Module
+            position={[-16, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[-8, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[0, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[8, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[16, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[19.5, 0, 0]}
+              color={homeColor}
+              rotate
+              twoStory={false}
+            />
+          )}
         </>
       );
       break;
     case "mod2x2":
       home = (
         <>
-          <Module position={[-4, 0, 0]} color={homeColor}></Module>
-          <Module position={[4, 0, 0]} color={homeColor}></Module>
-          <Module position={[-4, 10, 0]} color={homeColor}></Module>
-          <Module position={[4, 10, 0]} color={homeColor}></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[-7.5, 0, 0]}
+              color={homeColor}
+              rotate={false}
+              twoStory
+            />
+          )}
+          <Module
+            position={[-4, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[4, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[-4, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[4, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          {envelopeOn && (
+            <EndWall position={[7.5, 0, 0]} color={homeColor} rotate twoStory />
+          )}
         </>
       );
       break;
     case "mod3x2":
       home = (
         <>
-          <Module position={[-8, 0, 0]} color={homeColor}></Module>
-          <Module position={[0, 0, 0]} color={homeColor}></Module>
-          <Module position={[8, 0, 0]} color={homeColor}></Module>
-          <Module position={[-8, 10, 0]} color={homeColor}></Module>
-          <Module position={[0, 10, 0]} color={homeColor}></Module>
-          <Module position={[8, 10, 0]} color={homeColor}></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[-11.5, 0, 0]}
+              color={homeColor}
+              rotate={false}
+              twoStory
+            />
+          )}
+          <Module
+            position={[-8, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[0, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[8, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[-8, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[0, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[8, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[11.5, 0, 0]}
+              color={homeColor}
+              rotate
+              twoStory
+            />
+          )}
         </>
       );
       break;
     case "mod4x2":
       home = (
         <>
-          <Module position={[-12, 0, 0]} color={homeColor}></Module>
-          <Module position={[-4, 0, 0]} color={homeColor}></Module>
-          <Module position={[4, 0, 0]} color={homeColor}></Module>
-          <Module position={[12, 0, 0]} color={homeColor}></Module>
-          <Module position={[-12, 10, 0]} color={homeColor}></Module>
-          <Module position={[-4, 10, 0]} color={homeColor}></Module>
-          <Module position={[4, 10, 0]} color={homeColor}></Module>
-          <Module position={[12, 10, 0]} color={homeColor}></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[-15.5, 0, 0]}
+              color={homeColor}
+              rotate={false}
+              twoStory
+            />
+          )}
+          <Module
+            position={[-12, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[-4, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[4, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[12, 0, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[-12, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[-4, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[4, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          <Module
+            position={[12, 10, 0]}
+            color={homeColor}
+            envelopeOn={envelopeOn}
+          ></Module>
+          {envelopeOn && (
+            <EndWall
+              position={[15.5, 0, 0]}
+              color={homeColor}
+              rotate
+              twoStory
+            />
+          )}
         </>
       );
       break;

@@ -4,6 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import { Typography, useMediaQuery, Grid, Button } from "@mui/material";
 import Roof from "./roof";
 import Module from "./module";
+import EndWall from "./endwall";
 import Foundation from "./foundation";
 import { COLORS } from "./colors";
 import { motion } from "framer-motion";
@@ -72,7 +73,9 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
             <pointLight position={[-40, -80, -80]} />
             <ambientLight intensity={0.3} />
             <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
-            <Module position={[0, 0, 0]} color={COLORS.grey}></Module>;
+            <EndWall position={[-3.5, 0, 0]} color={COLORS.grey} rotate={false} />
+            <Module position={[0, 0, 0]} color={COLORS.grey} envelopeOn></Module>
+            <EndWall position={[3.5, 0, 0]} color={COLORS.grey} rotate />
             <Foundation position={[0, -5.7, 0]} color="#dbd9d9" width={7} />
           </Canvas>
         </motion.div>
