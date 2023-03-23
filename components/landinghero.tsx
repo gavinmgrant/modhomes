@@ -61,7 +61,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.8 }}
-          style={{ height: isMobile ? "30vh" : "60vh" }}
+          style={{ height: isMobile ? "35vh" : "75vh" }}
         >
           <Canvas camera={{ position: [60, 0, 60], fov: 30 }}>
             <OrbitControls
