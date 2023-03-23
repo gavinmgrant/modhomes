@@ -43,15 +43,15 @@ const NavBar = () => {
         alignItems: "center",
         borderRadius: "0.5rem",
         border: "1px dashed #131414",
-        background: router.pathname === "/" ? "#f9f7f1" : "none",
+        background: "none",
         color: "#131414",
         boxShadow: "none",
         backdropFilter: "blur(5px)",
       }}
     >
       <Typography
-        variant="h6"
-        fontWeight={500}
+        variant="h5"
+        fontWeight={700}
         marginLeft={{ xs: "1rem", sm: "1.5rem" }}
       >
         <Link href="/">ModHomes</Link>
