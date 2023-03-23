@@ -39,6 +39,7 @@ const Colors = ({ homeColor, handleColor }: ColorProps) => {
       borderRadius="0.5rem"
       border="1px dashed #131414"
       padding={{ xs: "10px", sm: "13px" }}
+      sx={{ backdropFilter: "blur(5px)" }}
     >
       <Tooltip title="White" role="tooltip">
         <Avatar

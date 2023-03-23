@@ -46,6 +46,7 @@ const NavBar = () => {
         background: router.pathname === "/" ? "#f9f7f1" : "none",
         color: "#131414",
         boxShadow: "none",
+        backdropFilter: "blur(5px)",
       }}
     >
       <Typography

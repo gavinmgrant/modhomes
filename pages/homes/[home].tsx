@@ -566,7 +566,11 @@ const Homes: FC = () => {
           </Cylinder>
         </Canvas>
         <div
-          style={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}
+          style={{
+            position: "relative",
+            maxWidth: "1200px",
+            margin: "0 auto",
+          }}
         >
           <Colors homeColor={homeColor} handleColor={handleColorChange} />
           <Typography
@@ -581,6 +585,7 @@ const Homes: FC = () => {
               border: "1px dashed #131414",
               background: "none",
               borderRadius: "0.5rem",
+              backdropFilter: "blur(5px)",
             }}
           >
             <animated.span>
