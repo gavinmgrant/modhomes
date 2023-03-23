@@ -73,9 +73,9 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
             <pointLight position={[-40, -80, -80]} />
             <ambientLight intensity={0.3} />
             <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
-            <EndWall position={[-3.5, 0, 0]} color={COLORS.grey} rotate={false} />
+            <EndWall position={[-3.5, 0, 0]} color={COLORS.grey} rotate={false} twoStory={false} />
             <Module position={[0, 0, 0]} color={COLORS.grey} envelopeOn></Module>
-            <EndWall position={[3.5, 0, 0]} color={COLORS.grey} rotate />
+            <EndWall position={[3.5, 0, 0]} color={COLORS.grey} rotate twoStory={false} />
             <Foundation position={[0, -5.7, 0]} color="#dbd9d9" width={7} />
           </Canvas>
         </motion.div>
