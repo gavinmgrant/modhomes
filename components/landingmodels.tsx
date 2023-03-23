@@ -10,13 +10,13 @@ import { AnimatePresence, motion } from "framer-motion";
 const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   const router = useRouter();
 
-  const cards = MODELS.map((model) => (
+  const cards = MODELS.map((model, index) => (
     <Grid item key={model.slug} xs={12} sm={6} md={4} lg={3}>
       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.4 + index * 0.1 }}
           viewport={{ once: true }}
         >
           <Card
@@ -83,6 +83,6 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   );
 });
 
-LandingModels.displayName = "LandingModels"
+LandingModels.displayName = "LandingModels";
 
 export default LandingModels;
