@@ -6,9 +6,9 @@ interface FoundationProps {
 
 const Foundation = ({ color, position, width }: FoundationProps) => {
   return (
-    <mesh position={position}>
+    <mesh position={position} castShadow receiveShadow>
       <boxGeometry args={[width, 1.5, 39]} />
-      <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} castShadow receiveShadow />
+      <meshStandardMaterial color={color} />
     </mesh>
   );
 };

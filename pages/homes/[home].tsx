@@ -6,7 +6,7 @@ import Foundation from "../../components/foundation";
 import Roof from "../../components/roof";
 import NavBar from "../../components/navbar";
 import Colors, { COLORS } from "../../components/colors";
-import { OrbitControls, Sky, Cylinder } from "@react-three/drei";
+import { OrbitControls, Sky, Cylinder, Stage } from "@react-three/drei";
 import { useSpring, animated, config } from "@react-spring/web";
 import { Typography, useMediaQuery } from "@mui/material";
 
@@ -15,7 +15,6 @@ const Homes: FC = () => {
   const [currentArea, setCurrentArea] = useState(0);
   const [homeColor, setHomeColor] = useState(COLORS.white);
   const isMobile = useMediaQuery("(max-width:900px)");
-  const colorGround = "#dbd9d9";
 
   let foundationWidth;
   const w = router.query.home?.slice(3, 4);
@@ -129,6 +128,8 @@ const Homes: FC = () => {
       break;
   }
 
+  const isTwoStory = router.query.home?.includes("x2");
+
   const floorArea = useSpring({
     val: currentArea,
     from: 0,
@@ -175,26 +176,36 @@ const Homes: FC = () => {
           shadows
         >
           <OrbitControls maxPolarAngle={Math.PI / 2} maxDistance={100} />
-          <pointLight position={[20, 40, 40]} />
-          <pointLight position={[-40, -80, -80]} />
-          <ambientLight intensity={0.3} />
-          <Sky sunPosition={[100, 100, 20]} />
-          {home}
-          <Foundation
-            position={[0, -5.7, 0]}
-            color={colorGround}
-            width={foundationWidth}
-          />
-          {roofHeight && (
-            <Roof
-              position={[0, roofHeight, 0]}
-              color={COLORS.roof}
+          <ambientLight intensity={0.5} />
+          <pointLight position={[100, 100, 20]} />
+          <Sky sunPosition={[100, 100, 20]} inclination={0} azimuth={0.25} />
+          <Stage
+            intensity={0.4}
+            environment="city"
+            adjustCamera={false}
+            shadows={{
+              type: "accumulative",
+              color: COLORS.shadow,
+              opacity: 0.3,
+            }}
+          >
+            {home}
+            <Foundation
+              position={[0, -5.7, 0]}
+              color={COLORS.foundation}
               width={foundationWidth}
             />
-          )}
+            {roofHeight && (
+              <Roof
+                position={[0, roofHeight, 0]}
+                color={COLORS.roof}
+                width={foundationWidth}
+              />
+            )}
+          </Stage>
           <Cylinder
             args={[1000, 1000, -1]}
-            position={[0, -7, 0]}
+            position={[0, isTwoStory ? -12 : -7, 0]}
             receiveShadow
             key={undefined}
             material={undefined}
@@ -290,7 +301,7 @@ const Homes: FC = () => {
             isMesh={undefined}
             updateMorphTargets={undefined}
           >
-            <meshBasicMaterial color={colorGround} />
+            <meshBasicMaterial color={COLORS.ground} />
           </Cylinder>
         </Canvas>
         <div

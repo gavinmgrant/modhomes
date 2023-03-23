@@ -6,9 +6,9 @@ interface RoofProps {
 
 const Roof = ({ color, position, width }: RoofProps) => {
   return (
-    <mesh position={position}>
+    <mesh position={position} castShadow receiveShadow>
       <boxGeometry args={[width, 0.75, 39]} />
-      <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} castShadow receiveShadow />
+      <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
     </mesh>
   );
 };

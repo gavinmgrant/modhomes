@@ -7,6 +7,9 @@ export const COLORS = {
   copper: "#554a3d",
   grey: "#94948b",
   roof: "#faf9f6",
+  foundation: "#9b9998",
+  shadow: "#696969",
+  ground: "#dbd9d9",
 };
 
 interface ColorProps {
