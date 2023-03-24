@@ -27,13 +27,20 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
       height="100vh"
       margin="0 auto"
     >
-      <Grid item xs={12} md={6}>
+      <Grid item xs={12} md={4}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ margin: "2rem", textAlign: isMobile ? "center" : "left" }}
+          style={{
+            margin: isMobile ? "1rem" : "1rem 1rem 1rem 0",
+            textAlign: isMobile ? "center" : "left",
+          }}
         >
-          <Typography variant="h2" fontWeight={700}>
+          <Typography
+            variant="h1"
+            fontWeight={700}
+            fontSize={isMobile ? "62px" : "92px"}
+          >
             Modern, modular homes.
           </Typography>
           <Button
@@ -41,7 +48,8 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
             variant="outlined"
             onClick={handleScroll}
             style={{
-              marginTop: "1rem",
+              marginTop: isMobile ? "1rem" : "2rem",
+              marginLeft: isMobile ? "0" : "0.5rem",
               color: "#131414",
               border: borderStyle,
             }}
@@ -56,7 +64,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
           </Button>
         </motion.div>
       </Grid>
-      <Grid item xs={12} md={6} alignSelf={isMobile ? "flex-start" : "center"}>
+      <Grid item xs={12} md={8} alignSelf={isMobile ? "flex-start" : "center"}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -73,9 +81,23 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
             <pointLight position={[-40, -80, -80]} />
             <ambientLight intensity={0.3} />
             <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
-            <EndWall position={[-3.5, 0, 0]} color={COLORS.grey} rotate={false} twoStory={false} />
-            <Module position={[0, 0, 0]} color={COLORS.grey} envelopeOn></Module>
-            <EndWall position={[3.5, 0, 0]} color={COLORS.grey} rotate twoStory={false} />
+            <EndWall
+              position={[-3.5, 0, 0]}
+              color={COLORS.grey}
+              rotate={false}
+              twoStory={false}
+            />
+            <Module
+              position={[0, 0, 0]}
+              color={COLORS.grey}
+              envelopeOn
+            ></Module>
+            <EndWall
+              position={[3.5, 0, 0]}
+              color={COLORS.grey}
+              rotate
+              twoStory={false}
+            />
             <Foundation position={[0, -5.7, 0]} color="#dbd9d9" width={7} />
           </Canvas>
         </motion.div>
