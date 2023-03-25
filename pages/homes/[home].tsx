@@ -8,13 +8,14 @@ import EndWall from "../../components/endwall";
 import NavBar from "../../components/navbar";
 import Ground from "../../components/ground";
 import Colors, { COLORS } from "../../components/colors";
-import { OrbitControls, Sky, Stage } from "@react-three/drei";
+import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
 import { useSpring, animated, config } from "@react-spring/web";
-import { Typography, useMediaQuery } from "@mui/material";
+import { Typography, useMediaQuery, Button } from "@mui/material";
 
 const Homes: FC = () => {
   const router = useRouter();
   const envelopeOn = true;
+  const [isInside, setIsInside] = useState(false);
   const [currentArea, setCurrentArea] = useState(0);
   const [homeColor, setHomeColor] = useState(COLORS.white);
   const isMobile = useMediaQuery("(max-width:900px)");
@@ -390,7 +391,26 @@ const Homes: FC = () => {
       break;
   }
 
-  const isTwoStory = router.query.home?.includes("x2");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const position = window.localStorage.getItem("position");
+      position === "inside" ? setIsInside(true) : setIsInside(false);
+    }
+  }, []);
+
+  const handleInsideToggle = () => {
+    setIsInside(!isInside);
+
+    if (typeof window !== "undefined") {
+      if (isInside) {
+        window.localStorage.setItem("position", "outside");
+      } else {
+        window.localStorage.setItem("position", "inside");
+      }
+    }
+
+    router.reload();
+  };
 
   const floorArea = useSpring({
     val: currentArea,
@@ -433,40 +453,79 @@ const Homes: FC = () => {
         <NavBar />
       </div>
       <div style={{ height: "100vh", width: "100vw", margin: 0 }}>
-        <Canvas
-          camera={{ position: [60, 0, 60], fov: isMobile ? 70 : 40 }}
-          shadows
-        >
-          <OrbitControls maxPolarAngle={Math.PI / 2} maxDistance={100} />
-          <ambientLight intensity={0.5} />
-          <pointLight position={[100, 100, 20]} />
-          <Sky sunPosition={[100, 100, 20]} inclination={0} azimuth={0.25} />
-          <Stage
-            intensity={0.4}
-            environment="city"
-            adjustCamera={false}
-            shadows={{
-              type: "accumulative",
-              color: COLORS.shadow,
-              opacity: 0.3,
+        {isInside ? (
+          <Canvas
+            camera={{
+              position: [2, 0, 2],
+              fov: 80,
             }}
+            shadows
           >
+            <OrbitControls
+              minPolarAngle={Math.PI / 2}
+              maxPolarAngle={Math.PI / 2}
+              enableZoom={false}
+            />
+            <ambientLight intensity={0.6} />
+            <pointLight position={[100, 100, 20]} />
+            <Environment
+              background
+              files="../images/alps_field_4k.hdr"
+            />
             {home}
             <Foundation
               position={[0, -5.7, 0]}
               color={COLORS.foundation}
               width={foundationWidth}
             />
-            {roofHeight && (
+            <Roof
+              position={[0, roofHeight || 0, 0]}
+              color={COLORS.roof}
+              width={foundationWidth}
+            />
+          </Canvas>
+        ) : (
+          <Canvas
+            camera={{
+              position: [60, 0, 60],
+              fov: isMobile ? 70 : 40,
+            }}
+            shadows
+          >
+            <OrbitControls
+              maxPolarAngle={Math.PI / 2}
+              maxDistance={100}
+              enableZoom
+            />
+            <ambientLight intensity={0.5} />
+            <pointLight position={[100, 100, 20]} />
+            <Sky sunPosition={[100, 100, 20]} inclination={0} azimuth={0.25} />
+            <Stage
+              intensity={0.4}
+              environment="city"
+              adjustCamera={false}
+              shadows={{
+                type: "accumulative",
+                color: COLORS.shadow,
+                opacity: 0.3,
+              }}
+            >
+              {home}
+              <Foundation
+                position={[0, -5.7, 0]}
+                color={COLORS.foundation}
+                width={foundationWidth}
+              />
               <Roof
-                position={[0, roofHeight, 0]}
+                position={[0, roofHeight || 0, 0]}
                 color={COLORS.roof}
                 width={foundationWidth}
               />
-            )}
-          </Stage>
-          <Ground />
-        </Canvas>
+            </Stage>
+            <Ground />
+          </Canvas>
+        )}
+
         <div
           style={{
             position: "relative",
@@ -475,12 +534,28 @@ const Homes: FC = () => {
           }}
         >
           <Colors homeColor={homeColor} handleColor={handleColorChange} />
+          <Button
+            size="large"
+            variant="outlined"
+            onClick={handleInsideToggle}
+            sx={{
+              position: "absolute",
+              height: isMobile ? 58 : 68,
+              bottom: isMobile ? 86 : 16,
+              left: isMobile ? 16 : 240,
+              color: "#131414",
+              border: "1px dashed #131414",
+              backdropFilter: "blur(5px)",
+            }}
+          >
+            {isInside ? "Go Outside" : "Go Inside"}
+          </Button>
           <Typography
             variant="h6"
             position="absolute"
             color="#131414"
             padding={{ xs: "0.75rem", sm: "1rem" }}
-            style={{
+            sx={{
               right: 16,
               bottom: 16,
               margin: 0,

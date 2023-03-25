@@ -32,7 +32,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
-            margin: isMobile ? "1rem" : "1rem 1rem 1rem 0",
+            margin: isMobile ? "1rem" : "1rem 1rem 1rem 1.2rem",
             textAlign: isMobile ? "center" : "left",
           }}
         >
