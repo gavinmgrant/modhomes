@@ -1,4 +1,4 @@
-import { Edges } from "@react-three/drei"
+import { Edges, useTexture } from "@react-three/drei";
 import Wall from "./wall";
 
 interface ModuleProps {
@@ -8,6 +8,13 @@ interface ModuleProps {
 }
 
 const Module = ({ color, position, envelopeOn }: ModuleProps) => {
+  // All textures are CC0 textures from: https://cc0textures.com/
+  const floorMaterialProps = useTexture({
+    map: "/images/materials/WoodFloor046_1K_Color.jpg",
+    normalMap: "/images/materials/WoodFloor046_1K_Normal.jpg",
+    roughnessMap: "/images/materials/WoodFloor046_1K_Roughness.jpg",
+  });
+
   return (
     <mesh position={position}>
       {envelopeOn && <Wall color={color} position={[0, 0.75, 20]}></Wall>}
@@ -16,7 +23,13 @@ const Module = ({ color, position, envelopeOn }: ModuleProps) => {
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
         <Edges />
       </mesh>
-      <mesh position={[3.625, -0.05, 19.75]} castShadow receiveShadow>
+
+      <mesh position={[0, -4, 0]} rotation={[0, -Math.PI / 2, 0]}>
+        <boxGeometry args={[39, 0.1, 8]} />
+        <meshStandardMaterial {...floorMaterialProps} />
+      </mesh>
+
+      <mesh position={[3.625, -0.2, 19.75]} castShadow receiveShadow>
         <boxGeometry args={[0.5, 7.9, 0.5]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
         <Edges />
