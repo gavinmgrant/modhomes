@@ -13,7 +13,7 @@ const Wall = ({ color, position }: WallProps) => {
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
         <Edges />
       </mesh>
-      <mesh position={position}>
+      <mesh position={position} castShadow receiveShadow>
         <boxGeometry args={[7.8, 11.25, 0.625]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
         <Edges />

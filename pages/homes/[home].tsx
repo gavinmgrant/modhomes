@@ -8,6 +8,7 @@ import EndWall from "../../components/endwall";
 import NavBar from "../../components/navbar";
 import Ground from "../../components/ground";
 import Colors, { COLORS } from "../../components/colors";
+import Materials, { TEXTURES } from "../../components/materials";
 import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
 import { useSpring, animated, config } from "@react-spring/web";
 import { Typography, useMediaQuery, Button } from "@mui/material";
@@ -18,6 +19,7 @@ const Homes: FC = () => {
   const [isInside, setIsInside] = useState(false);
   const [currentArea, setCurrentArea] = useState(0);
   const [homeColor, setHomeColor] = useState(COLORS.white);
+  const [floorMaterial, setFloorMaterial] = useState("walnut");
   const isMobile = useMediaQuery("(max-width:900px)");
 
   let foundationWidth;
@@ -68,6 +70,7 @@ const Homes: FC = () => {
             position={[0, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           {envelopeOn && (
             <EndWall
@@ -95,11 +98,13 @@ const Homes: FC = () => {
             position={[-4, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[4, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           {envelopeOn && (
             <EndWall
@@ -127,16 +132,19 @@ const Homes: FC = () => {
             position={[-8, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[0, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[8, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           {envelopeOn && (
             <EndWall
@@ -164,21 +172,25 @@ const Homes: FC = () => {
             position={[-12, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[-4, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[4, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[12, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           {envelopeOn && (
             <EndWall
@@ -206,26 +218,31 @@ const Homes: FC = () => {
             position={[-16, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[-8, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[0, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[8, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[16, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           {envelopeOn && (
             <EndWall
@@ -253,21 +270,25 @@ const Homes: FC = () => {
             position={[-4, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[4, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[-4, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[4, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           {envelopeOn && (
             <EndWall position={[7.5, 0, 0]} color={homeColor} rotate twoStory />
@@ -290,31 +311,37 @@ const Homes: FC = () => {
             position={[-8, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[0, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[8, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[-8, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[0, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[8, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           {envelopeOn && (
             <EndWall
@@ -342,41 +369,49 @@ const Homes: FC = () => {
             position={[-12, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[-4, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[4, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[12, 0, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[-12, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[-4, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[4, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           <Module
             position={[12, 10, 0]}
             color={homeColor}
             envelopeOn={envelopeOn}
+            floorMaterial={floorMaterial}
           ></Module>
           {envelopeOn && (
             <EndWall
@@ -445,6 +480,10 @@ const Homes: FC = () => {
     setHomeColor(color);
   };
 
+  const handleFloorMaterialChange = (floorMaterial: string) => {
+    setFloorMaterial(floorMaterial);
+  };
+
   return (
     <>
       <div
@@ -456,8 +495,8 @@ const Homes: FC = () => {
         {isInside ? (
           <Canvas
             camera={{
-              position: [2, 0, 2],
-              fov: 80,
+              position: [0, 0, 3.4],
+              fov: 60,
             }}
             shadows
           >
@@ -470,7 +509,7 @@ const Homes: FC = () => {
             <pointLight position={[100, 100, 20]} />
             <Environment
               background
-              files="../images/alps_field_4k.hdr"
+              files="../images/environments/alps_field_4k.hdr"
             />
             {home}
             <Foundation
@@ -533,7 +572,15 @@ const Homes: FC = () => {
             margin: "0 auto",
           }}
         >
-          <Colors homeColor={homeColor} handleColor={handleColorChange} />
+          {isInside ? (
+            <Materials
+              floorMaterial={floorMaterial}
+              handleFloorMaterial={handleFloorMaterialChange}
+            />
+          ) : (
+            <Colors homeColor={homeColor} handleColor={handleColorChange} />
+          )}
+
           <Button
             size="large"
             variant="outlined"

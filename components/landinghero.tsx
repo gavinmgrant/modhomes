@@ -100,6 +100,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                 position={[0, 0, 0]}
                 color={COLORS.grey}
                 envelopeOn
+                floorMaterial="walnut"
               ></Module>
               <EndWall
                 position={[3.5, 0, 0]}

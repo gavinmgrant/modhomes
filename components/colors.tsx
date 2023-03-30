@@ -10,6 +10,7 @@ export const COLORS = {
   foundation: "#9b9998",
   shadow: "#696969",
   ground: "#dbd9d9",
+  gyp: "#faf9f6",
 };
 
 interface ColorProps {
