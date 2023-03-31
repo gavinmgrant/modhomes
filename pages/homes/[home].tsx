@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from "react";
+import React, { FC, useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/router";
 import { Canvas } from "@react-three/fiber";
 import Module from "../../components/module";
@@ -8,7 +8,8 @@ import EndWall from "../../components/endwall";
 import NavBar from "../../components/navbar";
 import Ground from "../../components/ground";
 import Colors, { COLORS } from "../../components/colors";
-import Materials, { TEXTURES } from "../../components/materials";
+import Materials from "../../components/materials";
+import Loader from "../../components/loader";
 import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
 import { useSpring, animated, config } from "@react-spring/web";
 import { Typography, useMediaQuery, Button } from "@mui/material";
@@ -500,55 +501,18 @@ const Homes: FC = () => {
             }}
             shadows
           >
-            <OrbitControls
-              minPolarAngle={Math.PI / 2}
-              maxPolarAngle={Math.PI / 2}
-              enableZoom={false}
-            />
-            <ambientLight intensity={0.6} />
-            <pointLight position={[100, 100, 20]} />
-            <Environment
-              background
-              files="../images/environments/alps_field_4k.hdr"
-            />
-            {home}
-            <Foundation
-              position={[0, -5.7, 0]}
-              color={COLORS.foundation}
-              width={foundationWidth}
-            />
-            <Roof
-              position={[0, roofHeight || 0, 0]}
-              color={COLORS.roof}
-              width={foundationWidth}
-            />
-          </Canvas>
-        ) : (
-          <Canvas
-            camera={{
-              position: [60, 0, 60],
-              fov: isMobile ? 70 : 40,
-            }}
-            shadows
-          >
-            <OrbitControls
-              maxPolarAngle={Math.PI / 2}
-              maxDistance={100}
-              enableZoom
-            />
-            <ambientLight intensity={0.5} />
-            <pointLight position={[100, 100, 20]} />
-            <Sky sunPosition={[100, 100, 20]} inclination={0} azimuth={0.25} />
-            <Stage
-              intensity={0.4}
-              environment="city"
-              adjustCamera={false}
-              shadows={{
-                type: "accumulative",
-                color: COLORS.shadow,
-                opacity: 0.3,
-              }}
-            >
+            <Suspense fallback={<Loader />}>
+              <OrbitControls
+                minPolarAngle={Math.PI / 2}
+                maxPolarAngle={Math.PI / 2}
+                enableZoom={false}
+              />
+              <ambientLight intensity={0.6} />
+              <pointLight position={[100, 100, 20]} />
+              <Environment
+                background
+                files="../images/environments/alps_field_4k.hdr"
+              />
               {home}
               <Foundation
                 position={[0, -5.7, 0]}
@@ -560,8 +524,53 @@ const Homes: FC = () => {
                 color={COLORS.roof}
                 width={foundationWidth}
               />
-            </Stage>
-            <Ground />
+            </Suspense>
+          </Canvas>
+        ) : (
+          <Canvas
+            camera={{
+              position: [60, 0, 60],
+              fov: isMobile ? 70 : 40,
+            }}
+            shadows
+          >
+            <Suspense fallback={<Loader />}>
+              <OrbitControls
+                maxPolarAngle={Math.PI / 2}
+                maxDistance={100}
+                enableZoom
+              />
+              <ambientLight intensity={0.5} />
+              <pointLight position={[100, 100, 20]} />
+              <Sky
+                sunPosition={[100, 100, 20]}
+                inclination={0}
+                azimuth={0.25}
+              />
+              <Stage
+                intensity={0.4}
+                environment="city"
+                adjustCamera={false}
+                shadows={{
+                  type: "accumulative",
+                  color: COLORS.shadow,
+                  opacity: 0.3,
+                }}
+              >
+                {home}
+                <Foundation
+                  position={[0, -5.7, 0]}
+                  color={COLORS.foundation}
+                  width={foundationWidth}
+                />
+                <Roof
+                  position={[0, roofHeight || 0, 0]}
+                  color={COLORS.roof}
+                  width={foundationWidth}
+                />
+              </Stage>
+              <Ground />
+            </Suspense>
           </Canvas>
         )}
 

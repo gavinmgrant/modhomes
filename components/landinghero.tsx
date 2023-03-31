@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage } from "@react-three/drei";
 import { Typography, useMediaQuery, Grid, Button } from "@mui/material";
@@ -6,6 +6,7 @@ import Roof from "./roof";
 import Module from "./module";
 import EndWall from "./endwall";
 import Foundation from "./foundation";
+import Loader from "./loader";
 import { COLORS } from "./colors";
 import { motion } from "framer-motion";
 
@@ -72,48 +73,50 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
           style={{ height: isMobile ? "35vh" : "65vh" }}
         >
           <Canvas camera={{ position: [60, 0, 60], fov: 30 }} shadows>
-            <OrbitControls
-              autoRotate
-              maxPolarAngle={Math.PI / 2}
-              enableZoom={false}
-            />
-            <ambientLight intensity={0.5} />
-            <pointLight position={[100, 100, 20]} />
-            <Stage
-              intensity={0.4}
-              environment="city"
-              adjustCamera
-              shadows={{
-                type: "accumulative",
-                color: COLORS.shadow,
-                opacity: 0.3,
-              }}
-            >
-              <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
-              <EndWall
-                position={[-3.5, 0, 0]}
-                color={COLORS.grey}
-                rotate={false}
-                twoStory={false}
+            <Suspense fallback={<Loader />}>
+              <OrbitControls
+                autoRotate
+                maxPolarAngle={Math.PI / 2}
+                enableZoom={false}
               />
-              <Module
-                position={[0, 0, 0]}
-                color={COLORS.grey}
-                envelopeOn
-                floorMaterial="walnut"
-              ></Module>
-              <EndWall
-                position={[3.5, 0, 0]}
-                color={COLORS.grey}
-                rotate
-                twoStory={false}
-              />
-              <Foundation
-                position={[0, -5.7, 0]}
-                color={COLORS.foundation}
-                width={7}
-              />
-            </Stage>
+              <ambientLight intensity={0.5} />
+              <pointLight position={[100, 100, 20]} />
+              <Stage
+                intensity={0.4}
+                environment="city"
+                adjustCamera
+                shadows={{
+                  type: "accumulative",
+                  color: COLORS.shadow,
+                  opacity: 0.3,
+                }}
+              >
+                <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
+                <EndWall
+                  position={[-3.5, 0, 0]}
+                  color={COLORS.grey}
+                  rotate={false}
+                  twoStory={false}
+                />
+                <Module
+                  position={[0, 0, 0]}
+                  color={COLORS.grey}
+                  envelopeOn
+                  floorMaterial="walnut"
+                ></Module>
+                <EndWall
+                  position={[3.5, 0, 0]}
+                  color={COLORS.grey}
+                  rotate
+                  twoStory={false}
+                />
+                <Foundation
+                  position={[0, -5.7, 0]}
+                  color={COLORS.foundation}
+                  width={7}
+                />
+              </Stage>
+            </Suspense>
           </Canvas>
         </motion.div>
       </Grid>
