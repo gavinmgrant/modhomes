@@ -36,8 +36,8 @@ const Module = ({
         <boxGeometry args={[39, 0.1, 8]} />
         <meshStandardMaterial
           color={COLORS.gyp}
-          metalness={0.5}
-          roughness={0.5}
+          metalness={0.1}
+          roughness={0.1}
         />
       </mesh>
 
@@ -56,16 +56,16 @@ const Module = ({
         <boxGeometry args={[8, 7.9, 0.05]} />
         <meshStandardMaterial
           color={COLORS.gyp}
-          metalness={0.5}
-          roughness={0.5}
+          metalness={0.1}
+          roughness={0.1}
         />
       </mesh>
       <mesh position={[0, -0.05, -19.5]} receiveShadow>
         <boxGeometry args={[8, 7.9, 0.05]} />
         <meshStandardMaterial
           color={COLORS.gyp}
-          metalness={0.5}
-          roughness={0.5}
+          metalness={0.1}
+          roughness={0.1}
         />
       </mesh>
 
