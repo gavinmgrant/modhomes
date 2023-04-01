@@ -13,6 +13,7 @@ import Loader from "../../components/loader";
 import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
 import { useSpring, animated, config } from "@react-spring/web";
 import { Typography, useMediaQuery, Button } from "@mui/material";
+import { IconLogin, IconLogout } from "@tabler/icons-react";
 
 const Homes: FC = () => {
   const router = useRouter();
@@ -592,7 +593,7 @@ const Homes: FC = () => {
 
           <Button
             size="large"
-            variant="outlined"
+            variant="text"
             onClick={handleInsideToggle}
             sx={{
               position: "absolute",
@@ -604,8 +605,20 @@ const Homes: FC = () => {
               backdropFilter: "blur(5px)",
             }}
           >
-            {isInside ? "Go Outside" : "Go Inside"}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <div style={{ marginRight: "0.5rem" }}>
+                {isInside ? "Go Outside" : "Go Inside"}
+              </div>
+              {isInside ? <IconLogout /> : <IconLogin />}
+            </div>
           </Button>
+
           <Typography
             variant="h6"
             position="absolute"

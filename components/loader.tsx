@@ -1,4 +1,3 @@
-import { textAlign } from "@mui/system";
 import { Html, useProgress } from "@react-three/drei";
 
 const Loader = () => {

@@ -1842,7 +1842,7 @@
     "@tabler/icons" "2.12.0"
     prop-types "^15.7.2"
 
-"@tabler/icons@2.12.0", "@tabler/icons@^2.12.0":
+"@tabler/icons@2.12.0":
   version "2.12.0"
   resolved "https://registry.npmjs.org/@tabler/icons/-/icons-2.12.0.tgz#cb4300ec52677b30f9f36c351dcb54cb4fc2ee63"
   integrity sha512-PiYD2zUOewNAtfJKU9tBZfyv3NeFlTlUe5LSGTTplvBcM0iuHrNVnd30+HIcUGJQhi3Uf0Ng9FRi/kPqm/q6ZA==
