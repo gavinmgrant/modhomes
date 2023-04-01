@@ -2,11 +2,21 @@
 
 This app leverages React Three Fiber to render 3d models of modular homes.
 
-![User flow GIF of ModHomes](./public/modhomes-animation.gif)
-
 ## Live App
 
 See a live version of this app here: [modhomes.vercel.app](https://modhomes.vercel.app/).
+
+## Landing Page
+
+![ModHomes landing page](./public/modhomes-landing.gif)
+
+## ModHome Model Page - Outside
+
+![ModHomes models page from the outside](./public/modhomes-outside.gif)
+
+## ModHome Model Page - Inside
+
+![ModHomes models page from the inside](./public/modhomes-inside.gif)
 
 ## Technology
 
