@@ -6,7 +6,7 @@ const Loader = () => {
 
   return (
     <Html as="div" center style={{ width: "200px", textAlign: "center" }}>
-      {progressToShow}% complete
+      {progressToShow === 100 ? "Model ready!" : `${progressToShow}% complete`}
     </Html>
   );
 };
