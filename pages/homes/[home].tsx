@@ -6,7 +6,6 @@ import Foundation from "../../components/foundation";
 import Roof from "../../components/roof";
 import EndWall from "../../components/endwall";
 import NavBar from "../../components/navbar";
-import Ground from "../../components/ground";
 import Colors, { COLORS } from "../../components/colors";
 import Materials from "../../components/materials";
 import Loader from "../../components/loader";
@@ -570,7 +569,6 @@ const Homes: FC = () => {
                   width={foundationWidth}
                 />
               </Stage>
-              <Ground />
             </Suspense>
           </Canvas>
         )}

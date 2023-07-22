@@ -1,5 +1,3 @@
-import { Edges } from "@react-three/drei"
-
 interface RoofProps {
   color: string;
   position: number[];
@@ -11,7 +9,6 @@ const Roof = ({ color, position, width }: RoofProps) => {
     <mesh position={position} castShadow receiveShadow>
       <boxGeometry args={[width, 0.75, 39]} />
       <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-      <Edges />
     </mesh>
   );
 };

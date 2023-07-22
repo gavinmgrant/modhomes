@@ -1,5 +1,3 @@
-import { Edges } from "@react-three/drei";
-
 interface EndWallProps {
   color: string;
   position: number[];
@@ -18,22 +16,18 @@ const EndWall = ({ color, position, rotate, twoStory }: EndWallProps) => {
       <mesh position={[-0.775, endHeight, 19.75]}>
         <boxGeometry args={[0.55, endBoxHeight, 1]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-        <Edges />
       </mesh>
       <mesh position={[-0.775, endHeight, -19.75]}>
         <boxGeometry args={[0.55, endBoxHeight, 1]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-        <Edges />
       </mesh>
       <mesh position={[-0.71, topHeight, 0]}>
         <boxGeometry args={[0.68, 2, 38.5]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-        <Edges />
       </mesh>
       <mesh position={[-0.71, -4.5, 0]}>
         <boxGeometry args={[0.68, 1, 38.5]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-        <Edges />
       </mesh>
     </mesh>
   );
