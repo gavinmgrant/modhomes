@@ -38,7 +38,7 @@ export type PaneLayout = {
 export const getPaneLayout = (
   side: number,
   halfWidth: number,
-  stories: number
+  stories: number,
 ): PaneLayout[] => {
   const width = (OPENING_END + (PANES_PER_HALF - 1) * OVERLAP) / PANES_PER_HALF;
   const height = CEILING - FLOOR;
@@ -75,7 +75,7 @@ export type HeaderLayout = {
 export const getHeaderLayout = (
   side: number,
   halfWidth: number,
-  stories: number
+  stories: number,
 ): HeaderLayout => {
   const depth = END_WALL_FACE - HEADER_INSET;
   const storyOffset = STORY_HEIGHT * (stories - 1);
@@ -96,18 +96,29 @@ export type PaneEntrance = {
 };
 
 // Eased 0-1 progress of a pane's slide in, `elapsed` seconds after mount
-export const getEntranceProgress = (elapsed: number, delay: number) => {
-  const t = Math.min(Math.max((elapsed - delay) / ENTER_DURATION, 0), 1);
+export const getEntranceProgress = (
+  elapsed: number,
+  delay: number,
+  duration = ENTER_DURATION,
+) => {
+  const t = Math.min(Math.max((elapsed - delay) / duration, 0), 1);
   return 1 - Math.pow(1 - t, 3);
 };
 
-// Panes slide in from one end of the wall to the other, lowest story first
-export const getEntranceDelays = (panes: PaneLayout[]) => {
+// Panes slide in from one end of the wall to the other, lowest story first,
+// the first one `start` seconds after mount
+export const getEntranceDelays = (panes: PaneLayout[], start = 0) => {
   const order = [...panes].sort(
-    (a, b) => a.position[1] - b.position[1] || a.position[2] - b.position[2]
+    (a, b) => a.position[1] - b.position[1] || a.position[2] - b.position[2],
   );
-  return new Map(order.map((pane, rank) => [pane.id, rank * ENTER_STAGGER]));
+  return new Map(
+    order.map((pane, rank) => [pane.id, start + rank * ENTER_STAGGER]),
+  );
 };
+
+export const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 interface GlassPaneProps {
   position: [number, number, number];
@@ -134,7 +145,7 @@ export const GlassPane = ({
     const startedAt = (start.current ??= state.clock.elapsedTime);
     const progress = getEntranceProgress(
       state.clock.elapsedTime - startedAt,
-      entrance.delay
+      entrance.delay,
     );
     group.current.position.x = position[0] + entrance.from * (1 - progress);
   });
@@ -182,7 +193,28 @@ interface SlidingDoorsProps {
   stories: number;
   // Slide the panes in one after another when they mount
   animateIn?: boolean;
+  // Seconds after mount before the first pane starts sliding in
+  animateDelay?: number;
+  // Leave the header out, for when it's drawn (and animated) separately
+  hideHeader?: boolean;
 }
+
+interface DoorHeaderProps {
+  side: number;
+  halfWidth: number;
+  stories: number;
+}
+
+// Dark band over the top story's doors, up to the end wall's top beam
+export const DoorHeader = ({ side, halfWidth, stories }: DoorHeaderProps) => {
+  const header = getHeaderLayout(side, halfWidth, stories);
+  return (
+    <mesh position={header.position}>
+      <boxGeometry args={header.size} />
+      <meshStandardMaterial color={COLORS.frame} roughness={0.4} />
+    </mesh>
+  );
+};
 
 // Floor-to-ceiling sliding glass doors filling one open side of a home,
 // with a dark header above them
@@ -191,13 +223,14 @@ const SlidingDoors = ({
   halfWidth,
   stories,
   animateIn = false,
+  animateDelay = 0,
+  hideHeader = false,
 }: SlidingDoorsProps) => {
   const panes = getPaneLayout(side, halfWidth, stories);
-  const header = getHeaderLayout(side, halfWidth, stories);
-  const reduceMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const delays = animateIn && !reduceMotion ? getEntranceDelays(panes) : null;
+  const delays =
+    animateIn && !prefersReducedMotion()
+      ? getEntranceDelays(panes, animateDelay)
+      : null;
 
   return (
     <>
@@ -212,10 +245,9 @@ const SlidingDoors = ({
           }
         />
       ))}
-      <mesh position={header.position}>
-        <boxGeometry args={header.size} />
-        <meshStandardMaterial color={COLORS.frame} roughness={0.4} />
-      </mesh>
+      {!hideHeader && (
+        <DoorHeader side={side} halfWidth={halfWidth} stories={stories} />
+      )}
     </>
   );
 };

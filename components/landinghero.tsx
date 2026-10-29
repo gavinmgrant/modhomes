@@ -7,7 +7,14 @@ import Module from "./module";
 import EndWall from "./endwall";
 import Foundation from "./foundation";
 import Loader from "./loader";
-import SlidingDoors from "./slidingdoors";
+import SlidingDoors, { DoorHeader } from "./slidingdoors";
+import AssembleIn, {
+  ASSEMBLY,
+  ROOF_OFFSET,
+  SIDE_OFFSET,
+  WALL_ORDER,
+  getWallStep,
+} from "./assembly";
 import { COLORS } from "./colors";
 import { FOCUS_RING, PANEL } from "./panel";
 import { motion } from "framer-motion";
@@ -23,6 +30,9 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
   const [modelOffset, setModelOffset] = useState<
     [number, number, number] | null
   >(null);
+  // Stage's ground shadow and camera fit measure whatever is in the scene, so
+  // they wait until the walls and roof have landed
+  const [shellBuilt, setShellBuilt] = useState(false);
 
   return (
     <Grid
@@ -98,6 +108,13 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                 intensity={0.4}
                 environment="city"
                 adjustCamera
+                // Stage hands extra props to its camera fit. It first fits
+                // before anything moves, so it frames the finished home; any
+                // refit mid-assembly would measure the pieces still flying in
+                // and shift the camera, so refits wait until the shell is
+                // built, and the camera jumps straight to its fit rather than
+                // easing in
+                {...{ damping: 0, observe: shellBuilt }}
                 center={{
                   onCentered: ({ center }) =>
                     setModelOffset([-center.x, -center.y, -center.z]),
@@ -105,27 +122,36 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                 shadows={{
                   type: "accumulative",
                   color: COLORS.shadow,
-                  opacity: 0.3,
+                  opacity: shellBuilt ? 0.3 : 0,
                 }}
               >
-                <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
+                <AssembleIn
+                  from={[0, ROOF_OFFSET, 0]}
+                  step={ASSEMBLY.roof}
+                  onDone={() => setShellBuilt(true)}
+                >
+                  <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
+                </AssembleIn>
                 <EndWall
                   position={[-3.5, 0, 0]}
                   color={COLORS.grey}
                   rotate={false}
                   twoStory={false}
+                  assembleStep={getWallStep(WALL_ORDER.left)}
                 />
                 <Module
                   position={[0, 0, 0]}
                   color={COLORS.grey}
                   envelopeOn
                   floorMaterial="walnut"
+                  animateIn
                 ></Module>
                 <EndWall
                   position={[3.5, 0, 0]}
                   color={COLORS.grey}
                   rotate
                   twoStory={false}
+                  assembleStep={getWallStep(WALL_ORDER.right)}
                 />
                 <Foundation
                   position={[0, -5.7, 0]}
@@ -135,8 +161,27 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
               </Stage>
               {modelOffset && (
                 <group position={modelOffset}>
-                  <SlidingDoors side={-1} halfWidth={4} stories={1} animateIn />
-                  <SlidingDoors side={1} halfWidth={4} stories={1} animateIn />
+                  {[-1, 1].map((side) => (
+                    <React.Fragment key={side}>
+                      <SlidingDoors
+                        side={side}
+                        halfWidth={4}
+                        stories={1}
+                        animateIn
+                        animateDelay={ASSEMBLY.windows}
+                        hideHeader
+                      />
+                      {/* The header arrives with its side's parapet */}
+                      <AssembleIn
+                        from={[side * SIDE_OFFSET, 0, 0]}
+                        step={getWallStep(
+                          side < 0 ? WALL_ORDER.left : WALL_ORDER.right,
+                        )}
+                      >
+                        <DoorHeader side={side} halfWidth={4} stories={1} />
+                      </AssembleIn>
+                    </React.Fragment>
+                  ))}
                 </group>
               )}
             </Suspense>

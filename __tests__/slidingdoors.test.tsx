@@ -119,6 +119,12 @@ describe("sliding doors", () => {
       }
     });
 
+    it("can hold the first pane back until later in an assembly", () => {
+      const panes = getPaneLayout(1, 4, 1);
+      const delays = Array.from(getEntranceDelays(panes, 4).values()).sort();
+      expect(delays).toEqual([4, 4.5, 5, 5.5, 6, 6.5]);
+    });
+
     it("holds each pane out until its turn, then eases it fully into place", () => {
       expect(getEntranceProgress(0, 1)).toBe(0);
       expect(getEntranceProgress(1, 1)).toBe(0);
