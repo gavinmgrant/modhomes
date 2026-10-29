@@ -7,7 +7,7 @@ describe("colors", () => {
     const { getAllByRole } = render(
       <Colors homeColor="#e3d7c4" handleColor={() => {}} />
     );
-    const colorOptions = getAllByRole("tooltip")
+    const colorOptions = getAllByRole("button");
     expect(colorOptions).toHaveLength(4);
   });
 

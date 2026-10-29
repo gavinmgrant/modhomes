@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect, Suspense } from "react";
+import React, { FC, useState, useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/router";
 import { Canvas } from "@react-three/fiber";
 import Module from "../../components/module";
@@ -9,19 +9,29 @@ import NavBar from "../../components/navbar";
 import Colors, { COLORS } from "../../components/colors";
 import Materials from "../../components/materials";
 import Loader from "../../components/loader";
+import InfoChip from "../../components/infochip";
+import ControlDock from "../../components/controldock";
+import WalkControls, {
+  WalkPad,
+  Joystick,
+  WalkInput,
+  IDLE_INPUT,
+  getWalkBounds,
+} from "../../components/walkcontrols";
+import MODELS from "../../lib/models";
 import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
-import { useSpring, animated, config } from "@react-spring/web";
-import { Typography, useMediaQuery, Button } from "@mui/material";
-import { IconLogin, IconLogout } from "@tabler/icons-react";
+import { useMediaQuery } from "@mui/material";
 
 const Homes: FC = () => {
   const router = useRouter();
   const envelopeOn = true;
   const [isInside, setIsInside] = useState(false);
-  const [currentArea, setCurrentArea] = useState(0);
   const [homeColor, setHomeColor] = useState(COLORS.white);
   const [floorMaterial, setFloorMaterial] = useState("walnut");
   const isMobile = useMediaQuery("(max-width:900px)");
+  const isTouch = useMediaQuery("(pointer: coarse)");
+  const walkInput = useRef<WalkInput>({ ...IDLE_INPUT });
+  const model = MODELS.find((model) => model.slug === router.query.home);
 
   let foundationWidth;
   const w = router.query.home?.slice(3, 4);
@@ -42,6 +52,7 @@ const Homes: FC = () => {
       foundationWidth = 39;
       break;
   }
+  const walkBounds = getWalkBounds(Number(w) || 1);
 
   let roofHeight;
   const stories = router.query.home?.slice(5);
@@ -434,48 +445,12 @@ const Homes: FC = () => {
     }
   }, []);
 
-  const handleInsideToggle = () => {
-    setIsInside(!isInside);
-
-    if (typeof window !== "undefined") {
-      if (isInside) {
-        window.localStorage.setItem("position", "outside");
-      } else {
-        window.localStorage.setItem("position", "inside");
-      }
-    }
-
-    router.reload();
+  // Swaps the canvas in place; the keyed wrappers below remount it with a fresh camera
+  const handleViewChange = (inside: boolean) => {
+    setIsInside(inside);
+    walkInput.current = { ...IDLE_INPUT };
+    window.localStorage.setItem("position", inside ? "inside" : "outside");
   };
-
-  const floorArea = useSpring({
-    val: currentArea,
-    from: 0,
-    config: config.molasses,
-    clamp: true,
-  }) as any;
-
-  useEffect(() => {
-    if (router.query.home === "mod1x1") {
-      setCurrentArea(320 * 1);
-    } else if (router.query.home === "mod2x1") {
-      setCurrentArea(320 * 2);
-    } else if (router.query.home === "mod2x1") {
-      setCurrentArea(320 * 2);
-    } else if (router.query.home === "mod3x1") {
-      setCurrentArea(320 * 3);
-    } else if (router.query.home === "mod4x1") {
-      setCurrentArea(320 * 4);
-    } else if (router.query.home === "mod5x1") {
-      setCurrentArea(320 * 5);
-    } else if (router.query.home === "mod2x2") {
-      setCurrentArea(320 * 4);
-    } else if (router.query.home === "mod3x2") {
-      setCurrentArea(320 * 6);
-    } else if (router.query.home === "mod4x2") {
-      setCurrentArea(320 * 8);
-    }
-  }, [router.query.home]);
 
   const handleColorChange = (color: string) => {
     setHomeColor(color);
@@ -491,72 +466,26 @@ const Homes: FC = () => {
         style={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}
       >
         <NavBar />
+        {model && <InfoChip name={model.name} area={model.area} />}
       </div>
       <div style={{ height: "100vh", width: "100vw", margin: 0 }}>
         {isInside ? (
-          <Canvas
-            camera={{
-              position: [0, 0, 3.4],
-              fov: 60,
-            }}
-            shadows
-          >
-            <Suspense fallback={<Loader />}>
-              <OrbitControls
-                minPolarAngle={Math.PI / 2}
-                maxPolarAngle={Math.PI / 2}
-                enableZoom={false}
-              />
-              <ambientLight intensity={0.6} />
-              <pointLight position={[100, 100, 20]} />
-              <Environment
-                background
-                files="../images/environments/alps_field_4k.hdr"
-              />
-              {home}
-              <Foundation
-                position={[0, -5.7, 0]}
-                color={COLORS.foundation}
-                width={foundationWidth}
-              />
-              <Roof
-                position={[0, roofHeight || 0, 0]}
-                color={COLORS.roof}
-                width={foundationWidth}
-              />
-            </Suspense>
-          </Canvas>
-        ) : (
-          <Canvas
-            camera={{
-              position: [60, 0, 60],
-              fov: isMobile ? 70 : 40,
-            }}
-            shadows
-          >
-            <Suspense fallback={<Loader />}>
-              <OrbitControls
-                maxPolarAngle={Math.PI / 2}
-                maxDistance={100}
-                enableZoom
-              />
-              <ambientLight intensity={0.5} />
-              <pointLight position={[100, 100, 20]} />
-              <Sky
-                sunPosition={[100, 100, 20]}
-                inclination={0}
-                azimuth={0.25}
-              />
-              <Stage
-                intensity={0.4}
-                environment="city"
-                adjustCamera={false}
-                shadows={{
-                  type: "accumulative",
-                  color: COLORS.shadow,
-                  opacity: 0.3,
-                }}
-              >
+          <div key="inside" className="viewer-fade">
+            <Canvas
+              camera={{
+                position: [0, 0, 3.4],
+                fov: 60,
+              }}
+              shadows
+            >
+              <Suspense fallback={<Loader />}>
+                <WalkControls bounds={walkBounds} input={walkInput} />
+                <ambientLight intensity={0.6} />
+                <pointLight position={[100, 100, 20]} />
+                <Environment
+                  background
+                  files="../images/environments/alps_field_4k.hdr"
+                />
                 {home}
                 <Foundation
                   position={[0, -5.7, 0]}
@@ -568,9 +497,56 @@ const Homes: FC = () => {
                   color={COLORS.roof}
                   width={foundationWidth}
                 />
-              </Stage>
-            </Suspense>
-          </Canvas>
+              </Suspense>
+            </Canvas>
+          </div>
+        ) : (
+          <div key="outside" className="viewer-fade">
+            <Canvas
+              camera={{
+                position: [60, 0, 60],
+                fov: isMobile ? 70 : 40,
+              }}
+              shadows
+            >
+              <Suspense fallback={<Loader />}>
+                <OrbitControls
+                  maxPolarAngle={Math.PI / 2}
+                  maxDistance={100}
+                  enableZoom
+                />
+                <ambientLight intensity={0.5} />
+                <pointLight position={[100, 100, 20]} />
+                <Sky
+                  sunPosition={[100, 100, 20]}
+                  inclination={0}
+                  azimuth={0.25}
+                />
+                <Stage
+                  intensity={0.4}
+                  environment="city"
+                  adjustCamera={false}
+                  shadows={{
+                    type: "accumulative",
+                    color: COLORS.shadow,
+                    opacity: 0.3,
+                  }}
+                >
+                  {home}
+                  <Foundation
+                    position={[0, -5.7, 0]}
+                    color={COLORS.foundation}
+                    width={foundationWidth}
+                  />
+                  <Roof
+                    position={[0, roofHeight || 0, 0]}
+                    color={COLORS.roof}
+                    width={foundationWidth}
+                  />
+                </Stage>
+              </Suspense>
+            </Canvas>
+          </div>
         )}
 
         <div
@@ -580,65 +556,27 @@ const Homes: FC = () => {
             margin: "0 auto",
           }}
         >
-          {isInside ? (
-            <Materials
-              floorMaterial={floorMaterial}
-              handleFloorMaterial={handleFloorMaterialChange}
-            />
-          ) : (
-            <Colors homeColor={homeColor} handleColor={handleColorChange} />
-          )}
+          {isInside &&
+            (isTouch ? (
+              <Joystick input={walkInput} />
+            ) : (
+              <WalkPad input={walkInput} />
+            ))}
 
-          <Button
-            size="large"
-            variant="text"
-            onClick={handleInsideToggle}
-            sx={{
-              position: "absolute",
-              height: isMobile ? 58 : 68,
-              bottom: isMobile ? 86 : 16,
-              left: isMobile ? 16 : 240,
-              color: "#131414",
-              border: "1px dashed #131414",
-              backdropFilter: "blur(5px)",
-            }}
+          <ControlDock
+            isInside={isInside}
+            onViewChange={handleViewChange}
+            label={isInside ? "Floor" : "Color"}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <div style={{ marginRight: "0.5rem" }}>
-                {isInside ? "Go Outside" : "Go Inside"}
-              </div>
-              {isInside ? <IconLogout /> : <IconLogin />}
-            </div>
-          </Button>
-
-          <Typography
-            variant="h6"
-            position="absolute"
-            color="#131414"
-            padding={{ xs: "0.75rem", sm: "1rem" }}
-            sx={{
-              right: 16,
-              bottom: 16,
-              margin: 0,
-              border: "1px dashed #131414",
-              background: "none",
-              borderRadius: "0.5rem",
-              backdropFilter: "blur(5px)",
-            }}
-          >
-            <animated.span>
-              {floorArea.val.to((val: number) =>
-                new Intl.NumberFormat().format(Math.floor(val))
-              )}
-            </animated.span>{" "}
-            sf
-          </Typography>
+            {isInside ? (
+              <Materials
+                floorMaterial={floorMaterial}
+                handleFloorMaterial={handleFloorMaterialChange}
+              />
+            ) : (
+              <Colors homeColor={homeColor} handleColor={handleColorChange} />
+            )}
+          </ControlDock>
         </div>
       </div>
     </>

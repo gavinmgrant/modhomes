@@ -16,3 +16,24 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Fade the 3D view in when switching between inside and outside */
+.viewer-fade {
+  height: 100%;
+  animation: viewer-fade 400ms ease-out;
+}
+
+@keyframes viewer-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewer-fade {
+    animation: none;
+  }
+}
