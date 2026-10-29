@@ -12,9 +12,12 @@ export const parseModel = (slug?: string | string[]) => {
   return match ? { cols: Number(match[1]), stories: Number(match[2]) } : null;
 };
 
+// Bottom of the foundation, where the model meets the ground
+export const MODEL_BASE = -6.45;
+
 // Outer size of the built model, from the foundation base to the end wall tops
 export const getModelSize = (cols: number, stories: number) => {
-  const bottom = -6.45;
+  const bottom = MODEL_BASE;
   const top = stories === 2 ? 16.5 : 6.5;
   return {
     width: 8 * cols + 1.2,

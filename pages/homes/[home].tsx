@@ -1,7 +1,7 @@
 import React, { FC, useState, useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/router";
 import { Canvas } from "@react-three/fiber";
-import HomeModel, { parseModel } from "../../components/homemodel";
+import HomeModel, { MODEL_BASE, parseModel } from "../../components/homemodel";
 import NavBar from "../../components/navbar";
 import Colors, { COLORS } from "../../components/colors";
 import Materials from "../../components/materials";
@@ -18,6 +18,18 @@ import WalkControls, {
 import MODELS from "../../lib/models";
 import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
 import { useMediaQuery } from "@mui/material";
+
+// The landscape photo is projected onto a ground plane at y = 0 with real
+// parallax, so the inside scene is lifted to stand its foundation on it.
+// Units are feet: the photo was taken about 6 ft up, and the flat ground
+// reaches 1500 ft out before curving up into the sky dome, far enough that
+// the mountains barely shift as you walk. The dome mesh itself only needs to
+// sit inside the camera's far plane.
+const GROUND_LIFT = -MODEL_BASE;
+const LANDSCAPE = {
+  files: "../images/environments/alps_field_4k.hdr",
+  ground: { height: 6, radius: 1500, scale: 900 },
+};
 
 const Homes: FC = () => {
   const router = useRouter();
@@ -75,7 +87,7 @@ const Homes: FC = () => {
           <div key="inside" className="viewer-fade">
             <Canvas
               camera={{
-                position: [0, 0, 3.4],
+                position: [0, GROUND_LIFT, 3.4],
                 fov: 60,
               }}
               shadows
@@ -84,11 +96,8 @@ const Homes: FC = () => {
                 <WalkControls bounds={walkBounds} input={walkInput} />
                 <ambientLight intensity={0.6} />
                 <pointLight position={[100, 100, 20]} />
-                <Environment
-                  background
-                  files="../images/environments/alps_field_4k.hdr"
-                />
-                {home}
+                <Environment {...LANDSCAPE} />
+                <group position={[0, GROUND_LIFT, 0]}>{home}</group>
               </Suspense>
             </Canvas>
           </div>
