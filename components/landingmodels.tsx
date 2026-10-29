@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import MODELS from "../lib/models";
 import { AnimatePresence, motion } from "framer-motion";
+import { PANEL } from "./panel";
 
 const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   const router = useRouter();
@@ -25,15 +26,13 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              background: "none",
-              boxShadow: "none",
-              color: "#131414",
-              borderRadius: "0.5rem",
+              ...PANEL,
+              borderRadius: "16px",
               cursor: "pointer",
               height: "8rem",
-              border: "1px dashed #131414",
+              transition: "box-shadow 200ms ease-out",
               "&:hover": {
-                border: "1.5px dashed #131414",
+                boxShadow: "0 8px 24px rgba(19, 20, 20, 0.12)",
               },
             }}
             onClick={() => router.push(`/homes/${model.slug}`)}

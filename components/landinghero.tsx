@@ -8,6 +8,7 @@ import EndWall from "./endwall";
 import Foundation from "./foundation";
 import Loader from "./loader";
 import { COLORS } from "./colors";
+import { FOCUS_RING, PANEL } from "./panel";
 import { motion } from "framer-motion";
 
 type LandingHeroProps = {
@@ -16,7 +17,6 @@ type LandingHeroProps = {
 
 const LandingHero = ({ handleScroll }: LandingHeroProps) => {
   const isMobile = useMediaQuery("(max-width:900px)");
-  const borderStyle = "1px dashed #131414";
 
   return (
     <Grid
@@ -53,11 +53,17 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
               size="large"
               variant="outlined"
               onClick={handleScroll}
-              style={{
+              sx={{
+                ...PANEL,
                 marginTop: isMobile ? "1rem" : "2rem",
                 marginLeft: isMobile ? "0" : "0.5rem",
-                color: "#131414",
-                border: borderStyle,
+                padding: "10px 24px",
+                borderRadius: 999,
+                "&:hover": {
+                  ...PANEL,
+                  boxShadow: "0 8px 24px rgba(19, 20, 20, 0.12)",
+                },
+                ...FOCUS_RING,
               }}
             >
               Select a model
