@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { createRef, forwardRef, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Card from "@mui/material/Card";
 import { CardContent } from "@mui/material";
@@ -7,9 +7,15 @@ import Grid from "@mui/material/Grid";
 import MODELS from "../lib/models";
 import { AnimatePresence, motion } from "framer-motion";
 import { PANEL } from "./panel";
+import ModelPreviews from "./modelpreviews";
 
 const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   const router = useRouter();
+  const previews = useRef(
+    MODELS.map(() => createRef<HTMLDivElement>())
+  ).current;
+  const [shown, setShown] = useState<string[]>([]);
+  const [hovered, setHovered] = useState<string | null>(null);
 
   const cards = MODELS.map((model, index) => (
     <Grid item key={model.slug} xs={12} sm={6} md={4} lg={3}>
@@ -19,17 +25,18 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 + index * 0.1 }}
           viewport={{ once: true }}
+          onAnimationComplete={() =>
+            setShown((slugs) => [...slugs, model.slug])
+          }
         >
           <Card
             key={model.slug}
+            onMouseEnter={() => setHovered(model.slug)}
+            onMouseLeave={() => setHovered(null)}
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
               ...PANEL,
               borderRadius: "16px",
               cursor: "pointer",
-              height: "8rem",
               transition: "box-shadow 200ms ease-out",
               "&:hover": {
                 boxShadow: "0 8px 24px rgba(19, 20, 20, 0.12)",
@@ -37,10 +44,24 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
             }}
             onClick={() => router.push(`/homes/${model.slug}`)}
           >
-            <CardContent style={{ padding: 0, margin: 0 }}>
-              <Typography variant="h4">{model.name}</Typography>
-              <Typography variant="body1" margin="0.25rem 0">
-                Floor Area: {model.area} sf
+            {/* The shared canvas draws this model's 3D preview into this box */}
+            <div
+              ref={previews[index]}
+              aria-hidden
+              style={{ width: "100%", height: 168 }}
+            />
+            <CardContent
+              style={{ padding: "0 16px 20px", textAlign: "center" }}
+            >
+              <Typography variant="h5" fontWeight={600}>
+                {model.name}
+              </Typography>
+              <Typography
+                variant="body2"
+                marginTop="0.25rem"
+                sx={{ opacity: 0.7 }}
+              >
+                Floor Area: {new Intl.NumberFormat().format(model.area)} sf
               </Typography>
             </CardContent>
           </Card>
@@ -78,6 +99,12 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
       <Grid container spacing={2} columns={12}>
         <AnimatePresence>{cards}</AnimatePresence>
       </Grid>
+      <ModelPreviews
+        slugs={MODELS.map((model) => model.slug)}
+        tracks={previews}
+        shown={shown}
+        hovered={hovered}
+      />
     </div>
   );
 });
