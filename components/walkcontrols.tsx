@@ -2,6 +2,7 @@ import React, {
   ElementRef,
   MutableRefObject,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -103,8 +104,10 @@ const WalkControls = ({ bounds, input }: WalkControlsProps) => {
   const controls = useRef<ElementRef<typeof OrbitControls>>(null);
   const camera = useThree((state) => state.camera);
 
-  // Orbit around a point just in front of the camera so dragging looks around
-  useEffect(() => {
+  // Orbit around a point just in front of the camera so dragging looks around.
+  // A layout effect, so it runs before the first frame: one update against the
+  // default target at the origin would snap the camera down to y = 0
+  useLayoutEffect(() => {
     const { x, y, z } = camera.position;
     controls.current?.target.set(x, y, z - 0.01);
     controls.current?.update();
