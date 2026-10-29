@@ -2,11 +2,17 @@ import { getWalkBounds, stepWithin } from "../components/walkcontrols";
 
 describe("walkcontrols", () => {
   it("keeps the walkable area inside the modules", () => {
-    expect(getWalkBounds(1)).toEqual({ maxX: 3, maxZ: 18.5, columns: [] });
+    expect(getWalkBounds(1)).toEqual({
+      maxX: 3,
+      maxZ: 18.5,
+      columns: [],
+      blocks: [],
+    });
     expect(getWalkBounds(3)).toEqual({
       maxX: 11,
       maxZ: 18.5,
       columns: [-4, 4],
+      blocks: [],
     });
   });
 
@@ -28,5 +34,17 @@ describe("walkcontrols", () => {
     const bounds = getWalkBounds(2);
     // walking diagonally into the front of the column pair at x = 0
     expect(stepWithin(bounds, -0.5, -1.5, 0.5, 1)).toEqual({ x: 0, z: -1.5 });
+  });
+
+  it("walks around the stair in two-story homes", () => {
+    const bounds = getWalkBounds(2, 2);
+    expect(bounds.blocks).toHaveLength(1);
+    const [stair] = bounds.blocks;
+    const midX = (stair.x[0] + stair.x[1]) / 2;
+    // walking from the end wall toward the bottom step stops short of it
+    const blocked = stepWithin(bounds, midX, 16, 0, -0.5);
+    expect(blocked.z).toBe(16);
+    // the same step is fine in a one-story home
+    expect(stepWithin(getWalkBounds(2), midX, 16, 0, -0.5).z).toBe(15.5);
   });
 });

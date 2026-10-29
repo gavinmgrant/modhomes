@@ -4,6 +4,7 @@ import EndWall from "./endwall";
 import Foundation from "./foundation";
 import Roof from "./roof";
 import SlidingDoors from "./slidingdoors";
+import Stair, { getStairLayout } from "./stair";
 import { COLORS } from "./colors";
 
 // "mod3x2" -> 3 modules wide, 2 stories; null until the slug is known
@@ -48,9 +49,21 @@ const HomeModel = ({
   const modules = [];
   for (let story = 0; story < stories; story++) {
     for (let i = 0; i < cols; i++) {
-      modules.push([-halfWidth + 4 + 8 * i, 10 * story, 0]);
+      modules.push({
+        position: [-halfWidth + 4 + 8 * i, 10 * story, 0],
+        story,
+        i,
+      });
     }
   }
+
+  // Two-story homes get a stair in the first module, through an opening in
+  // that module's ground floor ceiling and upper floor
+  const stair = twoStory ? getStairLayout(cols) : null;
+  const opening = stair && {
+    x: stair.footprint.x.map((x) => x - stair.moduleX) as [number, number],
+    z: stair.footprint.z,
+  };
 
   return (
     <>
@@ -62,15 +75,20 @@ const HomeModel = ({
           twoStory={twoStory}
         />
       )}
-      {modules.map((position) => (
+      {modules.map(({ position, story, i }) => (
         <Module
           key={position.join()}
           position={position}
           color={color}
           envelopeOn={envelopeOn}
           floorMaterial={floorMaterial}
+          ceilingOpening={
+            opening && story === 0 && i === 0 ? opening : undefined
+          }
+          floorOpening={opening && story === 1 && i === 0 ? opening : undefined}
         />
       ))}
+      {twoStory && <Stair cols={cols} />}
       {envelopeOn && (
         <EndWall
           position={[halfWidth - 0.5, 0, 0]}

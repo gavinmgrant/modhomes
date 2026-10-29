@@ -13,6 +13,7 @@ export const COLORS = {
   gyp: "#faf9f6",
   frame: "#2b2c2c",
   glass: "#d6e6ec",
+  tread: "#c49a6c",
 };
 
 const OPTIONS = [

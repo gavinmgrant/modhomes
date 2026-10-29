@@ -42,7 +42,7 @@ const Homes: FC = () => {
   const model = MODELS.find((model) => model.slug === router.query.home);
 
   const layout = parseModel(router.query.home);
-  const walkBounds = getWalkBounds(layout?.cols ?? 1);
+  const walkBounds = getWalkBounds(layout?.cols ?? 1, layout?.stories);
   const home = layout && (
     <HomeModel
       cols={layout.cols}

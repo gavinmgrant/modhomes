@@ -16,6 +16,7 @@ import {
   IconChevronRight,
 } from "@tabler/icons-react";
 import { FOCUS_RING, INK, PANEL } from "./panel";
+import { getStairLayout, Rect } from "./stair";
 
 export type WalkInput = {
   forward: boolean;
@@ -43,6 +44,8 @@ export type WalkBounds = {
   maxZ: number;
   // x centres of the column pairs where two modules meet (at z = 0)
   columns: number[];
+  // Solid footprints to walk around, like the stair
+  blocks: Rect[];
 };
 
 const SPEED = 7;
@@ -54,19 +57,27 @@ const clamp = (value: number, max: number) =>
   Math.min(Math.max(value, -max), max);
 
 // Each module is 8 wide (x) and 40 deep (z), laid side by side and centred on 0
-export const getWalkBounds = (modulesWide: number): WalkBounds => {
+export const getWalkBounds = (modulesWide: number, stories = 1): WalkBounds => {
   const halfWidth = 4 * modulesWide;
   const columns = [];
   for (let i = 1; i < modulesWide; i++) {
     columns.push(-halfWidth + 8 * i);
   }
-  return { maxX: halfWidth - 1, maxZ: 18.5, columns };
+  const blocks = stories === 2 ? [getStairLayout(modulesWide).footprint] : [];
+  return { maxX: halfWidth - 1, maxZ: 18.5, columns, blocks };
 };
 
-const hitsColumn = (bounds: WalkBounds, x: number, z: number) =>
-  Math.abs(z) < COLUMN_HALF_DEPTH + BODY_RADIUS &&
-  bounds.columns.some(
-    (cx) => Math.abs(x - cx) < COLUMN_HALF_WIDTH + BODY_RADIUS
+const isBlocked = (bounds: WalkBounds, x: number, z: number) =>
+  (Math.abs(z) < COLUMN_HALF_DEPTH + BODY_RADIUS &&
+    bounds.columns.some(
+      (cx) => Math.abs(x - cx) < COLUMN_HALF_WIDTH + BODY_RADIUS
+    )) ||
+  bounds.blocks.some(
+    (block) =>
+      x > block.x[0] - BODY_RADIUS &&
+      x < block.x[1] + BODY_RADIUS &&
+      z > block.z[0] - BODY_RADIUS &&
+      z < block.z[1] + BODY_RADIUS
   );
 
 // Move one axis at a time so walking into a wall or column slides along it
@@ -78,9 +89,9 @@ export const stepWithin = (
   dz: number
 ) => {
   const nextX = clamp(x + dx, bounds.maxX);
-  if (!hitsColumn(bounds, nextX, z)) x = nextX;
+  if (!isBlocked(bounds, nextX, z)) x = nextX;
   const nextZ = clamp(z + dz, bounds.maxZ);
-  if (!hitsColumn(bounds, x, nextZ)) z = nextZ;
+  if (!isBlocked(bounds, x, nextZ)) z = nextZ;
   return { x, z };
 };
 
