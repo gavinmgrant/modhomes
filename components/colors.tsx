@@ -14,6 +14,7 @@ export const COLORS = {
   frame: "#2b2c2c",
   glass: "#d6e6ec",
   tread: "#c49a6c",
+  cable: "#a9adb1",
 };
 
 const OPTIONS = [

@@ -61,8 +61,8 @@ const HomeModel = ({
   // that module's ground floor ceiling and upper floor
   const stair = twoStory ? getStairLayout(cols) : null;
   const opening = stair && {
-    x: stair.footprint.x.map((x) => x - stair.moduleX) as [number, number],
-    z: stair.footprint.z,
+    x: stair.opening.x.map((x) => x - stair.moduleX) as [number, number],
+    z: stair.opening.z,
   };
 
   return (

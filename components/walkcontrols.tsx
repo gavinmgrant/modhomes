@@ -63,7 +63,7 @@ export const getWalkBounds = (modulesWide: number, stories = 1): WalkBounds => {
   for (let i = 1; i < modulesWide; i++) {
     columns.push(-halfWidth + 8 * i);
   }
-  const blocks = stories === 2 ? [getStairLayout(modulesWide).footprint] : [];
+  const blocks = stories === 2 ? [getStairLayout(modulesWide).opening] : [];
   return { maxX: halfWidth - 1, maxZ: 18.5, columns, blocks };
 };
 
