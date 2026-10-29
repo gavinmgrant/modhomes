@@ -47,6 +47,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
             variant="h1"
             fontWeight={700}
             fontSize={isMobile ? "62px" : "92px"}
+            lineHeight={1}
           >
             Modern, modular homes.
           </Typography>
