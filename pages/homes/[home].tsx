@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import HomeModel, { MODEL_BASE, parseModel } from "../../components/homemodel";
 import NavBar from "../../components/navbar";
 import Colors, { COLORS } from "../../components/colors";
-import Materials from "../../components/materials";
+import Materials, { CITY_ENVIRONMENT } from "../../components/materials";
 import Loader from "../../components/loader";
 import InfoChip from "../../components/infochip";
 import ControlDock from "../../components/controldock";
@@ -125,7 +125,7 @@ const Homes: FC = () => {
                 />
                 <Stage
                   intensity={0.4}
-                  environment="city"
+                  environment={{ files: CITY_ENVIRONMENT }}
                   adjustCamera={false}
                   shadows={{
                     type: "accumulative",

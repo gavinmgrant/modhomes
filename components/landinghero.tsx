@@ -16,6 +16,7 @@ import AssembleIn, {
   getWallStep,
 } from "./assembly";
 import { COLORS } from "./colors";
+import { CITY_ENVIRONMENT } from "./materials";
 import { FOCUS_RING, PANEL } from "./panel";
 import { motion } from "framer-motion";
 
@@ -106,7 +107,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
               <pointLight position={[100, 100, 20]} />
               <Stage
                 intensity={0.4}
-                environment="city"
+                environment={{ files: CITY_ENVIRONMENT }}
                 adjustCamera
                 // Stage hands extra props to its camera fit. It first fits
                 // before anything moves, so it frames the finished home; any

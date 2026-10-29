@@ -4,6 +4,7 @@ import NavBar from "../components/navbar";
 import LandingModels from "../components/landingmodels";
 import LandingHero from "../components/landinghero";
 import Footer from "../components/footer";
+import { CITY_ENVIRONMENT, TEXTURES } from "../components/materials";
 import { useMediaQuery } from "@mui/material";
 
 const Home = () => {
@@ -20,6 +21,24 @@ const Home = () => {
         <meta name="description" content="Modular home website prototype" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        {/* Start the hero model's floor textures and lighting downloading
+            alongside the page's JavaScript; crossOrigin matches how three's
+            loaders request them, so the browser reuses these responses */}
+        {Object.values(TEXTURES.walnut).map((href) => (
+          <link
+            key={href}
+            rel="preload"
+            as="image"
+            href={href}
+            crossOrigin="anonymous"
+          />
+        ))}
+        <link
+          rel="preload"
+          as="fetch"
+          href={CITY_ENVIRONMENT}
+          crossOrigin="anonymous"
+        />
       </Head>
       <div
         style={{
