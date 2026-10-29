@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stage } from "@react-three/drei";
 import { Typography, useMediaQuery, Grid, Button } from "@mui/material";
@@ -7,6 +7,7 @@ import Module from "./module";
 import EndWall from "./endwall";
 import Foundation from "./foundation";
 import Loader from "./loader";
+import SlidingDoors from "./slidingdoors";
 import { COLORS } from "./colors";
 import { FOCUS_RING, PANEL } from "./panel";
 import { motion } from "framer-motion";
@@ -17,6 +18,11 @@ type LandingHeroProps = {
 
 const LandingHero = ({ handleScroll }: LandingHeroProps) => {
   const isMobile = useMediaQuery("(max-width:900px)");
+  // Where Stage moved the model to centre it, so the doors can sit outside
+  // Stage (its framing would otherwise include panes that start 10 ft out)
+  const [modelOffset, setModelOffset] = useState<
+    [number, number, number] | null
+  >(null);
 
   return (
     <Grid
@@ -91,6 +97,10 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                 intensity={0.4}
                 environment="city"
                 adjustCamera
+                center={{
+                  onCentered: ({ center }) =>
+                    setModelOffset([-center.x, -center.y, -center.z]),
+                }}
                 shadows={{
                   type: "accumulative",
                   color: COLORS.shadow,
@@ -122,6 +132,12 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                   width={7}
                 />
               </Stage>
+              {modelOffset && (
+                <group position={modelOffset}>
+                  <SlidingDoors side={-1} halfWidth={4} stories={1} animateIn />
+                  <SlidingDoors side={1} halfWidth={4} stories={1} animateIn />
+                </group>
+              )}
             </Suspense>
           </Canvas>
         </motion.div>

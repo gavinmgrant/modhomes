@@ -11,6 +11,8 @@ export const COLORS = {
   shadow: "#696969",
   ground: "#dbd9d9",
   gyp: "#faf9f6",
+  frame: "#2b2c2c",
+  glass: "#d6e6ec",
 };
 
 const OPTIONS = [

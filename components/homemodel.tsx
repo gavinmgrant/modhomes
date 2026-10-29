@@ -3,6 +3,7 @@ import Module from "./module";
 import EndWall from "./endwall";
 import Foundation from "./foundation";
 import Roof from "./roof";
+import SlidingDoors from "./slidingdoors";
 import { COLORS } from "./colors";
 
 // "mod3x2" -> 3 modules wide, 2 stories; null until the slug is known
@@ -74,6 +75,12 @@ const HomeModel = ({
           rotate
           twoStory={twoStory}
         />
+      )}
+      {envelopeOn && (
+        <>
+          <SlidingDoors side={-1} halfWidth={halfWidth} stories={stories} />
+          <SlidingDoors side={1} halfWidth={halfWidth} stories={stories} />
+        </>
       )}
       <Foundation
         position={[0, -5.7, 0]}
