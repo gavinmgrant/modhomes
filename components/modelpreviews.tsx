@@ -15,6 +15,16 @@ const FOV = 30;
 const AZIMUTH = Math.PI / 4;
 const ELEVATION = 0.32;
 const SPIN_SPEED = 0.5;
+// How quickly a preview turns back to its starting angle after hover ends
+const RETURN_RATE = 6;
+
+// One frame of easing back to the starting angle, the short way round:
+// a model turned 90° unwinds, one turned 300° finishes the last 60°
+export const easeToStart = (angle: number, delta: number) => {
+  const offset = Math.atan2(Math.sin(angle), Math.cos(angle));
+  const next = offset * Math.exp(-RETURN_RATE * delta);
+  return Math.abs(next) < 0.001 ? 0 : next;
+};
 
 // How much of the frame the model may fill at its widest moment
 const FRAME_FILL = 0.88;
@@ -117,8 +127,12 @@ const ModelPreview = ({ slug, visible, spinning }: ModelPreviewProps) => {
   }, [set]);
 
   useFrame((_, delta) => {
-    if (spinning && group.current) {
-      group.current.rotation.y += delta * SPIN_SPEED;
+    if (!group.current) return;
+    const rotation = group.current.rotation;
+    if (spinning) {
+      rotation.y += delta * SPIN_SPEED;
+    } else if (rotation.y !== 0) {
+      rotation.y = easeToStart(rotation.y, delta);
     }
   });
 
