@@ -1,7 +1,7 @@
 import React, { createRef, forwardRef, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Card from "@mui/material/Card";
-import { CardContent } from "@mui/material";
+import { CardContent, useMediaQuery } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import MODELS from "../lib/models";
@@ -11,6 +11,7 @@ import ModelPreviews from "./modelpreviews";
 
 const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   const router = useRouter();
+  const isMobile = useMediaQuery("(max-width:900px)");
   const previews = useRef(
     MODELS.map(() => createRef<HTMLDivElement>())
   ).current;
@@ -71,7 +72,18 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   ));
 
   return (
-    <div ref={ref} style={{ minHeight: "75vh" }}>
+    <div
+      ref={ref}
+      style={{
+        // On desktop the section fills the screen with its content centred,
+        // so "Select a model" scrolls to a framed view of every card
+        minHeight: isMobile ? "75vh" : "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: isMobile ? "flex-start" : "center",
+        padding: isMobile ? 0 : "2rem 0",
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -81,7 +93,7 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
           variant="h2"
           fontWeight={700}
           textAlign="center"
-          marginTop={{ xs: "5rem", sm: "6rem" }}
+          marginTop={isMobile ? { xs: "5rem", sm: "6rem" } : 0}
         >
           Models
         </Typography>
