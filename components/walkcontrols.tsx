@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { POST_INSET, POST_SIZE } from "./module";
 import { IconButton } from "@mui/material";
 import {
   IconChevronUp,
@@ -50,8 +51,9 @@ export type WalkBounds = {
 
 const SPEED = 7;
 const BODY_RADIUS = 0.6;
-const COLUMN_HALF_WIDTH = 0.625;
-const COLUMN_HALF_DEPTH = 0.25;
+// A pair of posts where two modules meet, either side of the joint
+const COLUMN_HALF_WIDTH = POST_INSET + POST_SIZE;
+const COLUMN_HALF_DEPTH = POST_SIZE / 2;
 
 const clamp = (value: number, max: number) =>
   Math.min(Math.max(value, -max), max);
@@ -65,6 +67,25 @@ export const getWalkBounds = (modulesWide: number, stories = 1): WalkBounds => {
   }
   const blocks = stories === 2 ? [getStairLayout(modulesWide).opening] : [];
   return { maxX: halfWidth - 1, maxZ: 18.5, columns, blocks };
+};
+
+// Start a step in from the front right corner, facing the opposite corner,
+// so the first view runs diagonally across the home rather than straight
+// into the columns where modules meet. The stair sits in the leftmost
+// module, so it's never in the way
+const START_INSET = 1;
+
+export type WalkStart = {
+  x: number;
+  z: number;
+  // Direction to face, along the floor
+  facing: [number, number];
+};
+
+export const getWalkStart = (bounds: WalkBounds): WalkStart => {
+  const x = bounds.maxX - START_INSET;
+  const z = bounds.maxZ - START_INSET;
+  return { x, z, facing: [-2 * x, -2 * z] };
 };
 
 const isBlocked = (bounds: WalkBounds, x: number, z: number) =>
@@ -109,20 +130,28 @@ const KEYS: Record<string, WalkKey> = {
 interface WalkControlsProps {
   bounds: WalkBounds;
   input: MutableRefObject<WalkInput>;
+  // Which way to look at first, along the floor
+  facing?: [number, number];
 }
 
-const WalkControls = ({ bounds, input }: WalkControlsProps) => {
+const WalkControls = ({
+  bounds,
+  input,
+  facing = [0, -1],
+}: WalkControlsProps) => {
   const controls = useRef<ElementRef<typeof OrbitControls>>(null);
   const camera = useThree((state) => state.camera);
 
   // Orbit around a point just in front of the camera so dragging looks around.
   // A layout effect, so it runs before the first frame: one update against the
   // default target at the origin would snap the camera down to y = 0
+  const [facingX, facingZ] = facing;
   useLayoutEffect(() => {
     const { x, y, z } = camera.position;
-    controls.current?.target.set(x, y, z - 0.01);
+    const step = 0.01 / (Math.hypot(facingX, facingZ) || 1);
+    controls.current?.target.set(x + facingX * step, y, z + facingZ * step);
     controls.current?.update();
-  }, [camera]);
+  }, [camera, facingX, facingZ]);
 
   useEffect(() => {
     const handleKey = (pressed: boolean) => (event: KeyboardEvent) => {

@@ -38,6 +38,27 @@ export const FLOOR_OFFSET = 12;
 export const CEILING_OFFSET = 6.1;
 export const ROOF_OFFSET = 6.75;
 
+// How far the hero camera sits from the home's centre so every piece stays in
+// frame as the home turns, whatever shape the canvas is. The piece reaching
+// furthest from the centre is an end wall at its start: its outer face is
+// 20.3 ft out plus WALL_OFFSET, and it's 8 ft wide. (The doors, 10 ft out
+// past the sides but no further than the module's ends, reach about 24 ft.)
+// Up the canvas, it's the top of the roof at the head of its stack, which
+// can swing up to half its 39 ft length towards the camera
+const ASSEMBLY_REACH = Math.hypot(20.3 + WALL_OFFSET, 4);
+const ASSEMBLY_TOP = 5.625 + ROOF_OFFSET;
+const ROOF_HALF_LENGTH = 19.5;
+// Breathing room around the furthest pieces, as a share of the frame
+const FRAME_MARGIN = 1.05;
+
+export const getAssemblyDistance = (aspect: number, fov: number) => {
+  const tan = Math.tan((fov * Math.PI) / 360) / FRAME_MARGIN;
+  // A point turning at radius r projects at most r / sqrt(d² - r²) across
+  const across = ASSEMBLY_REACH * Math.sqrt(1 + 1 / (tan * aspect) ** 2);
+  const up = ASSEMBLY_TOP / tan + ROOF_HALF_LENGTH;
+  return Math.max(across, up);
+};
+
 interface AssembleInProps {
   from: [number, number, number];
   // Without a step the children are simply drawn in place

@@ -1,4 +1,5 @@
 import {
+  COLUMN_FACE,
   getOpeningParts,
   getRailing,
   getRailPostTreads,
@@ -30,7 +31,7 @@ describe("stair", () => {
       expect(opening.x[1]).toBeGreaterThan(footprint.x[1]);
       // inside the module's floor, short of the columns at its edge
       expect(opening.x[0]).toBeGreaterThan(moduleX - 3.875);
-      expect(opening.x[1]).toBeLessThanOrEqual(moduleX + 3.375);
+      expect(opening.x[1]).toBeLessThanOrEqual(moduleX + COLUMN_FACE);
       // clear of the middle column, with 4-5 ft between the bottom step and
       // the end wall's inner face
       expect(footprint.z[0]).toBeGreaterThan(0.25);

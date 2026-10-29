@@ -12,6 +12,14 @@ import AssembleIn, {
 } from "./assembly";
 import type { Rect } from "./stair";
 
+// 4" square steel posts, set 1" in from the module's long edges so that where
+// two modules meet, their posts stand 2" apart
+export const POST_SIZE = 4 / 12;
+export const POST_INSET = 1 / 12;
+const POST_X = 4 - POST_INSET - POST_SIZE / 2;
+// The corner posts sit flush with the module's ends
+const POST_END_Z = 20 - POST_SIZE / 2;
+
 type SlabPiece = { x: number; z: number; width: number; depth: number };
 
 // Splits a slab (width along x, depth along z, centred on 0) into the pieces
@@ -149,30 +157,30 @@ const Module = ({
         ))}
       </AssembleIn>
 
-      <mesh position={[3.625, -0.2, 19.75]} castShadow receiveShadow>
-        <boxGeometry args={[0.5, 7.9, 0.5]} />
+      <mesh position={[POST_X, -0.2, POST_END_Z]} castShadow receiveShadow>
+        <boxGeometry args={[POST_SIZE, 7.9, POST_SIZE]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
       </mesh>
-      <mesh position={[-3.625, -0.05, 19.75]} castShadow receiveShadow>
-        <boxGeometry args={[0.5, 7.9, 0.5]} />
-        <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-      </mesh>
-
-      <mesh position={[3.625, -0.05, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.5, 7.9, 0.5]} />
-        <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-      </mesh>
-      <mesh position={[-3.625, -0.05, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.5, 7.9, 0.5]} />
+      <mesh position={[-POST_X, -0.05, POST_END_Z]} castShadow receiveShadow>
+        <boxGeometry args={[POST_SIZE, 7.9, POST_SIZE]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
       </mesh>
 
-      <mesh position={[3.625, -0.05, -19.75]} castShadow receiveShadow>
-        <boxGeometry args={[0.5, 7.9, 0.5]} />
+      <mesh position={[POST_X, -0.05, 0]} castShadow receiveShadow>
+        <boxGeometry args={[POST_SIZE, 7.9, POST_SIZE]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
       </mesh>
-      <mesh position={[-3.625, -0.05, -19.75]} castShadow receiveShadow>
-        <boxGeometry args={[0.5, 7.9, 0.5]} />
+      <mesh position={[-POST_X, -0.05, 0]} castShadow receiveShadow>
+        <boxGeometry args={[POST_SIZE, 7.9, POST_SIZE]} />
+        <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
+      </mesh>
+
+      <mesh position={[POST_X, -0.05, -POST_END_Z]} castShadow receiveShadow>
+        <boxGeometry args={[POST_SIZE, 7.9, POST_SIZE]} />
+        <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
+      </mesh>
+      <mesh position={[-POST_X, -0.05, -POST_END_Z]} castShadow receiveShadow>
+        <boxGeometry args={[POST_SIZE, 7.9, POST_SIZE]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
       </mesh>
       {getSlabPieces(7.75, 40, ceilingOpening).map((piece) => (

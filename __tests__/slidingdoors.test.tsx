@@ -2,7 +2,10 @@ import {
   ENTER_DURATION,
   getEntranceDelays,
   getEntranceProgress,
+  getFloorBandLayouts,
   getHeaderLayout,
+  getRevealPieces,
+  REVEAL,
   getPaneLayout,
   PANES_PER_HALF,
 } from "../components/slidingdoors";
@@ -100,6 +103,53 @@ describe("sliding doors", () => {
         expect(inset).toBeLessThanOrEqual(4);
       });
     });
+  });
+
+  describe("floor bands", () => {
+    it("has one between each pair of stories", () => {
+      expect(getFloorBandLayouts(1, 8, 1)).toHaveLength(0);
+      expect(getFloorBandLayouts(1, 8, 2)).toHaveLength(1);
+    });
+
+    it("fills from one story's doors to the next, in line with the header", () => {
+      const [band] = getFloorBandLayouts(1, 8, 2);
+      const header = getHeaderLayout(1, 8, 2);
+      const panes = getPaneLayout(1, 8, 2);
+      const edge = (story: number, end: number) =>
+        panes
+          .filter((pane) => pane.id.includes(`-${story}-`))
+          .map((pane) => pane.position[1] + (end * pane.height) / 2)[0];
+      expect(band.position[1] - band.size[1] / 2).toBeCloseTo(edge(0, 1));
+      expect(band.position[1] + band.size[1] / 2).toBeCloseTo(edge(1, -1));
+      expect(band.position[0]).toBeCloseTo(header.position[0]);
+      expect(band.size[0]).toBeCloseTo(header.size[0]);
+      expect(band.size[2]).toBeCloseTo(header.size[2]);
+    });
+
+    it.each([-1, 1])(
+      "has a 1 inch reveal, 2 inches deep, across its middle (side %i)",
+      (side) => {
+        const [band] = getFloorBandLayouts(side, 8, 2);
+        const [above, below, back] = getRevealPieces(band, side);
+        const top = (box: typeof band) => box.position[1] + box.size[1] / 2;
+        const bottom = (box: typeof band) => box.position[1] - box.size[1] / 2;
+        const outer = (box: typeof band) =>
+          side * box.position[0] + box.size[0] / 2;
+        // the strips fill the band, leaving a 1" gap centred in it
+        expect(top(above)).toBeCloseTo(top(band));
+        expect(bottom(below)).toBeCloseTo(bottom(band));
+        expect((bottom(above) - top(below)) * 12).toBeCloseTo(1);
+        expect(back.position[1]).toBeCloseTo(band.position[1]);
+        expect(back.size[1]).toBeCloseTo(REVEAL.height);
+        // the gap is closed 2" back from the band's face
+        expect(outer(above)).toBeCloseTo(outer(band));
+        expect(outer(below)).toBeCloseTo(outer(band));
+        expect((outer(band) - outer(back)) * 12).toBeCloseTo(2);
+        expect(side * back.position[0] - back.size[0] / 2).toBeCloseTo(
+          side * band.position[0] - band.size[0] / 2,
+        );
+      },
+    );
   });
 
   describe("entrance animation", () => {

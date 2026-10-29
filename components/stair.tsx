@@ -1,5 +1,6 @@
 import React from "react";
 import { COLORS } from "./colors";
+import { POST_INSET, POST_SIZE } from "./module";
 
 // Units are feet. Floor-to-floor is 10 ft: 16 risers of 7.5" and 15 treads
 // with a 10" run, so the flight is 12.5 ft long
@@ -30,7 +31,7 @@ const RAIL = {
 export const RAIL_HEIGHT = RAIL.height;
 const POSTS_PER_SIDE = 5;
 // Inner face of the columns where the first module meets the next
-const COLUMN_FACE = 3.375;
+export const COLUMN_FACE = 4 - POST_INSET - POST_SIZE;
 // The flight climbs toward the middle of the home, starting 4.5 ft out from
 // the end wall's inner face so there's room to walk around the bottom step.
 // It still stops short of the middle column at z = 0

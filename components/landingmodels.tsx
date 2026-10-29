@@ -8,6 +8,7 @@ import MODELS from "../lib/models";
 import { AnimatePresence, motion } from "framer-motion";
 import { PANEL } from "./panel";
 import ModelPreviews from "./modelpreviews";
+import { saveInsideView } from "../lib/viewposition";
 
 const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   const router = useRouter();
@@ -43,7 +44,11 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
                 boxShadow: "0 8px 24px rgba(19, 20, 20, 0.12)",
               },
             }}
-            onClick={() => router.push(`/homes/${model.slug}`)}
+            onClick={() => {
+              // A card always opens the model from the outside
+              saveInsideView(false);
+              router.push(`/homes/${model.slug}`);
+            }}
           >
             {/* The shared canvas draws this model's 3D preview into this box */}
             <div

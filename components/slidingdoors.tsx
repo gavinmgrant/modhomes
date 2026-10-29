@@ -90,6 +90,65 @@ export const getHeaderLayout = (
   };
 };
 
+// Dark bands across the floor line between each pair of stories, filling the
+// gap between one story's doors and the next, in line with the header
+export const getFloorBandLayouts = (
+  side: number,
+  halfWidth: number,
+  stories: number,
+): HeaderLayout[] => {
+  const depth = END_WALL_FACE - HEADER_INSET;
+  const height = STORY_HEIGHT + FLOOR - CEILING;
+  return Array.from({ length: stories - 1 }, (_, story) => ({
+    position: [
+      side * (halfWidth + depth / 2),
+      STORY_HEIGHT * story + CEILING + height / 2,
+      0,
+    ],
+    size: [depth, height, 2 * OPENING_END],
+  }));
+};
+
+// A 1" tall, 2" deep groove along the middle of each floor band
+export const REVEAL = { height: 1 / 12, depth: 2 / 12 };
+
+// Faces of a box, in the order three.js draws their materials
+const FACES = { top: 2, bottom: 3 };
+
+export type TrimPiece = HeaderLayout & {
+  // Faces drawn in shadow, inside the reveal
+  shaded?: number[];
+};
+
+// Splits a floor band into full-depth strips above and below the reveal, and
+// the strip set back behind it
+export const getRevealPieces = (
+  band: HeaderLayout,
+  side: number,
+): TrimPiece[] => {
+  const [x, y, z] = band.position;
+  const [depth, height, length] = band.size;
+  const strip = (height - REVEAL.height) / 2;
+  const offset = (strip + REVEAL.height) / 2;
+  return [
+    {
+      position: [x, y + offset, z],
+      size: [depth, strip, length],
+      shaded: [FACES.bottom],
+    },
+    {
+      position: [x, y - offset, z],
+      size: [depth, strip, length],
+      shaded: [FACES.top],
+    },
+    {
+      position: [x - (side * REVEAL.depth) / 2, y, z],
+      size: [depth - REVEAL.depth, REVEAL.height, length],
+      shaded: [0, 1, 2, 3, 4, 5],
+    },
+  ];
+};
+
 export type PaneEntrance = {
   from: number;
   delay: number;
@@ -205,19 +264,31 @@ interface DoorHeaderProps {
   stories: number;
 }
 
-// Dark band over the top story's doors, up to the end wall's top beam
-export const DoorHeader = ({ side, halfWidth, stories }: DoorHeaderProps) => {
-  const header = getHeaderLayout(side, halfWidth, stories);
-  return (
-    <mesh position={header.position}>
-      <boxGeometry args={header.size} />
+const Trim = ({ position, size, shaded }: TrimPiece) => (
+  <mesh position={position}>
+    <boxGeometry args={size} />
+    {shaded ? (
+      Array.from({ length: 6 }, (_, face) => (
+        <meshStandardMaterial
+          key={face}
+          attach={`material-${face}`}
+          color={shaded.includes(face) ? COLORS.reveal : COLORS.frame}
+          roughness={0.4}
+        />
+      ))
+    ) : (
       <meshStandardMaterial color={COLORS.frame} roughness={0.4} />
-    </mesh>
-  );
-};
+    )}
+  </mesh>
+);
+
+// Dark band over the top story's doors, up to the end wall's top beam
+export const DoorHeader = ({ side, halfWidth, stories }: DoorHeaderProps) => (
+  <Trim {...getHeaderLayout(side, halfWidth, stories)} />
+);
 
 // Floor-to-ceiling sliding glass doors filling one open side of a home,
-// with a dark header above them
+// with a dark header above them and a dark band at each floor line between
 const SlidingDoors = ({
   side,
   halfWidth,
@@ -245,6 +316,11 @@ const SlidingDoors = ({
           }
         />
       ))}
+      {getFloorBandLayouts(side, halfWidth, stories)
+        .flatMap((band) => getRevealPieces(band, side))
+        .map((piece) => (
+          <Trim key={piece.position.join()} {...piece} />
+        ))}
       {!hideHeader && (
         <DoorHeader side={side} halfWidth={halfWidth} stories={stories} />
       )}

@@ -18,6 +18,10 @@ import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
 
 const HOVER = { "&:hover": { background: "rgba(19, 20, 20, 0.06)" } };
 
+// The bar sits 1rem from the top of the page. Its height is MUI's toolbar
+// (56px on phones, 64px from sm up) plus the panel's 1px border top and bottom
+export const NAVBAR_HEIGHT = { xs: 58, sm: 66 };
+
 const NavBar = () => {
   const isMobile = useMediaQuery("(max-width:900px)");
   const router = useRouter();

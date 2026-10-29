@@ -12,6 +12,8 @@ export const COLORS = {
   ground: "#dbd9d9",
   gyp: "#faf9f6",
   frame: "#2b2c2c",
+  // The inside of the floor band's reveal, which reads as a shadow line
+  reveal: "#121313",
   glass: "#d6e6ec",
   tread: "#c49a6c",
   cable: "#a9adb1",

@@ -1,7 +1,11 @@
 import React, { FC, useState, useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/router";
 import { Canvas } from "@react-three/fiber";
-import HomeModel, { MODEL_BASE, parseModel } from "../../components/homemodel";
+import HomeModel, {
+  MODEL_BASE,
+  getOrbitMinDistance,
+  parseModel,
+} from "../../components/homemodel";
 import NavBar from "../../components/navbar";
 import Colors, { COLORS } from "../../components/colors";
 import Materials, { CITY_ENVIRONMENT } from "../../components/materials";
@@ -14,8 +18,10 @@ import WalkControls, {
   WalkInput,
   IDLE_INPUT,
   getWalkBounds,
+  getWalkStart,
 } from "../../components/walkcontrols";
 import MODELS from "../../lib/models";
+import { loadInsideView, saveInsideView } from "../../lib/viewposition";
 import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
 import { useMediaQuery } from "@mui/material";
 
@@ -43,6 +49,7 @@ const Homes: FC = () => {
 
   const layout = parseModel(router.query.home);
   const walkBounds = getWalkBounds(layout?.cols ?? 1, layout?.stories);
+  const walkStart = getWalkStart(walkBounds);
   const home = layout && (
     <HomeModel
       cols={layout.cols}
@@ -53,17 +60,14 @@ const Homes: FC = () => {
   );
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const position = window.localStorage.getItem("position");
-      position === "inside" ? setIsInside(true) : setIsInside(false);
-    }
+    setIsInside(loadInsideView());
   }, []);
 
   // Swaps the canvas in place; the keyed wrappers below remount it with a fresh camera
   const handleViewChange = (inside: boolean) => {
     setIsInside(inside);
     walkInput.current = { ...IDLE_INPUT };
-    window.localStorage.setItem("position", inside ? "inside" : "outside");
+    saveInsideView(inside);
   };
 
   const handleColorChange = (color: string) => {
@@ -84,16 +88,22 @@ const Homes: FC = () => {
       </div>
       <div style={{ height: "100vh", width: "100vw", margin: 0 }}>
         {isInside ? (
-          <div key="inside" className="viewer-fade">
+          // Keyed by model too, so switching models from the menu starts the
+          // new one at its own corner rather than wherever the last one ended
+          <div key={`inside-${router.query.home}`} className="viewer-fade">
             <Canvas
               camera={{
-                position: [0, GROUND_LIFT, 3.4],
+                position: [walkStart.x, GROUND_LIFT, walkStart.z],
                 fov: 60,
               }}
               shadows
             >
               <Suspense fallback={<Loader />}>
-                <WalkControls bounds={walkBounds} input={walkInput} />
+                <WalkControls
+                  bounds={walkBounds}
+                  input={walkInput}
+                  facing={walkStart.facing}
+                />
                 <ambientLight intensity={0.6} />
                 <pointLight position={[100, 100, 20]} />
                 <Environment {...LANDSCAPE} />
@@ -113,6 +123,10 @@ const Homes: FC = () => {
               <Suspense fallback={<Loader />}>
                 <OrbitControls
                   maxPolarAngle={Math.PI / 2}
+                  minDistance={getOrbitMinDistance(
+                    layout?.cols ?? 1,
+                    layout?.stories ?? 1
+                  )}
                   maxDistance={100}
                   enableZoom
                 />
