@@ -31,12 +31,15 @@ import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
 import { useMediaQuery } from "@mui/material";
 
 // The landscape photo is projected onto a ground plane at y = 0 with real
-// parallax, so the inside scene is lifted to stand its foundation on it.
+// parallax, so the inside scene is lifted to stand its foundation on it, and
+// then some more so the grass falls away below the windows. The horizon stays
+// at eye level wherever the ground is.
 // Units are feet: the photo was taken about 6 ft up, and the flat ground
 // reaches 1500 ft out before curving up into the sky dome, far enough that
 // the mountains barely shift as you walk. The dome mesh itself only needs to
 // sit inside the camera's far plane.
-const GROUND_LIFT = -MODEL_BASE;
+const GRASS_DROP = 3;
+const GROUND_LIFT = -MODEL_BASE + GRASS_DROP;
 // Standing eye level, 5' 3" above the ground floor's finished surface, which
 // sits at y = -3.95 in the model
 const EYE_LEVEL = -3.95 + 5.25;
