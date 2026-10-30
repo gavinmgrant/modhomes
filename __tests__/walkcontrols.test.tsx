@@ -1,4 +1,10 @@
-import { getWalkBounds, stepWithin } from "../components/walkcontrols";
+import {
+  getWalkBounds,
+  getWalkStart,
+  stepWithin,
+} from "../components/walkcontrols";
+import { parseModel } from "../components/homemodel";
+import MODELS from "../lib/models";
 
 describe("walkcontrols", () => {
   it("keeps the walkable area inside the modules", () => {
@@ -46,5 +52,29 @@ describe("walkcontrols", () => {
     expect(blocked.z).toBe(16);
     // the same step is fine in a one-story home
     expect(stepWithin(getWalkBounds(2), midX, 16, 0, -0.5).z).toBe(15.5);
+  });
+
+  it("starts every model in a corner, facing the opposite corner", () => {
+    MODELS.forEach(({ slug }) => {
+      const layout = parseModel(slug);
+      const bounds = getWalkBounds(layout!.cols, layout!.stories);
+      const { x, z, facing } = getWalkStart(bounds);
+      // a step in from the front right corner
+      expect(x).toBe(bounds.maxX - 1);
+      expect(z).toBe(bounds.maxZ - 1);
+      // looking across to the same spot in the back left corner
+      expect([x + facing[0], z + facing[1]]).toEqual([-x, -z]);
+      // clear of the stair, and of the columns where modules meet
+      bounds.blocks.forEach((block) => {
+        expect(x > block.x[1] || z > block.z[1]).toBe(true);
+      });
+      // (the columns all stand at z = 0)
+      expect(Math.abs(z)).toBeGreaterThan(1);
+      // and free to walk from
+      expect(stepWithin(bounds, x, z, -0.5, -0.5)).toEqual({
+        x: x - 0.5,
+        z: z - 0.5,
+      });
+    });
   });
 });

@@ -25,6 +25,10 @@ export const TEXTURES = {
   },
 };
 
+// drei's "city" lighting preset (Poly Haven's Potsdamer Platz, CC0), served
+// from this site rather than drei's development CDN
+export const CITY_ENVIRONMENT = "/images/environments/potsdamer_platz_1k.hdr";
+
 const OPTIONS = [
   { name: "Walnut", material: "walnut" },
   { name: "Bamboo", material: "bamboo" },

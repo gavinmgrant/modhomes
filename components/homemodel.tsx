@@ -28,6 +28,16 @@ export const getModelSize = (cols: number, stories: number) => {
   };
 };
 
+// Closest the outside view may zoom to the model's centre, which Stage puts at
+// the orbit target: just beyond the corners of its box, so the camera stops
+// short of the home from any angle
+const ORBIT_CLEARANCE = 2;
+
+export const getOrbitMinDistance = (cols: number, stories: number) => {
+  const { width, depth, height } = getModelSize(cols, stories);
+  return Math.hypot(width, depth, height) / 2 + ORBIT_CLEARANCE;
+};
+
 interface HomeModelProps {
   cols: number;
   stories: number;
@@ -61,8 +71,8 @@ const HomeModel = ({
   // that module's ground floor ceiling and upper floor
   const stair = twoStory ? getStairLayout(cols) : null;
   const opening = stair && {
-    x: stair.footprint.x.map((x) => x - stair.moduleX) as [number, number],
-    z: stair.footprint.z,
+    x: stair.opening.x.map((x) => x - stair.moduleX) as [number, number],
+    z: stair.opening.z,
   };
 
   return (

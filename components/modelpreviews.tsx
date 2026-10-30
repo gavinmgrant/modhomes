@@ -9,6 +9,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, View } from "@react-three/drei";
 import HomeModel, { getModelSize, parseModel } from "./homemodel";
 import { COLORS } from "./colors";
+import { CITY_ENVIRONMENT } from "./materials";
 
 const FOV = 30;
 // Camera sits 45° round from the front and a little above the horizon
@@ -161,7 +162,7 @@ const ModelPreview = ({ slug, visible, spinning }: ModelPreviewProps) => {
       />
       <ambientLight intensity={0.5} />
       <directionalLight position={[40, 60, 30]} intensity={0.8} />
-      <Environment preset="city" />
+      <Environment files={CITY_ENVIRONMENT} />
       <group ref={group} visible={visible}>
         <HomeModel
           cols={layout.cols}

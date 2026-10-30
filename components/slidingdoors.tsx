@@ -38,7 +38,7 @@ export type PaneLayout = {
 export const getPaneLayout = (
   side: number,
   halfWidth: number,
-  stories: number
+  stories: number,
 ): PaneLayout[] => {
   const width = (OPENING_END + (PANES_PER_HALF - 1) * OVERLAP) / PANES_PER_HALF;
   const height = CEILING - FLOOR;
@@ -75,7 +75,7 @@ export type HeaderLayout = {
 export const getHeaderLayout = (
   side: number,
   halfWidth: number,
-  stories: number
+  stories: number,
 ): HeaderLayout => {
   const depth = END_WALL_FACE - HEADER_INSET;
   const storyOffset = STORY_HEIGHT * (stories - 1);
@@ -90,24 +90,94 @@ export const getHeaderLayout = (
   };
 };
 
+// Dark bands across the floor line between each pair of stories, filling the
+// gap between one story's doors and the next, in line with the header
+export const getFloorBandLayouts = (
+  side: number,
+  halfWidth: number,
+  stories: number,
+): HeaderLayout[] => {
+  const depth = END_WALL_FACE - HEADER_INSET;
+  const height = STORY_HEIGHT + FLOOR - CEILING;
+  return Array.from({ length: stories - 1 }, (_, story) => ({
+    position: [
+      side * (halfWidth + depth / 2),
+      STORY_HEIGHT * story + CEILING + height / 2,
+      0,
+    ],
+    size: [depth, height, 2 * OPENING_END],
+  }));
+};
+
+// A 1" tall, 2" deep groove along the middle of each floor band
+export const REVEAL = { height: 1 / 12, depth: 2 / 12 };
+
+// Faces of a box, in the order three.js draws their materials
+const FACES = { top: 2, bottom: 3 };
+
+export type TrimPiece = HeaderLayout & {
+  // Faces drawn in shadow, inside the reveal
+  shaded?: number[];
+};
+
+// Splits a floor band into full-depth strips above and below the reveal, and
+// the strip set back behind it
+export const getRevealPieces = (
+  band: HeaderLayout,
+  side: number,
+): TrimPiece[] => {
+  const [x, y, z] = band.position;
+  const [depth, height, length] = band.size;
+  const strip = (height - REVEAL.height) / 2;
+  const offset = (strip + REVEAL.height) / 2;
+  return [
+    {
+      position: [x, y + offset, z],
+      size: [depth, strip, length],
+      shaded: [FACES.bottom],
+    },
+    {
+      position: [x, y - offset, z],
+      size: [depth, strip, length],
+      shaded: [FACES.top],
+    },
+    {
+      position: [x - (side * REVEAL.depth) / 2, y, z],
+      size: [depth - REVEAL.depth, REVEAL.height, length],
+      shaded: [0, 1, 2, 3, 4, 5],
+    },
+  ];
+};
+
 export type PaneEntrance = {
   from: number;
   delay: number;
 };
 
 // Eased 0-1 progress of a pane's slide in, `elapsed` seconds after mount
-export const getEntranceProgress = (elapsed: number, delay: number) => {
-  const t = Math.min(Math.max((elapsed - delay) / ENTER_DURATION, 0), 1);
+export const getEntranceProgress = (
+  elapsed: number,
+  delay: number,
+  duration = ENTER_DURATION,
+) => {
+  const t = Math.min(Math.max((elapsed - delay) / duration, 0), 1);
   return 1 - Math.pow(1 - t, 3);
 };
 
-// Panes slide in from one end of the wall to the other, lowest story first
-export const getEntranceDelays = (panes: PaneLayout[]) => {
+// Panes slide in from one end of the wall to the other, lowest story first,
+// the first one `start` seconds after mount
+export const getEntranceDelays = (panes: PaneLayout[], start = 0) => {
   const order = [...panes].sort(
-    (a, b) => a.position[1] - b.position[1] || a.position[2] - b.position[2]
+    (a, b) => a.position[1] - b.position[1] || a.position[2] - b.position[2],
   );
-  return new Map(order.map((pane, rank) => [pane.id, rank * ENTER_STAGGER]));
+  return new Map(
+    order.map((pane, rank) => [pane.id, start + rank * ENTER_STAGGER]),
+  );
 };
+
+export const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 interface GlassPaneProps {
   position: [number, number, number];
@@ -134,7 +204,7 @@ export const GlassPane = ({
     const startedAt = (start.current ??= state.clock.elapsedTime);
     const progress = getEntranceProgress(
       state.clock.elapsedTime - startedAt,
-      entrance.delay
+      entrance.delay,
     );
     group.current.position.x = position[0] + entrance.from * (1 - progress);
   });
@@ -182,22 +252,56 @@ interface SlidingDoorsProps {
   stories: number;
   // Slide the panes in one after another when they mount
   animateIn?: boolean;
+  // Seconds after mount before the first pane starts sliding in
+  animateDelay?: number;
+  // Leave the header out, for when it's drawn (and animated) separately
+  hideHeader?: boolean;
 }
 
+interface DoorHeaderProps {
+  side: number;
+  halfWidth: number;
+  stories: number;
+}
+
+const Trim = ({ position, size, shaded }: TrimPiece) => (
+  <mesh position={position}>
+    <boxGeometry args={size} />
+    {shaded ? (
+      Array.from({ length: 6 }, (_, face) => (
+        <meshStandardMaterial
+          key={face}
+          attach={`material-${face}`}
+          color={shaded.includes(face) ? COLORS.reveal : COLORS.frame}
+          roughness={0.4}
+        />
+      ))
+    ) : (
+      <meshStandardMaterial color={COLORS.frame} roughness={0.4} />
+    )}
+  </mesh>
+);
+
+// Dark band over the top story's doors, up to the end wall's top beam
+export const DoorHeader = ({ side, halfWidth, stories }: DoorHeaderProps) => (
+  <Trim {...getHeaderLayout(side, halfWidth, stories)} />
+);
+
 // Floor-to-ceiling sliding glass doors filling one open side of a home,
-// with a dark header above them
+// with a dark header above them and a dark band at each floor line between
 const SlidingDoors = ({
   side,
   halfWidth,
   stories,
   animateIn = false,
+  animateDelay = 0,
+  hideHeader = false,
 }: SlidingDoorsProps) => {
   const panes = getPaneLayout(side, halfWidth, stories);
-  const header = getHeaderLayout(side, halfWidth, stories);
-  const reduceMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const delays = animateIn && !reduceMotion ? getEntranceDelays(panes) : null;
+  const delays =
+    animateIn && !prefersReducedMotion()
+      ? getEntranceDelays(panes, animateDelay)
+      : null;
 
   return (
     <>
@@ -212,10 +316,14 @@ const SlidingDoors = ({
           }
         />
       ))}
-      <mesh position={header.position}>
-        <boxGeometry args={header.size} />
-        <meshStandardMaterial color={COLORS.frame} roughness={0.4} />
-      </mesh>
+      {getFloorBandLayouts(side, halfWidth, stories)
+        .flatMap((band) => getRevealPieces(band, side))
+        .map((piece) => (
+          <Trim key={piece.position.join()} {...piece} />
+        ))}
+      {!hideHeader && (
+        <DoorHeader side={side} halfWidth={halfWidth} stories={stories} />
+      )}
     </>
   );
 };
