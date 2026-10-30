@@ -34,18 +34,22 @@ import { useMediaQuery } from "@mui/material";
 // parallax, so the inside scene is lifted to stand its foundation on it, and
 // then some more so the grass falls away below the windows. The horizon stays
 // at eye level wherever the ground is.
-// Units are feet: the photo was taken about 6 ft up, and the flat ground
-// reaches 1500 ft out before curving up into the sky dome, far enough that
-// the mountains barely shift as you walk. The dome mesh itself only needs to
-// sit inside the camera's far plane.
+// Units are feet. The projection is only true from where the photo was taken,
+// so it's taken at standing eye level; any lower and everything below the
+// photo's horizon stretches down into streaks. The flat ground reaches out to
+// the tree line, 250 ft, and curves up into the sky dome there, so the trees
+// stand on the dome instead of lying smeared across the grass when you walk
+// off centre. The dome mesh itself only needs to sit inside the camera's far
+// plane.
 const GRASS_DROP = 3;
 const GROUND_LIFT = -MODEL_BASE + GRASS_DROP;
 // Standing eye level, 5' 3" above the ground floor's finished surface, which
 // sits at y = -3.95 in the model
 const EYE_LEVEL = -3.95 + 5.25;
+// Poly Haven's Noon Grass (CC0), a mown field ringed by trees
 const LANDSCAPE = {
-  files: "../images/environments/alps_field_4k.hdr",
-  ground: { height: 6, radius: 1500, scale: 900 },
+  files: "../images/environments/noon_grass_2k.hdr",
+  ground: { height: GROUND_LIFT + EYE_LEVEL, radius: 250, scale: 900 },
 };
 
 const COUNTS = ["one", "two", "three", "four", "five", "six", "seven", "eight"];
