@@ -1,4 +1,5 @@
 import React from "react";
+import { useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import Swatch from "./swatch";
 
@@ -26,8 +27,17 @@ export const TEXTURES = {
   },
 };
 
+// useTexture uploads to the GPU straight away, but R3F only sets a texture's
+// color space once it's put on a material, and an uploaded texture keeps the
+// one it went up with. Set it first, as R3F would, or finishes not yet on the
+// floor render washed out when picked
 const FloorTexture = ({ material }: { material: keyof typeof TEXTURES }) => {
-  useTexture(TEXTURES[material]);
+  const gl = useThree((state) => state.gl);
+  useTexture(TEXTURES[material], (textures) => {
+    (textures as any[]).forEach((texture) => {
+      texture.colorSpace = gl.outputColorSpace;
+    });
+  });
   return null;
 };
 
