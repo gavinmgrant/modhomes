@@ -25,6 +25,8 @@ export const FINISHES = {
   mirror: { color: COLORS.mirror, metalness: 0.8, roughness: 0.15 },
   cooktop: { color: COLORS.cooktop, roughness: 0.2 },
   grout: { color: COLORS.grout, roughness: 0.8 },
+  plywood: { color: COLORS.plywood, roughness: 0.6 },
+  blackSteel: { color: COLORS.blackSteel, metalness: 0.6, roughness: 0.4 },
   // Seen only in the gaps between cabinet fronts
   reveal: { color: COLORS.reveal, roughness: 0.9 },
 };
@@ -203,7 +205,7 @@ export const drawersOverDoors = (
 
 // Anything standing on the floor, or starting within this far above it, is
 // in the way when walking; headers, mirrors and wall cabinets are not, and
-// nor is anything lower than a stool's base, like floor tile
+// nor is anything barely off it, like floor tile
 const BLOCKING_HEIGHT = 1.5;
 const TRIP_HEIGHT = 0.04;
 

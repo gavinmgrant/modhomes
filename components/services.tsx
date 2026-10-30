@@ -13,9 +13,11 @@ import {
   COUNTER_DEPTH,
   getGalleyParts,
   getKitchenParts,
+  getStools,
   TALL_DEPTH,
 } from "./kitchen";
 import { getPaneJoints } from "./slidingdoors";
+import Stool, { getStoolFootprint, StoolSpot } from "./stool";
 import type { Rect } from "./stair";
 
 // Homes three or more modules wide give their middle module (right of
@@ -122,6 +124,7 @@ export const getServicesLayout = (cols: number) => {
       ...showerBath.parts,
       ...getKitchenParts(ROOMS.kitchen),
     ],
+    stools: getStools(ROOMS.kitchen),
   };
 };
 
@@ -201,6 +204,7 @@ export const getGalleyLayout = (cols: number) => {
       ),
       ...getGalleyParts(GALLEY_FACE, [GALLEY_Z0, -WALL / 2]),
     ],
+    stools: [] as StoolSpot[],
   };
 };
 
@@ -208,7 +212,12 @@ export const getGalleyLayout = (cols: number) => {
 export const getServicesBlocks = (cols: number): Rect[] => {
   const layout = getServicesLayout(cols) ?? getGalleyLayout(cols);
   if (!layout) return [];
-  return getFootprints([...layout.walls, ...layout.fixtures], layout.moduleX);
+  return [
+    ...getFootprints([...layout.walls, ...layout.fixtures], layout.moduleX),
+    ...layout.stools.map((stool) =>
+      getStoolFootprint({ ...stool, x: stool.x + layout.moduleX }),
+    ),
+  ];
 };
 
 interface ServicesProps {
@@ -223,6 +232,9 @@ const Services = ({ cols }: ServicesProps) => {
     <group position={[layout.moduleX, 0, 0]}>
       <Parts parts={layout.walls} />
       <Parts parts={layout.fixtures} />
+      {layout.stools.map((stool) => (
+        <Stool key={`${stool.x},${stool.z}`} {...stool} />
+      ))}
     </group>
   );
 };

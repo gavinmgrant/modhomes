@@ -13,6 +13,7 @@ import {
   place,
 } from "./fixtures";
 import type { Rect } from "./stair";
+import type { StoolSpot } from "./stool";
 
 // Units are feet. Base cabinets are 2 ft deep with a 36" quartz counter;
 // wall cabinets start 18" above it and run up to the ceiling
@@ -26,8 +27,6 @@ const RANGE_HALF = 1.25;
 // Clear floor between the island and the end wall run
 export const AISLE = 3.5;
 export const ISLAND = { length: 7, depth: 3.5, overhang: 1 };
-// 26" to the top of a 1" seat, on a 5/8" base
-export const STOOL = { height: 26 / 12, seat: 1 / 12, base: 0.05 };
 export const TALL_DEPTH = 2.25;
 const FRIDGE_WIDTH = 3;
 
@@ -283,31 +282,20 @@ const island = (z1: number): Part[] => {
       [0, base[1]],
       "+z",
     ),
-    // stools with a thin seat on a thin disc base, tucked under the overhang
-    ...[-2.25, 0, 2.25].flatMap((x) => [
-      part(
-        "stainless",
-        [x - 0.55, x + 0.55],
-        [FLOOR, FLOOR + STOOL.base],
-        [z0 - 0.65, z0 + 0.45],
-        true,
-      ),
-      part(
-        "stainless",
-        [x - 0.08, x + 0.08],
-        [FLOOR + STOOL.base, FLOOR + STOOL.height - STOOL.seat],
-        [z0 - 0.18, z0 - 0.02],
-        true,
-      ),
-      part(
-        "walnut",
-        [x - 0.6, x + 0.6],
-        [FLOOR + STOOL.height - STOOL.seat, FLOOR + STOOL.height],
-        [z0 - 0.7, z0 + 0.5],
-        true,
-      ),
-    ]),
   ];
+};
+
+// Three stools along the island's overhang, facing it, their bases set
+// back from its edge so the seats' front lips tuck under the counter
+const STOOL_SET_BACK = 0.35;
+
+export const getStools = ({ z: [, z1] }: Rect): StoolSpot[] => {
+  const overhang = z1 - COUNTER_DEPTH - AISLE - ISLAND.depth;
+  return [-2.25, 0, 2.25].map((x) => ({
+    x,
+    z: overhang - STOOL_SET_BACK,
+    facing: 1,
+  }));
 };
 
 // The kitchen fills the module from the bathrooms' front face to the end
