@@ -47,6 +47,9 @@ interface HomeModelProps {
   stories: number;
   color: string;
   floorMaterial: string;
+  // The wood siding's and the kitchen and bathroom wall tile's colours
+  sidingColor?: string;
+  tileColor?: string;
   envelopeOn?: boolean;
 }
 
@@ -56,6 +59,8 @@ const HomeModel = ({
   stories,
   color,
   floorMaterial,
+  sidingColor,
+  tileColor,
   envelopeOn = true,
 }: HomeModelProps) => {
   const twoStory = stories === 2;
@@ -103,7 +108,7 @@ const HomeModel = ({
         />
       ))}
       {twoStory && <Stair cols={cols} />}
-      <Services cols={cols} />
+      <Services cols={cols} tileColor={tileColor} />
       {envelopeOn && (
         <EndWall
           position={[halfWidth - 0.5, 0, 0]}
@@ -120,6 +125,7 @@ const HomeModel = ({
             halfWidth={halfWidth}
             stories={stories}
             sided={getSidedPanes(cols, stories)}
+            sidingColor={sidingColor}
           />
         </>
       )}

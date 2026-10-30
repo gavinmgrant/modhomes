@@ -7,6 +7,34 @@ import { boxBetween, Box, Rect } from "./stair";
 export const FLOOR = -3.95;
 export const CEILING = 3.85;
 
+// The scene lights the floor from above far more strongly than it does the
+// walls, and its sky reflects in a shiny floor, so floor tile is drawn this
+// much darker, in linear light, and reflects less, to read as the same tile
+// as the walls
+const FLOOR_SHADE = 0.4;
+
+const toLinear = (c: number) =>
+  c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+const toSrgb = (c: number) =>
+  c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055;
+
+export const shadeColor = (hex: string, k: number) =>
+  "#" +
+  [1, 3, 5]
+    .map((i) => {
+      const c = toSrgb(toLinear(parseInt(hex.slice(i, i + 2), 16) / 255) * k);
+      return Math.round(c * 255)
+        .toString(16)
+        .padStart(2, "0");
+    })
+    .join("");
+
+// The wall tile's chosen colour, and the floor tile's to go with it
+export const tileColors = (color: string) => ({
+  tile: color,
+  floorTile: shadeColor(color, FLOOR_SHADE),
+});
+
 // Plain colours for now, standing in for real finishes
 export const FINISHES = {
   gyp: { color: COLORS.gyp, metalness: 0.1, roughness: 0.1 },
@@ -15,7 +43,11 @@ export const FINISHES = {
   porcelain: { color: COLORS.porcelain, roughness: 0.15 },
   stainless: { color: COLORS.stainless, metalness: 0.8, roughness: 0.3 },
   tile: { color: COLORS.tile, roughness: 0.3 },
-  floorTile: { color: COLORS.floorTile, roughness: 0.4 },
+  floorTile: {
+    color: tileColors(COLORS.tile).floorTile,
+    roughness: 0.3,
+    envMapIntensity: 0.3,
+  },
   glass: {
     color: COLORS.glass,
     roughness: 0.05,
@@ -203,6 +235,39 @@ export const drawersOverDoors = (
   ];
 };
 
+// 12" square floor tile laid over a room, matching the wall tile, with
+// 3/16" grout lines standing just proud of it. The grid is centred on the
+// room, so the cut tiles at opposite edges match
+export const FLOOR_TILE = { size: 1, grout: 3 / 16 / 12, thickness: 0.02 };
+
+const gridLines = ([a0, a1]: Span, size: number) => {
+  const middle = (a0 + a1) / 2;
+  const lines: number[] = [];
+  for (
+    let a = middle - Math.floor((middle - a0) / size) * size;
+    a < a1 - 1e-9;
+    a += size
+  ) {
+    if (a > a0 + 1e-9) lines.push(a);
+  }
+  return lines;
+};
+
+export const tileFloor = ({ x, z }: Rect): Part[] => {
+  const top = FLOOR + FLOOR_TILE.thickness;
+  const joint: Span = [top, top + 0.005];
+  const g = FLOOR_TILE.grout / 2;
+  return [
+    part("floorTile", x, [FLOOR, top], z),
+    ...gridLines(x, FLOOR_TILE.size).map((at) =>
+      part("grout", [at - g, at + g], joint, z),
+    ),
+    ...gridLines(z, FLOOR_TILE.size).map((at) =>
+      part("grout", x, joint, [at - g, at + g]),
+    ),
+  ];
+};
+
 // Anything standing on the floor, or starting within this far above it, is
 // in the way when walking; headers, mirrors and wall cabinets are not, and
 // nor is anything barely off it, like floor tile
@@ -221,7 +286,13 @@ export const getFootprints = (parts: Part[], offsetX = 0): Rect[] =>
       z: [z - d / 2, z + d / 2],
     }));
 
-export const Parts = ({ parts }: { parts: Part[] }) => (
+interface PartsProps {
+  parts: Part[];
+  // Chosen colours that stand in for a finish's own, like the wall tile's
+  colors?: Partial<Record<Finish, string>>;
+}
+
+export const Parts = ({ parts, colors }: PartsProps) => (
   <>
     {parts.map(({ position, size, finish, round }) => (
       <mesh
@@ -235,7 +306,10 @@ export const Parts = ({ parts }: { parts: Part[] }) => (
         ) : (
           <boxGeometry args={size} />
         )}
-        <meshStandardMaterial {...FINISHES[finish]} />
+        <meshStandardMaterial
+          {...FINISHES[finish]}
+          {...(colors?.[finish] && { color: colors[finish] })}
+        />
       </mesh>
     ))}
   </>

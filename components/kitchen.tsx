@@ -30,7 +30,7 @@ export const ISLAND = { length: 7, depth: 3.5, overhang: 1 };
 export const TALL_DEPTH = 2.25;
 const FRIDGE_WIDTH = 3;
 
-// Stainless tile on the backsplash, 3" high by 6" wide in a stacked grid:
+// Wall tile on the backsplash, the same as the bathrooms', 3" high by 6" wide in a stacked grid:
 // 3/16" grout lines standing just proud of its face, the columns centred on
 // the run so the cut tiles at each end match, and the rows from the counter up
 const TILE = { width: 6 / 12, height: 3 / 12, grout: 3 / 16 / 12 };
@@ -112,10 +112,10 @@ const range = (c: number): LocalPart[] => {
   ];
 };
 
-// The stainless tile backsplash and a run of wall cabinets above it, up to
+// The tile backsplash and a run of wall cabinets above it, up to
 // the ceiling, with a stainless hood over the range at c
 const uppers = (u: Span, c: number): LocalPart[] => [
-  local("stainless", u, [COUNTER_TOP, UPPER.bottom], [0, SPLASH_DEPTH]),
+  local("tile", u, [COUNTER_TOP, UPPER.bottom], [0, SPLASH_DEPTH]),
   ...tileGrid(u),
   local("walnut", u, [UPPER.bottom, CEILING], [0, UPPER.depth]),
   ...doors(
@@ -134,7 +134,7 @@ const uppers = (u: Span, c: number): LocalPart[] => [
 ];
 
 // Against the end wall, like the photo: base cabinets either side of the
-// range, under a stainless tile backsplash and a full run of wall cabinets
+// range, under a tile backsplash and a full run of wall cabinets
 // with a hood
 const rangeRun = (half: number): LocalPart[] => [
   ...baseCabinet([-half, -RANGE_HALF], 2),

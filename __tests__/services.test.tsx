@@ -5,6 +5,7 @@ import {
   END_FACE,
   GALLEY_END,
   GALLEY_FACE,
+  GALLEY_FLOOR,
   GALLEY_ROOMS,
   getGalleyLayout,
   getServicesLayout,
@@ -133,6 +134,33 @@ describe("services module", () => {
           ).toBe(false);
         });
     });
+  });
+
+  it.each(WIDE)("tiles the kitchen floor wall to wall (%i wide)", (cols) => {
+    const { walls, floors } = getServicesLayout(cols)!;
+    const [tile] = floors;
+    expect(tile.finish).toBe("floorTile");
+    expect(span(tile, 0)).toEqual(ROOMS.kitchen.x);
+    expect(span(tile, 2)[0]).toBeCloseTo(ROOMS.kitchen.z[0]);
+    expect(span(tile, 2)[1]).toBeCloseTo(ROOMS.kitchen.z[1]);
+    floors.forEach((part) => {
+      walls.forEach((wall) => {
+        const hits = [0, 1, 2].every((axis) =>
+          overlap(span(part, axis), span(wall, axis)),
+        );
+        expect(hits).toBe(false);
+      });
+    });
+  });
+
+  it("tiles the bathroom floors in the wall tile's finish", () => {
+    [getTubBath(ROOMS.tubBath), getShowerBath(ROOMS.showerBath)].forEach(
+      ({ parts }) => {
+        expect(parts[0].finish).toBe("floorTile");
+        expect(span(parts[0], 1)[0]).toBeCloseTo(FLOOR);
+        expect(parts.some((part) => part.finish === "grout")).toBe(true);
+      },
+    );
   });
 
   it.each(WIDE)("never runs a fixture into a wall (%i wide)", (cols) => {
@@ -394,9 +422,27 @@ describe("galley module", () => {
     ).toBe(true);
   });
 
+  it("tiles the kitchen floor across the next module to its glass", () => {
+    const [tile] = galley.floors;
+    expect(tile.finish).toBe("floorTile");
+    // the home's -x edge, where its glass stands
+    expect(span(tile, 0)[0] + galley.moduleX).toBeCloseTo(-8);
+    expect(span(tile, 0)[1]).toBeCloseTo(GALLEY_FACE);
+    expect(span(tile, 2)).toEqual(GALLEY_FLOOR.z);
+    galley.floors.forEach((part) => {
+      expect(span(part, 1)[1]).toBeLessThan(FLOOR + 0.04);
+      galley.walls.forEach((wall) => {
+        const hits = [0, 1, 2].every((axis) =>
+          overlap(span(part, axis), span(wall, axis)),
+        );
+        expect(hits).toBe(false);
+      });
+    });
+  });
+
   it("stays clear of the stair in the 2x2", () => {
     const { opening } = getStairLayout(2);
-    all.forEach((part) => {
+    [...all, ...galley.floors].forEach((part) => {
       const [x0, x1] = span(part, 0).map((x) => x + galley.moduleX);
       expect(
         overlap([x0, x1], opening.x) && overlap(span(part, 2), opening.z),

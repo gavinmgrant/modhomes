@@ -8,6 +8,11 @@ import HomeModel, {
   parseModel,
 } from "../../components/homemodel";
 import NavBar from "../../components/navbar";
+import {
+  getSidedPanes,
+  hasGalley,
+  hasServices,
+} from "../../components/services";
 import Colors, { COLORS } from "../../components/colors";
 import Materials, {
   CITY_ENVIRONMENT,
@@ -79,6 +84,8 @@ const Homes: FC = () => {
   const [isInside, setIsInside] = useState(false);
   const [homeColor, setHomeColor] = useState(COLORS.white);
   const [floorMaterial, setFloorMaterial] = useState("walnut");
+  const [sidingColor, setSidingColor] = useState(COLORS.siding);
+  const [tileColor, setTileColor] = useState(COLORS.tile);
   const isMobile = useMediaQuery("(max-width:900px)");
   const isTouch = useMediaQuery("(pointer: coarse)");
   const walkInput = useRef<WalkInput>({ ...IDLE_INPUT });
@@ -93,8 +100,14 @@ const Homes: FC = () => {
       stories={layout.stories}
       color={homeColor}
       floorMaterial={floorMaterial}
+      sidingColor={sidingColor}
+      tileColor={tileColor}
     />
   );
+  const hasWood =
+    !!layout && getSidedPanes(layout.cols, layout.stories).length > 0;
+  const hasTile =
+    !!layout && (hasServices(layout.cols) || hasGalley(layout.cols));
 
   useEffect(() => {
     setIsInside(loadInsideView());
@@ -220,15 +233,24 @@ const Homes: FC = () => {
           <ControlDock
             isInside={isInside}
             onViewChange={handleViewChange}
-            label={isInside ? "Floor" : "Color"}
+            label={isInside ? "Interior finishes" : "Exterior colors"}
           >
             {isInside ? (
               <Materials
                 floorMaterial={floorMaterial}
                 handleFloorMaterial={handleFloorMaterialChange}
+                tileColor={tileColor}
+                handleTileColor={setTileColor}
+                hasTile={hasTile}
               />
             ) : (
-              <Colors homeColor={homeColor} handleColor={handleColorChange} />
+              <Colors
+                homeColor={homeColor}
+                handleColor={handleColorChange}
+                sidingColor={sidingColor}
+                handleSidingColor={setSidingColor}
+                hasWood={hasWood}
+              />
             )}
           </ControlDock>
         </div>

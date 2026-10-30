@@ -1,10 +1,5 @@
 import React, { ReactNode } from "react";
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-  useMediaQuery,
-} from "@mui/material";
+import { ToggleButton, ToggleButtonGroup, useMediaQuery } from "@mui/material";
 import { IconSun, IconDoor } from "@tabler/icons-react";
 import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
 
@@ -96,15 +91,6 @@ const ControlDock = ({
         }}
       />
 
-      {!isMobile && (
-        <Typography
-          component="span"
-          sx={{ fontSize: 13, opacity: 0.6, paddingLeft: 0.5 }}
-        >
-          {label}
-        </Typography>
-      )}
-
       <div
         role="group"
         aria-label={label}
@@ -113,6 +99,7 @@ const ControlDock = ({
           alignItems: "center",
           justifyContent: isMobile ? "space-evenly" : "flex-start",
           flex: isMobile ? 1 : "none",
+          gap: isMobile ? 4 : 12,
           minWidth: 0,
         }}
       >

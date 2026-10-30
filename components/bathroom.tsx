@@ -1,4 +1,13 @@
-import { FLOOR, fronts, local, LocalPart, part, Part, place } from "./fixtures";
+import {
+  FLOOR,
+  fronts,
+  local,
+  LocalPart,
+  part,
+  Part,
+  place,
+  tileFloor,
+} from "./fixtures";
 import type { Rect } from "./stair";
 
 // Units are feet, and a room is the clear floor inside its walls. Both
@@ -125,9 +134,6 @@ const shower = (): LocalPart[] => {
   ];
 };
 
-const floorTile = ({ x, z }: Rect) =>
-  part("floorTile", x, [FLOOR, FLOOR + 0.02], z);
-
 // Against the end wall: the vanity on the +x side and the toilet on the -x
 // side. Against the far wall, the tub with a full-height linen cabinet
 // beside it. The door is in the +x wall, between the two
@@ -139,7 +145,7 @@ export const getTubBath = (room: Rect): Bathroom => {
   const between = (z0 + VANITY.depth + front) / 2;
   return {
     parts: [
-      floorTile(room),
+      ...tileFloor(room),
       ...place(vanity(), [x1 - VANITY.width / 2, z0], "+z"),
       ...place(toilet(), [x0 + 1.5, z0], "+z"),
       // facing away from the far wall, so its end tile is on the -x wall
@@ -168,7 +174,7 @@ export const getShowerBath = (room: Rect): Bathroom => {
   const vanityZ = z1 - VANITY.width / 2;
   return {
     parts: [
-      floorTile(room),
+      ...tileFloor(room),
       ...place(shower(), [x1 - SHOWER.width / 2, z0], "+z"),
       ...place(toilet(), [x0 + 1.5, z0], "+z"),
       ...place(vanity(), [x1, vanityZ], "-x"),
@@ -193,7 +199,7 @@ export const getGalleyBath = (room: Rect) => {
   const middle = (x0 + x1) / 2;
   return {
     parts: [
-      floorTile(room),
+      ...tileFloor(room),
       part("porcelain", [x0, x1], [FLOOR, tray], [z0, glass]),
       part("tile", [x0, x1], [tray, SPLASH_TOP], [z0, z0 + TILE]),
       part("tile", [x0, x0 + TILE], [tray, SPLASH_TOP], [z0 + TILE, glass]),

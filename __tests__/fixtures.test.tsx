@@ -2,8 +2,15 @@ import {
   doors,
   DRAWER_HEIGHT,
   drawersOverDoors,
+  FLOOR,
+  FLOOR_TILE,
   fronts,
+  getFootprints,
   LocalPart,
+  shadeColor,
+  tileColors,
+  Part,
+  tileFloor,
 } from "../components/fixtures";
 
 const middle = ({ u }: LocalPart) => (u[0] + u[1]) / 2;
@@ -60,5 +67,63 @@ describe("cabinet fronts", () => {
     );
     // the door pulls meet at the gap, not centred
     expect(lower.map(middle).every((u) => Math.abs(u - 2) < 0.5)).toBe(true);
+  });
+});
+
+describe("floor tile", () => {
+  const room = { x: [0, 7.25], z: [-3, 10.5] } as {
+    x: [number, number];
+    z: [number, number];
+  };
+  const parts = tileFloor(room);
+  const lines = (axis: number) =>
+    parts
+      .filter((part) => part.finish === "grout" && part.size[axis] < 0.1)
+      .map((part) => part.position[axis]);
+  const centre = (part: Part, axis: number) => part.position[axis];
+
+  it("draws the floor tile as a darker shade of the wall tile's colour", () => {
+    expect(shadeColor("#cbbdaa", 1)).toBe("#cbbdaa");
+    expect(shadeColor("#ffffff", 0)).toBe("#000000");
+    const { tile, floorTile } = tileColors("#a9adad");
+    expect(tile).toBe("#a9adad");
+    // a neutral grey stays neutral, only darker
+    const [r, g, b] = [1, 3, 5].map((i) =>
+      parseInt(floorTile.slice(i, i + 2), 16),
+    );
+    expect(r).toBeLessThan(0xa9);
+    expect(Math.abs(g - b)).toBeLessThanOrEqual(1);
+  });
+
+  it("covers the room in floor tile", () => {
+    const [tile] = parts;
+    expect(tile.finish).toBe("floorTile");
+    expect(centre(tile, 0)).toBeCloseTo(3.625);
+    expect(tile.size[0]).toBeCloseTo(7.25);
+    expect(tile.size[2]).toBeCloseTo(13.5);
+  });
+
+  it("lays a 12 inch grid, centred so opposite edges are cut alike", () => {
+    [
+      [lines(0), room.x],
+      [lines(2), room.z],
+    ].forEach(([at, [a0, a1]]) => {
+      (at as number[]).slice(1).forEach((line, i) => {
+        expect(line - (at as number[])[i]).toBeCloseTo(FLOOR_TILE.size);
+      });
+      const all = at as number[];
+      expect(all[0] - a0).toBeCloseTo(a1 - all[all.length - 1]);
+      expect(all[0] - a0).toBeGreaterThan(0);
+      expect(all[0] - a0).toBeLessThanOrEqual(FLOOR_TILE.size);
+    });
+  });
+
+  it("is never in the way when walking", () => {
+    expect(getFootprints(parts)).toEqual([]);
+    parts.forEach((part) => {
+      expect(part.position[1] - part.size[1] / 2).toBeGreaterThanOrEqual(
+        FLOOR - 1e-9,
+      );
+    });
   });
 });

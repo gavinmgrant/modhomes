@@ -1,6 +1,15 @@
 import React from "react";
 import { POST_INSET } from "./module";
-import { CEILING, FLOOR, getFootprints, part, Part, Parts } from "./fixtures";
+import {
+  CEILING,
+  FLOOR,
+  getFootprints,
+  part,
+  Part,
+  Parts,
+  tileColors,
+  tileFloor,
+} from "./fixtures";
 import {
   Door,
   DOOR_INSET,
@@ -124,6 +133,8 @@ export const getServicesLayout = (cols: number) => {
       ...showerBath.parts,
       ...getKitchenParts(ROOMS.kitchen),
     ],
+    // the kitchen's floor is tiled like the bathrooms', wall to wall
+    floors: tileFloor(ROOMS.kitchen),
     stools: getStools(ROOMS.kitchen),
   };
 };
@@ -139,6 +150,13 @@ export const CLOSET_LENGTH = 3.5;
 export const GALLEY_FACE = -SIDE_OUTER + COUNTER_DEPTH;
 const GALLEY_Z0 = GALLEY_END + WALL / 2;
 const CLOSET_WALL = GALLEY_Z0 + CLOSET_LENGTH;
+
+// The galley's tiled floor runs under its counter and on across the whole
+// neighbouring module to its glass, between the cross walls' faces
+export const GALLEY_FLOOR: Rect = {
+  x: [-12, GALLEY_FACE],
+  z: [GALLEY_Z0, -WALL / 2],
+};
 
 export const GALLEY_ROOMS = {
   closet: {
@@ -204,6 +222,7 @@ export const getGalleyLayout = (cols: number) => {
       ),
       ...getGalleyParts(GALLEY_FACE, [GALLEY_Z0, -WALL / 2]),
     ],
+    floors: tileFloor(GALLEY_FLOOR),
     stools: [] as StoolSpot[],
   };
 };
@@ -234,16 +253,19 @@ export const getServicesBlocks = (cols: number): Rect[] => {
 
 interface ServicesProps {
   cols: number;
+  tileColor?: string;
 }
 
-const Services = ({ cols }: ServicesProps) => {
+const Services = ({ cols, tileColor }: ServicesProps) => {
   const layout = getServicesLayout(cols) ?? getGalleyLayout(cols);
   if (!layout) return null;
+  const colors = tileColor ? tileColors(tileColor) : undefined;
 
   return (
     <group position={[layout.moduleX, 0, 0]}>
       <Parts parts={layout.walls} />
-      <Parts parts={layout.fixtures} />
+      <Parts parts={layout.fixtures} colors={colors} />
+      <Parts parts={layout.floors} colors={colors} />
       {layout.stools.map((stool) => (
         <Stool key={`${stool.x},${stool.z}`} {...stool} />
       ))}

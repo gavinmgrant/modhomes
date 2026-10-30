@@ -122,6 +122,25 @@ export const getFloorBandLayouts = (
 };
 
 // A 1" tall, 2" deep groove along the middle of each floor band
+// A dark sill along the foot of each story's doors, over the edge beam they
+// stand on, from the floor's edge out to the beam's outer face and flush
+// with the finished floor
+const FINISHED_FLOOR = -3.95;
+
+export const getSillLayouts = (
+  side: number,
+  halfWidth: number,
+  stories: number,
+): HeaderLayout[] =>
+  Array.from({ length: stories }, (_, story) => ({
+    position: [
+      side * (halfWidth + END_WALL_FACE / 2),
+      STORY_HEIGHT * story + (FLOOR + FINISHED_FLOOR) / 2,
+      0,
+    ],
+    size: [END_WALL_FACE, FINISHED_FLOOR - FLOOR, 2 * OPENING_END],
+  }));
+
 export const REVEAL = { height: 1 / 12, depth: 2 / 12 };
 
 // Faces of a box, in the order three.js draws their materials
@@ -211,6 +230,7 @@ interface GlassPaneProps {
   height: number;
   entrance?: PaneEntrance;
   infill?: "glass" | "siding";
+  sidingColor?: string;
 }
 
 // One sliding door: a glass sheet, or siding, in a dark frame, kept as its
@@ -221,6 +241,7 @@ export const GlassPane = ({
   height,
   entrance,
   infill = "glass",
+  sidingColor = COLORS.siding,
 }: GlassPaneProps) => {
   // three has no type definitions installed here, so the ref is untyped
   const group = useRef<any>(null);
@@ -265,7 +286,7 @@ export const GlassPane = ({
           {getSidingBoards(height).map(([y0, y1]) => (
             <mesh key={y0} position={[0, (y0 + y1) / 2, 0]}>
               <boxGeometry args={[SIDING.depth, y1 - y0, width - 2 * FRAME]} />
-              <meshStandardMaterial color={COLORS.siding} roughness={0.8} />
+              <meshStandardMaterial color={sidingColor} roughness={0.8} />
             </mesh>
           ))}
         </>
@@ -302,8 +323,9 @@ interface SlidingDoorsProps {
   animateDelay?: number;
   // Leave the header out, for when it's drawn (and animated) separately
   hideHeader?: boolean;
-  // Panes filled with siding instead of glass, by id
+  // Panes filled with siding instead of glass, by id, and its colour
   sided?: string[];
+  sidingColor?: string;
 }
 
 interface DoorHeaderProps {
@@ -345,6 +367,7 @@ const SlidingDoors = ({
   animateDelay = 0,
   hideHeader = false,
   sided = [],
+  sidingColor,
 }: SlidingDoorsProps) => {
   const panes = getPaneLayout(side, halfWidth, stories);
   const delays =
@@ -359,6 +382,7 @@ const SlidingDoors = ({
           key={id}
           {...pane}
           infill={sided.includes(id) ? "siding" : "glass"}
+          sidingColor={sidingColor}
           entrance={
             delays
               ? { from: side * ENTER_DISTANCE, delay: delays.get(id) ?? 0 }
@@ -371,6 +395,9 @@ const SlidingDoors = ({
         .map((piece) => (
           <Trim key={piece.position.join()} {...piece} />
         ))}
+      {getSillLayouts(side, halfWidth, stories).map((sill) => (
+        <Trim key={sill.position.join()} {...sill} />
+      ))}
       {!hideHeader && (
         <DoorHeader side={side} halfWidth={halfWidth} stories={stories} />
       )}

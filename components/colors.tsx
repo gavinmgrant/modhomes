@@ -1,5 +1,5 @@
 import React from "react";
-import Swatch from "./swatch";
+import SwatchPicker from "./swatchpicker";
 
 export const COLORS = {
   white: "#e3d7c4",
@@ -22,8 +22,8 @@ export const COLORS = {
   quartz: "#f1efea",
   stainless: "#b8bcbf",
   porcelain: "#f7f6f2",
-  tile: "#c9c4bb",
-  floorTile: "#8f8a82",
+  // Daltile Color Wheel's Matte Urban Putty, the default wall tile
+  tile: "#cbbdaa",
   mirror: "#dfe3e5",
   cooktop: "#1c1d1e",
   grout: "#7d8184",
@@ -34,29 +34,58 @@ export const COLORS = {
   blackSteel: "#232425",
 };
 
-const OPTIONS = [
-  { name: "White", color: COLORS.white },
-  { name: "Taupe", color: COLORS.taupe },
-  { name: "Copper", color: COLORS.copper },
-  { name: "Grey", color: COLORS.grey },
-];
+const swatches = (colors: Record<string, string>) =>
+  Object.entries(colors).map(([name, color]) => ({
+    name,
+    background: color,
+    value: color,
+  }));
+
+// The metal siding, and the wood siding on homes that have it
+export const METAL_OPTIONS = swatches({
+  White: COLORS.white,
+  Taupe: COLORS.taupe,
+  Copper: COLORS.copper,
+  Grey: COLORS.grey,
+});
+
+export const WOOD_OPTIONS = swatches({
+  Natural: "#b08d68",
+  Cedar: COLORS.siding,
+  Walnut: "#5e4330",
+  Espresso: "#3a2c24",
+});
 
 interface ColorProps {
   homeColor: string;
   handleColor: (color: string) => void;
+  sidingColor: string;
+  handleSidingColor: (color: string) => void;
+  hasWood: boolean;
 }
 
-const Colors = ({ homeColor, handleColor }: ColorProps) => (
+const Colors = ({
+  homeColor,
+  handleColor,
+  sidingColor,
+  handleSidingColor,
+  hasWood,
+}: ColorProps) => (
   <>
-    {OPTIONS.map(({ name, color }) => (
-      <Swatch
-        key={name}
-        name={name}
-        background={color}
-        selected={homeColor === color}
-        onSelect={() => handleColor(color)}
+    <SwatchPicker
+      label="Metal"
+      options={METAL_OPTIONS}
+      value={homeColor}
+      onChange={handleColor}
+    />
+    {hasWood && (
+      <SwatchPicker
+        label="Wood"
+        options={WOOD_OPTIONS}
+        value={sidingColor}
+        onChange={handleSidingColor}
       />
-    ))}
+    )}
   </>
 );
 
