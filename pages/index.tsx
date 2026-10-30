@@ -51,7 +51,7 @@ const Home = () => {
           maxWidth: "1200px",
           margin: "0 auto",
           padding: "1rem",
-          paddingBottom: isMobile ? "1rem" : "4rem",
+          paddingBottom: isMobile ? "1rem" : "8rem",
           color: "#131414",
           backgroundColor: "#f9f7f1",
         }}

@@ -8,5 +8,6 @@ describe("Footer", () => {
     const { getByText, getByTestId } = render(<Footer />);
     expect(getByText("Built by Gavin Grant")).toBeInTheDocument();
     expect(getByTestId("GitHubIcon")).toBeInTheDocument();
+    expect(getByText(/is a concept project/)).toBeInTheDocument();
   });
 });
