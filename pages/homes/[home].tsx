@@ -1,5 +1,6 @@
 import React, { FC, useState, useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/router";
+import type { GetStaticPaths, GetStaticProps } from "next";
 import { Canvas } from "@react-three/fiber";
 import HomeModel, {
   MODEL_BASE,
@@ -11,6 +12,7 @@ import Colors, { COLORS } from "../../components/colors";
 import Materials, { CITY_ENVIRONMENT } from "../../components/materials";
 import Loader from "../../components/loader";
 import InfoChip from "../../components/infochip";
+import PageMeta from "../../components/pagemeta";
 import ControlDock from "../../components/controldock";
 import WalkControls, {
   WalkPad,
@@ -36,6 +38,28 @@ const LANDSCAPE = {
   files: "../images/environments/alps_field_4k.hdr",
   ground: { height: 6, radius: 1500, scale: 900 },
 };
+
+const COUNTS = ["one", "two", "three", "four", "five", "six", "seven", "eight"];
+
+// e.g. "Mod 3x2 is a 1,920 sq ft, two-story modular home built from six modules…"
+const describeModel = (name: string, area: number, slug: string) => {
+  const layout = parseModel(slug);
+  const modules = (layout?.cols ?? 1) * (layout?.stories ?? 1);
+  const story = layout?.stories === 2 ? "two-story" : "single-story";
+  const built =
+    modules === 1 ? "a single module" : `${COUNTS[modules - 1]} modules`;
+  return `${name} is a ${new Intl.NumberFormat("en-US").format(
+    area
+  )} sq ft, ${story} modular home built from ${built}. Orbit it in 3D, try an exterior color, or step inside to walk through and choose a floor finish.`;
+};
+
+// Prerendering each model puts its title and share card in the page's HTML
+export const getStaticPaths: GetStaticPaths = () => ({
+  paths: MODELS.map((model) => ({ params: { home: model.slug } })),
+  fallback: false,
+});
+
+export const getStaticProps: GetStaticProps = () => ({ props: {} });
 
 const Homes: FC = () => {
   const router = useRouter();
@@ -80,6 +104,17 @@ const Homes: FC = () => {
 
   return (
     <>
+      {model && (
+        <PageMeta
+          title={`${model.name} · ${new Intl.NumberFormat("en-US").format(
+            model.area
+          )} sq ft modular home | ModHomes`}
+          description={describeModel(model.name, model.area, model.slug)}
+          path={`/homes/${model.slug}`}
+          image={`/og/${model.slug}.png`}
+          imageAlt={`3D render of the ${model.name} modular home`}
+        />
+      )}
       <div
         style={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}
       >
