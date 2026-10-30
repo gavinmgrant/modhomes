@@ -16,10 +16,13 @@ export const parseModel = (slug?: string | string[]) => {
 // Bottom of the foundation, where the model meets the ground
 export const MODEL_BASE = -6.45;
 
+// Top of the walls and the parapets they rise into around the roof
+export const getParapetTop = (stories: number) => 10 * (stories - 1) + 6.5;
+
 // Outer size of the built model, from the foundation base to the end wall tops
 export const getModelSize = (cols: number, stories: number) => {
   const bottom = MODEL_BASE;
-  const top = stories === 2 ? 16.5 : 6.5;
+  const top = getParapetTop(stories);
   return {
     width: 8 * cols + 1.2,
     depth: 40.6,
@@ -122,6 +125,7 @@ const HomeModel = ({
         position={[0, twoStory ? 15.3 : 5.3, 0]}
         color={COLORS.roof}
         width={8 * cols - 1}
+        ridgeHeight={getParapetTop(stories)}
       />
     </>
   );
