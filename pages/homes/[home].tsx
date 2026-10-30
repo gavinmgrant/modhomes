@@ -37,6 +37,9 @@ import { useMediaQuery } from "@mui/material";
 // the mountains barely shift as you walk. The dome mesh itself only needs to
 // sit inside the camera's far plane.
 const GROUND_LIFT = -MODEL_BASE;
+// Standing eye level, 5' 3" above the ground floor's finished surface, which
+// sits at y = -3.95 in the model
+const EYE_LEVEL = -3.95 + 5.25;
 const LANDSCAPE = {
   files: "../images/environments/alps_field_4k.hdr",
   ground: { height: 6, radius: 1500, scale: 900 },
@@ -131,7 +134,7 @@ const Homes: FC = () => {
           <div key={`inside-${router.query.home}`} className="viewer-fade">
             <Canvas
               camera={{
-                position: [walkStart.x, GROUND_LIFT, walkStart.z],
+                position: [walkStart.x, GROUND_LIFT + EYE_LEVEL, walkStart.z],
                 fov: 60,
               }}
               shadows
