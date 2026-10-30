@@ -25,7 +25,7 @@ const RAIL = {
   capOverhang: 0.25,
   // Real cables are 1/8"; drawn a little thicker so they read at a distance
   cable: 0.025,
-  firstCable: 0.3,
+  firstCable: 4.6 / 12,
   cableSpacing: 3 / 12,
 };
 export const RAIL_HEIGHT = RAIL.height;
