@@ -6,6 +6,7 @@ import Roof from "./roof";
 import Module from "./module";
 import EndWall from "./endwall";
 import Foundation from "./foundation";
+import { getParapetTop } from "./homemodel";
 import Loader from "./loader";
 import SlidingDoors, { DoorHeader } from "./slidingdoors";
 import AssembleIn, {
@@ -166,7 +167,12 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                   step={ASSEMBLY.roof}
                   onDone={() => setShellBuilt(true)}
                 >
-                  <Roof position={[0, 5.25, 0]} color={COLORS.roof} width={7} />
+                  <Roof
+                    position={[0, 5.25, 0]}
+                    color={COLORS.roof}
+                    width={7}
+                    ridgeHeight={getParapetTop(1)}
+                  />
                 </AssembleIn>
                 <EndWall
                   position={[-3.5, 0, 0]}
