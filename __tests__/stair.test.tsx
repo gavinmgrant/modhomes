@@ -160,6 +160,18 @@ describe("cable railing", () => {
     expect(reach).toBeCloseTo(postSpan);
   });
 
+  it("starts the cables 4.6 inches up and keeps them clear of the cap", () => {
+    // Cables, like the cap, are centred over the middle of the flight
+    const postTreads = getRailPostTreads();
+    const nosingAtCentre =
+      (treads[postTreads[0]].y + treads[postTreads[postTreads.length - 1]].y) /
+      2;
+    const [lowest, highest] = [cables[0], cables[cables.length - 1]];
+    expect((lowest.position[1] - nosingAtCentre) * 12).toBeCloseTo(4.6, 1);
+    const capBottom = cap.position[1] - verticalHalf(cap);
+    expect(highest.position[1] + verticalHalf(highest)).toBeLessThan(capBottom);
+  });
+
   it("sits inside the stair's width on both sides", () => {
     const { footprint } = getStairLayout(2);
     footprint.x.forEach((edge, side) => {
