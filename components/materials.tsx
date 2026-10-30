@@ -1,4 +1,5 @@
 import React from "react";
+import { useTexture } from "@react-three/drei";
 import Swatch from "./swatch";
 
 // All textures are CC0 textures from: https://cc0textures.com/
@@ -24,6 +25,22 @@ export const TEXTURES = {
     roughnessMap: "/images/materials/Fabric028_1K_Roughness.jpg",
   },
 };
+
+const FloorTexture = ({ material }: { material: keyof typeof TEXTURES }) => {
+  useTexture(TEXTURES[material]);
+  return null;
+};
+
+// Loads every floor finish under the scene's Suspense, keyed the same as
+// Module's useTexture call, so picking another finish swaps it in place
+// instead of suspending the model back to the loader
+export const FloorTextures = () => (
+  <>
+    {(Object.keys(TEXTURES) as (keyof typeof TEXTURES)[]).map((material) => (
+      <FloorTexture key={material} material={material} />
+    ))}
+  </>
+);
 
 // drei's "city" lighting preset (Poly Haven's Potsdamer Platz, CC0), served
 // from this site rather than drei's development CDN
