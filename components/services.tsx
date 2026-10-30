@@ -1,15 +1,31 @@
 import React from "react";
 import { POST_INSET } from "./module";
 import { CEILING, FLOOR, getFootprints, part, Part, Parts } from "./fixtures";
-import { Door, getShowerBath, getTubBath } from "./bathroom";
-import { COUNTER_DEPTH, getKitchenParts, TALL_DEPTH } from "./kitchen";
+import {
+  Door,
+  DOOR_INSET,
+  DOOR_WIDTH,
+  getGalleyBath,
+  getShowerBath,
+  getTubBath,
+} from "./bathroom";
+import {
+  COUNTER_DEPTH,
+  getGalleyParts,
+  getKitchenParts,
+  TALL_DEPTH,
+} from "./kitchen";
+import { getPaneJoints } from "./slidingdoors";
 import type { Rect } from "./stair";
 
 // Homes three or more modules wide give their middle module (right of
 // centre when there are four) to two bathrooms and a kitchen, on the
-// ground floor. Units are feet, in the module's own coordinates: x across
-// it, z along it from the back end wall (-z) to the front (+z)
+// ground floor; two-wide homes give their right module to a small bath, a
+// closet and a galley kitchen. Units are feet, in the module's own
+// coordinates: x across it, z along it from the back end wall (-z) to the
+// front (+z)
 export const hasServices = (cols: number) => cols >= 3;
+export const hasGalley = (cols: number) => cols === 2;
 
 export const getServicesModuleX = (cols: number) =>
   -4 * cols + 4 + 8 * Math.floor(cols / 2);
@@ -109,9 +125,88 @@ export const getServicesLayout = (cols: number) => {
   };
 };
 
+// The galley takes the back half of the module, from the middle column to
+// the second joint in the glass doors, clear of a 2x2's stair in the front
+// half of the other module. The closet and bath stand against the glass on
+// the +x side, and the kitchen runs along their inside wall, its counter
+// front on the line where the two modules meet. Cross walls are centred on
+// the column and the joint, and the one on the column hides its posts
+export const GALLEY_END = -getPaneJoints()[1];
+export const CLOSET_LENGTH = 3.5;
+export const GALLEY_FACE = -SIDE_OUTER + COUNTER_DEPTH;
+const GALLEY_Z0 = GALLEY_END + WALL / 2;
+const CLOSET_WALL = GALLEY_Z0 + CLOSET_LENGTH;
+
+export const GALLEY_ROOMS = {
+  closet: {
+    x: [GALLEY_FACE + WALL, SIDE_INNER],
+    z: [GALLEY_Z0, CLOSET_WALL],
+  } as Rect,
+  bath: {
+    x: [GALLEY_FACE + WALL, SIDE_INNER],
+    z: [CLOSET_WALL + WALL, -WALL / 2],
+  } as Rect,
+};
+
+// A wall across the module, from the counter front to the glass, with a
+// doorway by the glass and a header over it
+const crossWall = (z: number, [d0, d1]: [number, number]): Part[] => {
+  const across: [number, number] = [z - WALL / 2, z + WALL / 2];
+  return [
+    part("gyp", [-SIDE_OUTER, d0], [FLOOR, CEILING], across),
+    part("gyp", [d0, d1], [FLOOR + DOOR_HEIGHT, CEILING], across),
+    part("gyp", [d1, SIDE_INNER], [FLOOR, CEILING], across),
+  ];
+};
+
+export const getGalleyLayout = (cols: number) => {
+  if (!hasGalley(cols)) return null;
+  const { closet, bath: room } = GALLEY_ROOMS;
+  const bath = getGalleyBath(room);
+  const closetDoor: [number, number] = [
+    SIDE_INNER - DOOR_INSET - DOOR_WIDTH,
+    SIDE_INNER - DOOR_INSET,
+  ];
+  // a shelf and hanging rail along the closet's kitchen wall
+  const rail = GALLEY_FACE + WALL + 1;
+  const walls = [
+    part("gyp", sideX(1), [FLOOR, CEILING], [GALLEY_END - WALL / 2, WALL / 2]),
+    part(
+      "gyp",
+      [GALLEY_FACE, GALLEY_FACE + WALL],
+      [FLOOR, CEILING],
+      [GALLEY_Z0, -WALL / 2],
+    ),
+    part("gyp", closet.x, [FLOOR, CEILING], [CLOSET_WALL, CLOSET_WALL + WALL]),
+    ...crossWall(GALLEY_END, closetDoor),
+    ...crossWall(0, bath.doorX),
+  ];
+  return {
+    moduleX: getServicesModuleX(cols),
+    doors: { closet: closetDoor, bath: bath.doorX },
+    walls,
+    fixtures: [
+      ...bath.parts,
+      part(
+        "walnut",
+        [closet.x[0], closet.x[0] + 1.3],
+        [FLOOR + 5.55, FLOOR + 5.62],
+        closet.z,
+      ),
+      part(
+        "stainless",
+        [rail - 0.03, rail + 0.03],
+        [FLOOR + 5.3, FLOOR + 5.36],
+        closet.z,
+      ),
+      ...getGalleyParts(GALLEY_FACE, [GALLEY_Z0, -WALL / 2]),
+    ],
+  };
+};
+
 // What there is to walk around, in home coordinates
 export const getServicesBlocks = (cols: number): Rect[] => {
-  const layout = getServicesLayout(cols);
+  const layout = getServicesLayout(cols) ?? getGalleyLayout(cols);
   if (!layout) return [];
   return getFootprints([...layout.walls, ...layout.fixtures], layout.moduleX);
 };
@@ -121,7 +216,7 @@ interface ServicesProps {
 }
 
 const Services = ({ cols }: ServicesProps) => {
-  const layout = getServicesLayout(cols);
+  const layout = getServicesLayout(cols) ?? getGalleyLayout(cols);
   if (!layout) return null;
 
   return (

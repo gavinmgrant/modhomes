@@ -3,14 +3,26 @@ import {
   DOOR_HEIGHT,
   WALL_END,
   END_FACE,
+  GALLEY_END,
+  GALLEY_FACE,
+  GALLEY_ROOMS,
+  getGalleyLayout,
   getServicesLayout,
   getServicesModuleX,
+  hasGalley,
   hasServices,
   ROOMS,
+  SIDE_OUTER,
 } from "../components/services";
+import { getPaneJoints } from "../components/slidingdoors";
 import { POST_INSET, POST_SIZE } from "../components/module";
 import { COUNTER_DEPTH } from "../components/kitchen";
-import { getShowerBath, getTubBath, DOOR_WIDTH } from "../components/bathroom";
+import {
+  getGalleyBath,
+  getShowerBath,
+  getTubBath,
+  DOOR_WIDTH,
+} from "../components/bathroom";
 import { CEILING, FLOOR, Part } from "../components/fixtures";
 import { getStairLayout } from "../components/stair";
 import { parseModel } from "../components/homemodel";
@@ -212,6 +224,157 @@ describe("services module", () => {
     const { opening } = getStairLayout(cols);
     [...walls, ...fixtures].forEach((part) => {
       const [x0, x1] = span(part, 0).map((x) => x + moduleX);
+      expect(
+        overlap([x0, x1], opening.x) && overlap(span(part, 2), opening.z),
+      ).toBe(false);
+    });
+  });
+});
+
+describe("galley module", () => {
+  const galley = getGalleyLayout(2)!;
+  const all = [...galley.walls, ...galley.fixtures];
+
+  it("is only in homes two modules wide, in the right module", () => {
+    MODELS.forEach(({ slug }) => {
+      const { cols } = parseModel(slug)!;
+      expect(hasGalley(cols)).toBe(cols === 2);
+      expect(getGalleyLayout(cols) === null).toBe(cols !== 2);
+    });
+    expect(galley.moduleX).toBe(4);
+  });
+
+  it("keeps everything inside the module's back half, floor to ceiling", () => {
+    all.forEach((part) => {
+      const [x0, x1] = span(part, 0);
+      const [y0, y1] = span(part, 1);
+      const [z0, z1] = span(part, 2);
+      // only the range's oven handle reaches past the module's edge, by
+      // under an inch
+      expect(x0).toBeGreaterThanOrEqual(-4 - 1 / 12);
+      expect(x1).toBeLessThanOrEqual(4 + 1e-9);
+      expect(y0).toBeGreaterThanOrEqual(FLOOR - 1e-9);
+      expect(y1).toBeLessThanOrEqual(CEILING + 1e-9);
+      expect(z0).toBeGreaterThanOrEqual(GALLEY_END - 0.2);
+      expect(z1).toBeLessThanOrEqual(0.2);
+    });
+  });
+
+  it("lines its cross walls up with the middle column and a pane joint", () => {
+    expect(GALLEY_END).toBeCloseTo(-getPaneJoints()[1]);
+    // the walls reaching past the kitchen's wall to the counter front
+    const cross = galley.walls.filter(
+      (wall) => span(wall, 0)[0] < GALLEY_FACE && wall.size[2] < 1,
+    );
+    const centres = Array.from(
+      new Set(cross.map((wall) => wall.position[2].toFixed(6))),
+    ).map(Number);
+    expect(centres.sort((a, b) => a - b)).toEqual([
+      expect.closeTo(GALLEY_END),
+      expect.closeTo(0),
+    ]);
+    // from the counter's front edge to the wall against the glass
+    centres.forEach((z) => {
+      const xs = cross
+        .filter((wall) => Math.abs(wall.position[2] - z) < 1e-6)
+        .flatMap((wall) => span(wall, 0));
+      expect(Math.min(...xs)).toBeCloseTo(-SIDE_OUTER);
+      expect(GALLEY_FACE - COUNTER_DEPTH).toBeCloseTo(-SIDE_OUTER);
+    });
+    // and the one on the column hides both of this module's posts there
+    const posts = [
+      [4 - POST_INSET - POST_SIZE, 4 - POST_INSET],
+      [-4 + POST_INSET, -4 + POST_INSET + POST_SIZE],
+    ];
+    posts.forEach((post) => {
+      const covering = galley.walls.filter(
+        (wall) =>
+          span(wall, 0)[0] < post[0] &&
+          span(wall, 0)[1] > post[1] &&
+          span(wall, 2)[0] < -POST_SIZE / 2 &&
+          span(wall, 2)[1] > POST_SIZE / 2 &&
+          Math.abs(span(wall, 1)[0] - FLOOR) < 1e-9,
+      );
+      expect(covering.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("leaves a 2'-6\" x 6'-8\" doorway into the closet and the bath", () => {
+    [
+      [galley.doors.closet, GALLEY_END],
+      [galley.doors.bath, 0],
+    ].forEach(([door, z]: any) => {
+      expect(door[1] - door[0]).toBeCloseTo(DOOR_WIDTH);
+      const inWay = galley.walls.filter(
+        (wall) =>
+          overlap(span(wall, 2), [z - 0.01, z + 0.01]) &&
+          overlap(span(wall, 0), door),
+      );
+      // only the header crosses it, 6'-8" up
+      expect(inWay).toHaveLength(1);
+      expect(span(inWay[0], 1)[0]).toBeCloseTo(FLOOR + DOOR_HEIGHT);
+    });
+  });
+
+  it("keeps the bath's fixtures inside its walls, clear of its door", () => {
+    const room = GALLEY_ROOMS.bath;
+    const { parts, doorX } = getGalleyBath(room);
+    parts.forEach((part) => {
+      const [x0, x1] = span(part, 0);
+      const [z0, z1] = span(part, 2);
+      expect(x0).toBeGreaterThanOrEqual(room.x[0] - 1e-9);
+      expect(x1).toBeLessThanOrEqual(room.x[1] + 1e-9);
+      expect(z0).toBeGreaterThanOrEqual(room.z[0] - 1e-9);
+      expect(z1).toBeLessThanOrEqual(room.z[1] + 1e-9);
+    });
+    const step: [number, number] = [room.z[1] - 1.5, room.z[1]];
+    parts
+      .filter((part) => span(part, 1)[1] > FLOOR + 0.1)
+      .forEach((part) => {
+        expect(
+          overlap(span(part, 0), doorX) && overlap(span(part, 2), step),
+        ).toBe(false);
+      });
+  });
+
+  it("never runs a fixture into a wall", () => {
+    galley.fixtures.forEach((fixture) => {
+      galley.walls.forEach((wall) => {
+        const hits = [0, 1, 2].every((axis) =>
+          overlap(span(fixture, axis), span(wall, axis)),
+        );
+        expect(hits).toBe(false);
+      });
+    });
+  });
+
+  it("runs the kitchen between the cross walls, its counter on the module's edge", () => {
+    const kitchen = galley.fixtures.filter(
+      (part) => span(part, 0)[1] <= GALLEY_FACE + 1e-9,
+    );
+    const zs = kitchen.flatMap((part) => span(part, 2));
+    expect(Math.min(...zs)).toBeCloseTo(GALLEY_END + 0.1875);
+    expect(Math.max(...zs)).toBeCloseTo(-0.1875);
+    const counters = kitchen.filter((part) => part.finish === "quartz");
+    const fronts = counters.map((counter) => span(counter, 0)[0]);
+    expect(Math.min(...fronts)).toBeCloseTo(-SIDE_OUTER);
+    // a range, a sink and a fridge reaching the ceiling
+    expect(kitchen.some((part) => part.finish === "cooktop")).toBe(true);
+    expect(counters.length).toBeGreaterThan(4);
+    expect(
+      kitchen.some(
+        (part) =>
+          part.finish === "walnut" &&
+          Math.abs(span(part, 1)[1] - CEILING) < 1e-9 &&
+          Math.abs(span(part, 1)[0] - FLOOR) < 1e-9,
+      ),
+    ).toBe(true);
+  });
+
+  it("stays clear of the stair in the 2x2", () => {
+    const { opening } = getStairLayout(2);
+    all.forEach((part) => {
+      const [x0, x1] = span(part, 0).map((x) => x + galley.moduleX);
       expect(
         overlap([x0, x1], opening.x) && overlap(span(part, 2), opening.z),
       ).toBe(false);

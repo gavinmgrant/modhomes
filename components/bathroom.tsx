@@ -176,3 +176,50 @@ export const getShowerBath = (room: Rect): Bathroom => {
     door: { side: -1, z: [z1 - 0.25 - DOOR_WIDTH, z1 - 0.25] },
   };
 };
+
+// The two-wide homes' small bath, across the module like the plan: a
+// walk-in shower filling the end by the closet, glass across it with its
+// entry by the window, then the toilet and vanity against the kitchen wall,
+// facing the glass doors. Its door is in the far wall, by the glass, as
+// x across the doorway
+export const GALLEY_SHOWER = 2.75;
+export const DOOR_INSET = 0.35;
+const SHOWER_ENTRY = 1.75;
+
+export const getGalleyBath = (room: Rect) => {
+  const [[x0, x1], [z0, z1]] = [room.x, room.z];
+  const glass = z0 + GALLEY_SHOWER;
+  const tray = FLOOR + 0.2;
+  const middle = (x0 + x1) / 2;
+  return {
+    parts: [
+      floorTile(room),
+      part("porcelain", [x0, x1], [FLOOR, tray], [z0, glass]),
+      part("tile", [x0, x1], [tray, SPLASH_TOP], [z0, z0 + TILE]),
+      part("tile", [x0, x0 + TILE], [tray, SPLASH_TOP], [z0 + TILE, glass]),
+      part("tile", [x1 - TILE, x1], [tray, SPLASH_TOP], [z0 + TILE, glass]),
+      part(
+        "glass",
+        [x0 + TILE, x1 - SHOWER_ENTRY],
+        [tray, SPLASH_TOP],
+        [glass - 0.03, glass],
+      ),
+      part(
+        "stainless",
+        [middle - 0.04, middle + 0.04],
+        [FLOOR + 6.6, FLOOR + 6.68],
+        [z0 + TILE, z0 + 0.7],
+      ),
+      part(
+        "stainless",
+        [middle - 0.3, middle + 0.3],
+        [FLOOR + 6.52, FLOOR + 6.6],
+        [z0 + 0.4, z0 + 1],
+        true,
+      ),
+      ...place(toilet(), [x0, glass + 1.4], "+x"),
+      ...place(vanity(), [x0, z1 - 0.2 - VANITY.width / 2], "+x"),
+    ],
+    doorX: [x1 - DOOR_INSET - DOOR_WIDTH, x1 - DOOR_INSET] as [number, number],
+  };
+};

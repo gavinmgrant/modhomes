@@ -13,6 +13,9 @@ const TRACKS = [0.15, 0.35];
 // Neighbouring panes overlap like real sliding doors
 const OVERLAP = 0.08;
 const FRAME = 0.12;
+// Each pane's width, so the panes in each half span the opening
+const PANE_WIDTH =
+  (OPENING_END + (PANES_PER_HALF - 1) * OVERLAP) / PANES_PER_HALF;
 // As deep as the track spacing, so frames on neighbouring tracks meet
 const FRAME_DEPTH = TRACKS[1] - TRACKS[0];
 const GLASS_DEPTH = 0.03;
@@ -40,7 +43,7 @@ export const getPaneLayout = (
   halfWidth: number,
   stories: number,
 ): PaneLayout[] => {
-  const width = (OPENING_END + (PANES_PER_HALF - 1) * OVERLAP) / PANES_PER_HALF;
+  const width = PANE_WIDTH;
   const height = CEILING - FLOOR;
   const panes: PaneLayout[] = [];
 
@@ -64,6 +67,15 @@ export const getPaneLayout = (
   }
   return panes;
 };
+
+// Where neighbouring panes overlap, out along z from the middle column in
+// either half: the vertical lines across the glass that inside walls line up
+// with
+export const getPaneJoints = () =>
+  Array.from(
+    { length: PANES_PER_HALF - 1 },
+    (_, i) => (i + 1) * (PANE_WIDTH - OVERLAP) + OVERLAP / 2,
+  );
 
 export type HeaderLayout = {
   position: [number, number, number];

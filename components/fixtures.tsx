@@ -89,38 +89,116 @@ export const place = (
 // proud of the carcass at d with 1/4" gaps, dark behind so they read, each
 // with a small stainless pull along its top or bottom edge
 const FRONT = { depth: 0.06, gap: 1 / 48 };
-const PULL = { width: 0.25, height: 0.04, depth: 0.05, inset: 0.08 };
+const PULL = {
+  width: 0.25,
+  height: 0.04,
+  depth: 0.05,
+  inset: 0.08,
+  // from a door's opening edge to its pull's near end
+  side: 0.1,
+};
 
-export const fronts = (
+type Edge = "top" | "bottom";
+
+const backing = (u: Span, y: Span, d: number) =>
+  local("reveal", u, y, [d, d + FRONT.depth / 2]);
+
+// The panels alone, each with its pull centred along u where `pullAt` puts it
+const panels = (
   [u0, u1]: Span,
   [y0, y1]: Span,
   d: number,
   count: number,
-  pull?: "top" | "bottom",
-  finish: Finish = "walnut",
+  finish: Finish,
+  edge?: Edge,
+  pullAt?: (i: number, a: number, b: number) => number,
 ): LocalPart[] => {
   const width = (u1 - u0) / count;
   const face: Span = [d, d + FRONT.depth];
-  const backing = local("reveal", [u0, u1], [y0, y1], [d, d + FRONT.depth / 2]);
-  const panels = Array.from({ length: count }, (_, i) => {
+  return Array.from({ length: count }, (_, i) => {
     const a = u0 + i * width + FRONT.gap / 2;
     const b = a + width - FRONT.gap;
     const panel = local(finish, [a, b], [y0, y1], face);
-    if (!pull) return [panel];
-    const middle = (a + b) / 2;
-    const edge =
-      pull === "top" ? y1 - PULL.inset : y0 + PULL.inset + PULL.height;
+    if (!edge || !pullAt) return [panel];
+    const middle = pullAt(i, a, b);
+    const top =
+      edge === "top" ? y1 - PULL.inset : y0 + PULL.inset + PULL.height;
     return [
       panel,
       local(
         "stainless",
         [middle - PULL.width / 2, middle + PULL.width / 2],
-        [edge - PULL.height, edge],
+        [top - PULL.height, top],
         [face[1], face[1] + PULL.depth],
       ),
     ];
   }).flat();
-  return [backing, ...panels];
+};
+
+const centred = (_: number, a: number, b: number) => (a + b) / 2;
+
+// Drawer fronts, or plain panels without a pull: pulls centred on each
+export const fronts = (
+  u: Span,
+  y: Span,
+  d: number,
+  count: number,
+  pull?: Edge,
+  finish: Finish = "walnut",
+): LocalPart[] => [
+  backing(u, y, d),
+  ...panels(u, y, d, count, finish, pull, centred),
+];
+
+// Doors open in pairs, hinged on their outside edges, so each pair's pulls
+// sit together either side of the gap between them. With an odd count the
+// last door opens on its own toward `lone`: -1 for its low u edge, 1 for its
+// high u edge, away from its hinge
+const doorPull =
+  (count: number, lone: -1 | 1) => (i: number, a: number, b: number) => {
+    const paired = i < count - (count % 2);
+    const opens = paired ? (i % 2 === 0 ? 1 : -1) : lone;
+    const reach = PULL.side + PULL.width / 2;
+    return opens > 0 ? b - reach : a + reach;
+  };
+
+export const doors = (
+  u: Span,
+  y: Span,
+  d: number,
+  count: number,
+  edge: Edge,
+  lone: -1 | 1 = 1,
+  finish: Finish = "walnut",
+): LocalPart[] => [
+  backing(u, y, d),
+  ...panels(u, y, d, count, finish, edge, doorPull(count, lone)),
+];
+
+// A base cabinet's fronts: a drawer over each door, pulls along the top
+export const DRAWER_HEIGHT = 0.5;
+
+export const drawersOverDoors = (
+  u: Span,
+  [y0, y1]: Span,
+  d: number,
+  count: number,
+  lone: -1 | 1 = 1,
+): LocalPart[] => {
+  const split = y1 - DRAWER_HEIGHT;
+  return [
+    backing(u, [y0, y1], d),
+    ...panels(u, [split, y1], d, count, "walnut", "top", centred),
+    ...panels(
+      u,
+      [y0, split - FRONT.gap],
+      d,
+      count,
+      "walnut",
+      "top",
+      doorPull(count, lone),
+    ),
+  ];
 };
 
 // Anything standing on the floor, or starting within this far above it, is

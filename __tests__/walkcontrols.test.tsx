@@ -6,6 +6,7 @@ import {
   WalkBounds,
 } from "../components/walkcontrols";
 import { parseModel } from "../components/homemodel";
+import { getStairLayout } from "../components/stair";
 import { getServicesBlocks, getServicesModuleX } from "../components/services";
 import MODELS from "../lib/models";
 
@@ -75,14 +76,15 @@ describe("walkcontrols", () => {
 
   it("slides along a column instead of stopping dead", () => {
     const bounds = getWalkBounds(2);
-    // walking diagonally into the front of the column pair at x = 0
-    expect(stepWithin(bounds, -0.5, -1.5, 0.5, 1)).toEqual({ x: 0, z: -1.5 });
+    // walking diagonally into the front of the column pair at x = 0, in
+    // the half clear of the galley
+    expect(stepWithin(bounds, -0.5, 1.5, 0.5, -1)).toEqual({ x: 0, z: 1.5 });
   });
 
   it("walks around the stair in two-story homes", () => {
     const bounds = getWalkBounds(2, 2);
-    expect(bounds.blocks).toHaveLength(1);
-    const [stair] = bounds.blocks;
+    const stair = getStairLayout(2).opening;
+    expect(bounds.blocks).toContainEqual(stair);
     const midX = (stair.x[0] + stair.x[1]) / 2;
     // walking from the end wall toward the bottom step stops short of it
     const near = stair.z[1] + 1;
@@ -135,6 +137,22 @@ describe("walkcontrols", () => {
       expect(canReach(x - 1, -13)).toBe(false);
       expect(canReach(x, 12)).toBe(false);
       expect(canReach(x + 3.75, -8)).toBe(false);
+    }
+  );
+
+  it.each(["mod2x1", "mod2x2"])(
+    "walks into the bath, the closet and along the galley in %s",
+    (slug) => {
+      const { cols, stories } = parseModel(slug)!;
+      const bounds = getWalkBounds(cols, stories);
+      const canReach = reachable(bounds, getWalkStart(bounds));
+      // in the bath by the glass, in the closet, and in front of the range
+      expect(canReach(6, -2)).toBe(true);
+      expect(canReach(5, -11)).toBe(true);
+      expect(canReach(-1.5, -9)).toBe(true);
+      // but never into the shower or through the counter
+      expect(canReach(5, -7.5)).toBe(false);
+      expect(canReach(1.5, -6)).toBe(false);
     }
   );
 });
