@@ -113,15 +113,18 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
           Select a model home.
         </Typography>
       </motion.div>
-      <Grid container spacing={2} columns={12}>
-        <AnimatePresence>{cards}</AnimatePresence>
-      </Grid>
-      <ModelPreviews
-        slugs={MODELS.map((model) => model.slug)}
-        tracks={previews}
-        shown={shown}
-        hovered={hovered}
-      />
+      {/* The previews' canvas covers just the cards and scrolls with them */}
+      <div style={{ position: "relative" }}>
+        <Grid container spacing={2} columns={12}>
+          <AnimatePresence>{cards}</AnimatePresence>
+        </Grid>
+        <ModelPreviews
+          slugs={MODELS.map((model) => model.slug)}
+          tracks={previews}
+          shown={shown}
+          hovered={hovered}
+        />
+      </div>
     </div>
   );
 });
