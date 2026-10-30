@@ -18,6 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { FOCUS_RING, INK, PANEL } from "./panel";
 import { getStairLayout, Rect } from "./stair";
+import { getServicesBlocks } from "./services";
 
 export type WalkInput = {
   forward: boolean;
@@ -45,7 +46,8 @@ export type WalkBounds = {
   maxZ: number;
   // x centres of the column pairs where two modules meet (at z = 0)
   columns: number[];
-  // Solid footprints to walk around, like the stair
+  // Solid footprints to walk around, like the stair, and the services
+  // module's walls and fixtures
   blocks: Rect[];
 };
 
@@ -65,7 +67,10 @@ export const getWalkBounds = (modulesWide: number, stories = 1): WalkBounds => {
   for (let i = 1; i < modulesWide; i++) {
     columns.push(-halfWidth + 8 * i);
   }
-  const blocks = stories === 2 ? [getStairLayout(modulesWide).opening] : [];
+  const blocks = [
+    ...(stories === 2 ? [getStairLayout(modulesWide).opening] : []),
+    ...getServicesBlocks(modulesWide),
+  ];
   return { maxX: halfWidth - 1, maxZ: 18.5, columns, blocks };
 };
 
@@ -88,7 +93,7 @@ export const getWalkStart = (bounds: WalkBounds): WalkStart => {
   return { x, z, facing: [-2 * x, -2 * z] };
 };
 
-const isBlocked = (bounds: WalkBounds, x: number, z: number) =>
+export const isBlocked = (bounds: WalkBounds, x: number, z: number) =>
   (Math.abs(z) < COLUMN_HALF_DEPTH + BODY_RADIUS &&
     bounds.columns.some(
       (cx) => Math.abs(x - cx) < COLUMN_HALF_WIDTH + BODY_RADIUS

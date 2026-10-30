@@ -1,0 +1,162 @@
+import React from "react";
+import { COLORS } from "./colors";
+import { boxBetween, Box, Rect } from "./stair";
+
+// Units are feet. The ground floor's finished surface and the underside of
+// its ceiling
+export const FLOOR = -3.95;
+export const CEILING = 3.85;
+
+// Plain colours for now, standing in for real finishes
+export const FINISHES = {
+  gyp: { color: COLORS.gyp, metalness: 0.1, roughness: 0.1 },
+  walnut: { color: COLORS.walnut, roughness: 0.6 },
+  quartz: { color: COLORS.quartz, roughness: 0.2 },
+  porcelain: { color: COLORS.porcelain, roughness: 0.15 },
+  stainless: { color: COLORS.stainless, metalness: 0.8, roughness: 0.3 },
+  tile: { color: COLORS.tile, roughness: 0.3 },
+  floorTile: { color: COLORS.floorTile, roughness: 0.4 },
+  glass: {
+    color: COLORS.glass,
+    roughness: 0.05,
+    transparent: true,
+    opacity: 0.22,
+  },
+  mirror: { color: COLORS.mirror, metalness: 0.8, roughness: 0.15 },
+  cooktop: { color: COLORS.cooktop, roughness: 0.2 },
+  grout: { color: COLORS.grout, roughness: 0.8 },
+  // Seen only in the gaps between cabinet fronts
+  reveal: { color: COLORS.reveal, roughness: 0.9 },
+};
+
+export type Finish = keyof typeof FINISHES;
+
+// A box, or with `round` an upright cylinder (elliptical if its footprint
+// isn't square), in the services module's coordinates
+export type Part = Box & { finish: Finish; round?: boolean };
+
+type Span = [number, number];
+
+export const part = (
+  finish: Finish,
+  x: Span,
+  y: Span,
+  z: Span,
+  round = false,
+): Part => ({ ...boxBetween(x, y, z), finish, ...(round && { round }) });
+
+// Fixtures are laid out against a wall: u runs along the wall, centred on
+// the fixture, and d runs out from the wall's face into the room
+export type LocalPart = {
+  finish: Finish;
+  u: Span;
+  y: Span;
+  d: Span;
+  round?: boolean;
+};
+
+export const local = (
+  finish: Finish,
+  u: Span,
+  y: Span,
+  d: Span,
+  round = false,
+): LocalPart => ({ finish, u, y, d, round });
+
+// Which way a fixture faces, out from the wall it stands against
+export type Facing = "+x" | "-x" | "+z" | "-z";
+
+// Places fixture parts with their wall's face centred on `at`, along x and z
+export const place = (
+  parts: LocalPart[],
+  [x, z]: [number, number],
+  facing: Facing,
+): Part[] =>
+  parts.map(({ finish, u: [u0, u1], y, d: [d0, d1], round }) => {
+    switch (facing) {
+      case "+z":
+        return part(finish, [x + u0, x + u1], y, [z + d0, z + d1], round);
+      case "-z":
+        return part(finish, [x - u1, x - u0], y, [z - d1, z - d0], round);
+      case "+x":
+        return part(finish, [x + d0, x + d1], y, [z - u1, z - u0], round);
+      case "-x":
+        return part(finish, [x - d1, x - d0], y, [z + u0, z + u1], round);
+    }
+  });
+
+// Cabinet doors and drawer fronts: `count` panels across u, standing 3/4"
+// proud of the carcass at d with 1/4" gaps, dark behind so they read, each
+// with a small stainless pull along its top or bottom edge
+const FRONT = { depth: 0.06, gap: 1 / 48 };
+const PULL = { width: 0.25, height: 0.04, depth: 0.05, inset: 0.08 };
+
+export const fronts = (
+  [u0, u1]: Span,
+  [y0, y1]: Span,
+  d: number,
+  count: number,
+  pull?: "top" | "bottom",
+  finish: Finish = "walnut",
+): LocalPart[] => {
+  const width = (u1 - u0) / count;
+  const face: Span = [d, d + FRONT.depth];
+  const backing = local("reveal", [u0, u1], [y0, y1], [d, d + FRONT.depth / 2]);
+  const panels = Array.from({ length: count }, (_, i) => {
+    const a = u0 + i * width + FRONT.gap / 2;
+    const b = a + width - FRONT.gap;
+    const panel = local(finish, [a, b], [y0, y1], face);
+    if (!pull) return [panel];
+    const middle = (a + b) / 2;
+    const edge =
+      pull === "top" ? y1 - PULL.inset : y0 + PULL.inset + PULL.height;
+    return [
+      panel,
+      local(
+        "stainless",
+        [middle - PULL.width / 2, middle + PULL.width / 2],
+        [edge - PULL.height, edge],
+        [face[1], face[1] + PULL.depth],
+      ),
+    ];
+  }).flat();
+  return [backing, ...panels];
+};
+
+// Anything standing on the floor, or starting within this far above it, is
+// in the way when walking; headers, mirrors and wall cabinets are not, and
+// nor is anything lower than a stool's base, like floor tile
+const BLOCKING_HEIGHT = 1.5;
+const TRIP_HEIGHT = 0.04;
+
+export const getFootprints = (parts: Part[], offsetX = 0): Rect[] =>
+  parts
+    .filter(
+      ({ position, size }) =>
+        position[1] - size[1] / 2 < FLOOR + BLOCKING_HEIGHT &&
+        position[1] + size[1] / 2 > FLOOR + TRIP_HEIGHT,
+    )
+    .map(({ position: [x, , z], size: [w, , d] }) => ({
+      x: [offsetX + x - w / 2, offsetX + x + w / 2],
+      z: [z - d / 2, z + d / 2],
+    }));
+
+export const Parts = ({ parts }: { parts: Part[] }) => (
+  <>
+    {parts.map(({ position, size, finish, round }) => (
+      <mesh
+        key={`${finish}-${position.join()}-${size.join()}`}
+        position={position}
+        scale={round ? size : undefined}
+        receiveShadow
+      >
+        {round ? (
+          <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
+        ) : (
+          <boxGeometry args={size} />
+        )}
+        <meshStandardMaterial {...FINISHES[finish]} />
+      </mesh>
+    ))}
+  </>
+);

@@ -5,6 +5,7 @@ import Foundation from "./foundation";
 import Roof from "./roof";
 import SlidingDoors from "./slidingdoors";
 import Stair, { getStairLayout } from "./stair";
+import Services from "./services";
 import { COLORS } from "./colors";
 
 // "mod3x2" -> 3 modules wide, 2 stories; null until the slug is known
@@ -102,6 +103,7 @@ const HomeModel = ({
         />
       ))}
       {twoStory && <Stair cols={cols} />}
+      <Services cols={cols} />
       {envelopeOn && (
         <EndWall
           position={[halfWidth - 0.5, 0, 0]}

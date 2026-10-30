@@ -1,10 +1,47 @@
 import {
   getWalkBounds,
   getWalkStart,
+  isBlocked,
   stepWithin,
+  WalkBounds,
 } from "../components/walkcontrols";
 import { parseModel } from "../components/homemodel";
+import { getServicesBlocks, getServicesModuleX } from "../components/services";
 import MODELS from "../lib/models";
+
+// Every spot reachable from `start` in small steps, on a 1/4 ft grid
+const GRID = 0.25;
+const reachable = (bounds: WalkBounds, start: { x: number; z: number }) => {
+  const key = (i: number, j: number) => `${i},${j}`;
+  const seen = new Set<string>();
+  const queue: [number, number][] = [
+    [Math.round(start.x / GRID), Math.round(start.z / GRID)],
+  ];
+  seen.add(key(...queue[0]));
+  while (queue.length) {
+    const [i, j] = queue.pop()!;
+    for (const [di, dj] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ]) {
+      const [x, z] = [(i + di) * GRID, (j + dj) * GRID];
+      if (
+        Math.abs(x) > bounds.maxX ||
+        Math.abs(z) > bounds.maxZ ||
+        seen.has(key(i + di, j + dj)) ||
+        isBlocked(bounds, x, z)
+      ) {
+        continue;
+      }
+      seen.add(key(i + di, j + dj));
+      queue.push([i + di, j + dj]);
+    }
+  }
+  return (x: number, z: number) =>
+    seen.has(key(Math.round(x / GRID), Math.round(z / GRID)));
+};
 
 describe("walkcontrols", () => {
   it("keeps the walkable area inside the modules", () => {
@@ -18,7 +55,7 @@ describe("walkcontrols", () => {
       maxX: 11,
       maxZ: 18.5,
       columns: [-4, 4],
-      blocks: [],
+      blocks: getServicesBlocks(3),
     });
   });
 
@@ -48,10 +85,13 @@ describe("walkcontrols", () => {
     const [stair] = bounds.blocks;
     const midX = (stair.x[0] + stair.x[1]) / 2;
     // walking from the end wall toward the bottom step stops short of it
-    const blocked = stepWithin(bounds, midX, 16, 0, -0.5);
-    expect(blocked.z).toBe(16);
+    const near = stair.z[1] + 1;
+    const blocked = stepWithin(bounds, midX, near, 0, -0.5);
+    expect(blocked.z).toBe(near);
     // the same step is fine in a one-story home
-    expect(stepWithin(getWalkBounds(2), midX, 16, 0, -0.5).z).toBe(15.5);
+    expect(stepWithin(getWalkBounds(2), midX, near, 0, -0.5).z).toBe(
+      near - 0.5
+    );
   });
 
   it("starts every model in a corner, facing the opposite corner", () => {
@@ -77,4 +117,24 @@ describe("walkcontrols", () => {
       });
     });
   });
+
+  it.each(["mod3x1", "mod4x1", "mod5x1", "mod3x2", "mod4x2"])(
+    "walks into both bathrooms and around the kitchen in %s",
+    (slug) => {
+      const { cols, stories } = parseModel(slug)!;
+      const bounds = getWalkBounds(cols, stories);
+      const canReach = reachable(bounds, getWalkStart(bounds));
+      const x = getServicesModuleX(cols);
+      // inside the tub bath and the shower bath, between their fixtures
+      expect(canReach(x, -16)).toBe(true);
+      expect(canReach(x - 1, -6)).toBe(true);
+      // in front of the fridge and pantry, and in the aisle by the range
+      expect(canReach(x, 1.5)).toBe(true);
+      expect(canReach(x, 15.5)).toBe(true);
+      // but never into the tub, the island or through a bathroom wall
+      expect(canReach(x - 1, -13)).toBe(false);
+      expect(canReach(x, 12)).toBe(false);
+      expect(canReach(x + 3.75, -8)).toBe(false);
+    }
+  );
 });

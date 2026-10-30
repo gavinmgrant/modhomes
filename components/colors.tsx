@@ -17,6 +17,16 @@ export const COLORS = {
   glass: "#d6e6ec",
   tread: "#c49a6c",
   cable: "#a9adb1",
+  // Kitchen and bathroom finishes in the services module
+  walnut: "#5a4130",
+  quartz: "#f1efea",
+  stainless: "#b8bcbf",
+  porcelain: "#f7f6f2",
+  tile: "#c9c4bb",
+  floorTile: "#8f8a82",
+  mirror: "#dfe3e5",
+  cooktop: "#1c1d1e",
+  grout: "#7d8184",
 };
 
 const OPTIONS = [
