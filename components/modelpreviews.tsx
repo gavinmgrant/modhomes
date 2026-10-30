@@ -1,12 +1,20 @@
 import React, {
+  ReactNode,
   RefObject,
   Suspense,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, View } from "@react-three/drei";
+import {
+  Canvas,
+  createPortal,
+  useFrame,
+  useThree,
+} from "@react-three/fiber";
+import { Environment } from "@react-three/drei";
 import HomeModel, { getModelSize, parseModel } from "./homemodel";
 import { COLORS } from "./colors";
 import { CITY_ENVIRONMENT } from "./materials";
@@ -175,6 +183,113 @@ const ModelPreview = ({ slug, visible, spinning }: ModelPreviewProps) => {
   );
 };
 
+interface PreviewViewProps {
+  track: RefObject<HTMLElement>;
+  index: number;
+  children: ReactNode;
+}
+
+// How far beyond the screen a preview keeps drawing, so one scrolled in
+// before the next frame is already there
+const OFFSCREEN_MARGIN = 0.5;
+
+// Draws its children into the part of the canvas under its tracked element.
+// Like drei's <View>, but positioned against the canvas rather than the
+// screen, so it holds still while the page and canvas scroll together
+const PreviewView = ({ track, index, children }: PreviewViewProps) => {
+  const root = useThree((state) => state.scene);
+  const [scene] = useState(() => root.clone(false));
+  const [size, setSize] = useState<{
+    width: number;
+    height: number;
+    top: number;
+    left: number;
+  }>();
+
+  useEffect(() => {
+    const element = track.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() =>
+      setSize({
+        width: element.offsetWidth,
+        height: element.offsetHeight,
+        top: 0,
+        left: 0,
+      })
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [track]);
+
+  if (!size) return null;
+  return createPortal(
+    <PreviewViewport track={track} index={index}>
+      {children}
+    </PreviewViewport>,
+    scene,
+    { size }
+  );
+};
+
+const PreviewViewport = ({ track, index, children }: PreviewViewProps) => {
+  const camera = useThree((state) => state.camera);
+  const scene = useThree((state) => state.scene);
+
+  useFrame(({ gl }) => {
+    if (!track.current) return;
+    const box = track.current.getBoundingClientRect();
+    const margin = window.innerHeight * OFFSCREEN_MARGIN;
+    if (box.bottom < -margin || box.top > window.innerHeight + margin) return;
+
+    // Both rects move together on scroll, so the difference stays put even
+    // when this frame lands after the browser has already scrolled the page
+    const canvas = gl.domElement.getBoundingClientRect();
+    const left = box.left - canvas.left;
+    const bottom = canvas.bottom - box.bottom;
+    const aspect = box.width / box.height;
+    if (camera.aspect !== aspect) {
+      camera.aspect = aspect;
+      camera.updateProjectionMatrix();
+    }
+    gl.setViewport(left, bottom, box.width, box.height);
+    gl.setScissor(left, bottom, box.width, box.height);
+    gl.setScissorTest(true);
+    gl.render(scene, camera);
+  }, index);
+
+  return <>{children}</>;
+};
+
+// Keeps the canvas's drawing buffer within what the GPU can draw into; on a
+// phone the cards stack into a canvas a few thousand pixels tall
+const FitResolution = () => {
+  const gl = useThree((state) => state.gl);
+  const size = useThree((state) => state.size);
+  const setDpr = useThree((state) => state.setDpr);
+
+  useEffect(() => {
+    const context = gl.getContext();
+    const [maxWidth, maxHeight] = context.getParameter(
+      context.MAX_VIEWPORT_DIMS
+    );
+    const maxSide = Math.min(
+      maxWidth,
+      maxHeight,
+      context.getParameter(context.MAX_RENDERBUFFER_SIZE)
+    );
+    setDpr(
+      Math.min(
+        window.devicePixelRatio,
+        2,
+        maxSide / size.width,
+        maxSide / size.height
+      )
+    );
+  }, [gl, size.width, size.height, setDpr]);
+
+  return null;
+};
+
 interface ModelPreviewsProps {
   slugs: string[];
   tracks: RefObject<HTMLElement>[];
@@ -182,8 +297,10 @@ interface ModelPreviewsProps {
   hovered: string | null;
 }
 
-// One transparent canvas over the page draws every preview into its card's
-// placeholder, rather than a WebGL context per card
+// One transparent canvas laid over the cards draws every preview into its
+// card's placeholder, rather than a WebGL context per card. It sits in the
+// page rather than fixed to the screen, so it scrolls with the cards; a fixed
+// canvas trails a phone's scrolling by a frame and the models shake
 const ModelPreviews = ({
   slugs,
   tracks,
@@ -191,19 +308,18 @@ const ModelPreviews = ({
   hovered,
 }: ModelPreviewsProps) => (
   <Canvas
+    // Nothing here depends on where the canvas sits on screen
+    resize={{ scroll: false }}
     style={{
-      position: "fixed",
+      position: "absolute",
       inset: 0,
       pointerEvents: "none",
       zIndex: 1,
     }}
   >
+    <FitResolution />
     {slugs.map((slug, index) => (
-      <View
-        key={slug}
-        index={index + 1}
-        track={tracks[index] as React.MutableRefObject<HTMLElement>}
-      >
+      <PreviewView key={slug} index={index + 1} track={tracks[index]}>
         <Suspense fallback={null}>
           <ModelPreview
             slug={slug}
@@ -211,7 +327,7 @@ const ModelPreviews = ({
             spinning={hovered === slug}
           />
         </Suspense>
-      </View>
+      </PreviewView>
     ))}
   </Canvas>
 );
