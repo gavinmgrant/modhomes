@@ -9,12 +9,13 @@ import {
   getGalleyLayout,
   getServicesLayout,
   getServicesModuleX,
+  getSidedPanes,
   hasGalley,
   hasServices,
   ROOMS,
   SIDE_OUTER,
 } from "../components/services";
-import { getPaneJoints } from "../components/slidingdoors";
+import { getPaneJoints, getPaneLayout } from "../components/slidingdoors";
 import { POST_INSET, POST_SIZE } from "../components/module";
 import { COUNTER_DEPTH } from "../components/kitchen";
 import {
@@ -234,6 +235,28 @@ describe("services module", () => {
 describe("galley module", () => {
   const galley = getGalleyLayout(2)!;
   const all = [...galley.walls, ...galley.fixtures];
+
+  it("sides the two ground floor panes the closet and bath stand against", () => {
+    [1, 2].forEach((stories) => {
+      expect(getSidedPanes(2, stories)).toEqual([
+        "right-0-back-0",
+        "right-0-back-1",
+      ]);
+    });
+    const sided = getPaneLayout(1, 8, 1).filter(({ id }) =>
+      getSidedPanes(2, 1).includes(id),
+    );
+    sided.forEach(({ position: [, , z], width }) => {
+      expect(z - width / 2).toBeGreaterThan(GALLEY_END - 0.1);
+      expect(z + width / 2).toBeLessThan(0.1);
+    });
+  });
+
+  it("leaves every other home's glass alone", () => {
+    [1, 3, 4].forEach((cols) => {
+      expect(getSidedPanes(cols, 1)).toEqual([]);
+    });
+  });
 
   it("is only in homes two modules wide, in the right module", () => {
     MODELS.forEach(({ slug }) => {

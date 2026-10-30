@@ -7,7 +7,9 @@ import {
   getRevealPieces,
   REVEAL,
   getPaneLayout,
+  getSidingBoards,
   PANES_PER_HALF,
+  SIDING,
 } from "../components/slidingdoors";
 import { getWalkBounds } from "../components/walkcontrols";
 
@@ -183,6 +185,26 @@ describe("sliding doors", () => {
       expect(midway).toBeLessThan(1);
       expect(getEntranceProgress(1 + ENTER_DURATION, 1)).toBe(1);
       expect(getEntranceProgress(100, 1)).toBe(1);
+    });
+  });
+
+  describe("siding infill", () => {
+    const [pane] = getPaneLayout(1, 8, 1);
+    const boards = getSidingBoards(pane.height);
+    const [bottom, top] = [-pane.height / 2 + 0.12, pane.height / 2 - 0.12];
+
+    it("runs 6 inch boards from the bottom rail to the top rail", () => {
+      expect(boards[0][0]).toBeCloseTo(bottom);
+      expect(boards[boards.length - 1][1]).toBeCloseTo(top);
+      boards.slice(0, -1).forEach(([y0, y1]) => {
+        expect(y1 - y0 + SIDING.joint).toBeCloseTo(0.5);
+      });
+    });
+
+    it("leaves a shadow joint between neighbouring boards", () => {
+      boards.slice(1).forEach(([y0], i) => {
+        expect(y0 - boards[i][1]).toBeCloseTo(SIDING.joint);
+      });
     });
   });
 });

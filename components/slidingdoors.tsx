@@ -191,20 +191,36 @@ export const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Where a room is built against the glass, its pane is filled with
+// horizontal cedar boards instead: 6" each from the bottom rail up, the top
+// one cut to fit, with a 1/4" shadow joint between them
+export const SIDING = { board: 0.5, joint: 1 / 48, depth: 0.06 };
+
+export const getSidingBoards = (height: number) => {
+  const [bottom, top] = [-height / 2 + FRAME, height / 2 - FRAME];
+  const boards: [number, number][] = [];
+  for (let y = bottom; y < top - 1e-9; y += SIDING.board) {
+    boards.push([y, Math.min(y + SIDING.board - SIDING.joint, top)]);
+  }
+  return boards;
+};
+
 interface GlassPaneProps {
   position: [number, number, number];
   width: number;
   height: number;
   entrance?: PaneEntrance;
+  infill?: "glass" | "siding";
 }
 
-// One sliding door: a glass sheet in a dark frame, kept as its own group so
-// it can be animated on its own
+// One sliding door: a glass sheet, or siding, in a dark frame, kept as its
+// own group so it can be animated on its own
 export const GlassPane = ({
   position,
   width,
   height,
   entrance,
+  infill = "glass",
 }: GlassPaneProps) => {
   // three has no type definitions installed here, so the ref is untyped
   const group = useRef<any>(null);
@@ -223,19 +239,37 @@ export const GlassPane = ({
 
   return (
     <group ref={group} position={position}>
-      <mesh>
-        <boxGeometry
-          args={[GLASS_DEPTH, height - 2 * FRAME, width - 2 * FRAME]}
-        />
-        <meshStandardMaterial
-          color={COLORS.glass}
-          transparent
-          opacity={0.22}
-          metalness={0.2}
-          roughness={0.05}
-          depthWrite={false}
-        />
-      </mesh>
+      {infill === "glass" ? (
+        <mesh>
+          <boxGeometry
+            args={[GLASS_DEPTH, height - 2 * FRAME, width - 2 * FRAME]}
+          />
+          <meshStandardMaterial
+            color={COLORS.glass}
+            transparent
+            opacity={0.22}
+            metalness={0.2}
+            roughness={0.05}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : (
+        <>
+          {/* dark behind the boards, so the joints read as shadow lines */}
+          <mesh>
+            <boxGeometry
+              args={[GLASS_DEPTH, height - 2 * FRAME, width - 2 * FRAME]}
+            />
+            <meshStandardMaterial color={COLORS.reveal} roughness={0.9} />
+          </mesh>
+          {getSidingBoards(height).map(([y0, y1]) => (
+            <mesh key={y0} position={[0, (y0 + y1) / 2, 0]}>
+              <boxGeometry args={[SIDING.depth, y1 - y0, width - 2 * FRAME]} />
+              <meshStandardMaterial color={COLORS.siding} roughness={0.8} />
+            </mesh>
+          ))}
+        </>
+      )}
       {[1, -1].map((edge) => (
         <mesh
           key={`rail${edge}`}
@@ -268,6 +302,8 @@ interface SlidingDoorsProps {
   animateDelay?: number;
   // Leave the header out, for when it's drawn (and animated) separately
   hideHeader?: boolean;
+  // Panes filled with siding instead of glass, by id
+  sided?: string[];
 }
 
 interface DoorHeaderProps {
@@ -308,6 +344,7 @@ const SlidingDoors = ({
   animateIn = false,
   animateDelay = 0,
   hideHeader = false,
+  sided = [],
 }: SlidingDoorsProps) => {
   const panes = getPaneLayout(side, halfWidth, stories);
   const delays =
@@ -321,6 +358,7 @@ const SlidingDoors = ({
         <GlassPane
           key={id}
           {...pane}
+          infill={sided.includes(id) ? "siding" : "glass"}
           entrance={
             delays
               ? { from: side * ENTER_DISTANCE, delay: delays.get(id) ?? 0 }

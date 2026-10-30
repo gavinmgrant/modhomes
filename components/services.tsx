@@ -16,7 +16,7 @@ import {
   getStools,
   TALL_DEPTH,
 } from "./kitchen";
-import { getPaneJoints } from "./slidingdoors";
+import { getPaneJoints, getPaneLayout } from "./slidingdoors";
 import Stool, { getStoolFootprint, StoolSpot } from "./stool";
 import type { Rect } from "./stair";
 
@@ -207,6 +207,18 @@ export const getGalleyLayout = (cols: number) => {
     stools: [] as StoolSpot[],
   };
 };
+
+// The glass panes the galley's closet and bath are built against, on the
+// home's +x side of the ground floor, which take siding instead
+export const getSidedPanes = (cols: number, stories: number) =>
+  hasGalley(cols)
+    ? getPaneLayout(1, 4 * cols, stories)
+        .filter(({ position: [, y, z], width }) => {
+          const [z0, z1] = [z - width / 2, z + width / 2];
+          return y < CEILING && z0 > GALLEY_END - 0.1 && z1 < 0.1;
+        })
+        .map(({ id }) => id)
+    : [];
 
 // What there is to walk around, in home coordinates
 export const getServicesBlocks = (cols: number): Rect[] => {

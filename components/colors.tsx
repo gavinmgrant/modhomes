@@ -27,6 +27,8 @@ export const COLORS = {
   mirror: "#dfe3e5",
   cooktop: "#1c1d1e",
   grout: "#7d8184",
+  // Cedar siding where the two-wide homes' bath walls off the glass
+  siding: "#8c6240",
   // The counter stools' plywood shell edge and steel base
   plywood: "#c9a67c",
   blackSteel: "#232425",
