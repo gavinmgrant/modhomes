@@ -9,7 +9,10 @@ import HomeModel, {
 } from "../../components/homemodel";
 import NavBar from "../../components/navbar";
 import Colors, { COLORS } from "../../components/colors";
-import Materials, { CITY_ENVIRONMENT } from "../../components/materials";
+import Materials, {
+  CITY_ENVIRONMENT,
+  FloorTextures,
+} from "../../components/materials";
 import Loader from "../../components/loader";
 import InfoChip from "../../components/infochip";
 import PageMeta from "../../components/pagemeta";
@@ -142,6 +145,7 @@ const Homes: FC = () => {
                 <ambientLight intensity={0.6} />
                 <pointLight position={[100, 100, 20]} />
                 <Environment {...LANDSCAPE} />
+                <FloorTextures />
                 <group position={[0, GROUND_LIFT, 0]}>{home}</group>
               </Suspense>
             </Canvas>
