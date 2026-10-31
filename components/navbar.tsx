@@ -55,7 +55,7 @@ const NavBar = () => {
     >
       <Typography
         variant="h5"
-        fontWeight={700}
+        fontWeight={600}
         marginLeft={{ xs: "1.25rem", sm: "1.75rem" }}
       >
         <Link href="/">ModHomes</Link>

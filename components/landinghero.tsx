@@ -84,7 +84,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
         >
           <Typography
             variant="h1"
-            fontWeight={700}
+            fontWeight={600}
             fontSize={isMobile ? "62px" : "92px"}
             lineHeight={1}
           >
