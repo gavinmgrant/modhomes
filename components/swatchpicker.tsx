@@ -22,7 +22,8 @@ interface SwatchPickerProps {
 const RISE = 10;
 const STAGGER = 0.035;
 
-// One swatch showing the current choice, labelled. Clicking it opens a
+// One swatch showing the current choice, with its label as a caption under
+// it, so each picker is only as wide as its swatch. Clicking it opens a
 // column of every option rising out of the dock above it; picking one, or
 // clicking anywhere else, or Escape closes it again
 const SwatchPicker = ({
@@ -46,14 +47,21 @@ const SwatchPicker = ({
   return (
     <ClickAwayListener onClickAway={() => setOpen(false)}>
       <div
-        style={{ display: "flex", alignItems: "center", gap: 2 }}
+        style={{
+          display: "flex",
+          // The label comes first for screen readers but shows underneath
+          flexDirection: "column-reverse",
+          alignItems: "center",
+          gap: 2,
+        }}
         onKeyDown={(event) => {
           if (event.key === "Escape" && open) close();
         }}
       >
         <Typography
           component="span"
-          sx={{ fontSize: 13, opacity: 0.6, paddingLeft: 0.5 }}
+          // tucked up into the space under the swatch's dot
+          sx={{ fontSize: 11, lineHeight: 1.2, opacity: 0.6, marginTop: -0.75 }}
         >
           {label}
         </Typography>

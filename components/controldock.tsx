@@ -61,8 +61,9 @@ const ControlDock = ({
         display: "flex",
         alignItems: "center",
         gap: 8,
-        padding: "5px",
-        paddingRight: isMobile ? "5px" : "8px",
+        // The ends are as far from the view toggle as its top and bottom
+        // are, since the captioned swatches make the dock taller than it
+        padding: isMobile ? "5px 8px" : "5px 10px",
         borderRadius: 999,
       }}
     >

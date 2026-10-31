@@ -231,9 +231,10 @@ interface GlassPaneProps {
   entrance?: PaneEntrance;
   infill?: "glass" | "siding";
   sidingColor?: string;
+  trimColor?: string;
 }
 
-// One sliding door: a glass sheet, or siding, in a dark frame, kept as its
+// One sliding door: a glass sheet, or siding, in a metal frame, kept as its
 // own group so it can be animated on its own
 export const GlassPane = ({
   position,
@@ -242,6 +243,7 @@ export const GlassPane = ({
   entrance,
   infill = "glass",
   sidingColor = COLORS.siding,
+  trimColor = COLORS.trim,
 }: GlassPaneProps) => {
   // three has no type definitions installed here, so the ref is untyped
   const group = useRef<any>(null);
@@ -297,7 +299,7 @@ export const GlassPane = ({
           position={[0, (edge * (height - FRAME)) / 2, 0]}
         >
           <boxGeometry args={[FRAME_DEPTH, FRAME, width]} />
-          <meshStandardMaterial color={COLORS.frame} roughness={0.4} />
+          <meshStandardMaterial color={trimColor} roughness={0.4} />
         </mesh>
       ))}
       {[1, -1].map((edge) => (
@@ -306,7 +308,7 @@ export const GlassPane = ({
           position={[0, 0, (edge * (width - FRAME)) / 2]}
         >
           <boxGeometry args={[FRAME_DEPTH, height, FRAME]} />
-          <meshStandardMaterial color={COLORS.frame} roughness={0.4} />
+          <meshStandardMaterial color={trimColor} roughness={0.4} />
         </mesh>
       ))}
     </group>
@@ -326,15 +328,23 @@ interface SlidingDoorsProps {
   // Panes filled with siding instead of glass, by id, and its colour
   sided?: string[];
   sidingColor?: string;
+  // The colour of the door frames and the trim around them
+  trimColor?: string;
 }
 
 interface DoorHeaderProps {
   side: number;
   halfWidth: number;
   stories: number;
+  trimColor?: string;
 }
 
-const Trim = ({ position, size, shaded }: TrimPiece) => (
+const Trim = ({
+  position,
+  size,
+  shaded,
+  color = COLORS.trim,
+}: TrimPiece & { color?: string }) => (
   <mesh position={position}>
     <boxGeometry args={size} />
     {shaded ? (
@@ -342,19 +352,24 @@ const Trim = ({ position, size, shaded }: TrimPiece) => (
         <meshStandardMaterial
           key={face}
           attach={`material-${face}`}
-          color={shaded.includes(face) ? COLORS.reveal : COLORS.frame}
+          color={shaded.includes(face) ? COLORS.reveal : color}
           roughness={0.4}
         />
       ))
     ) : (
-      <meshStandardMaterial color={COLORS.frame} roughness={0.4} />
+      <meshStandardMaterial color={color} roughness={0.4} />
     )}
   </mesh>
 );
 
 // Dark band over the top story's doors, up to the end wall's top beam
-export const DoorHeader = ({ side, halfWidth, stories }: DoorHeaderProps) => (
-  <Trim {...getHeaderLayout(side, halfWidth, stories)} />
+export const DoorHeader = ({
+  side,
+  halfWidth,
+  stories,
+  trimColor,
+}: DoorHeaderProps) => (
+  <Trim {...getHeaderLayout(side, halfWidth, stories)} color={trimColor} />
 );
 
 // Floor-to-ceiling sliding glass doors filling one open side of a home,
@@ -368,6 +383,7 @@ const SlidingDoors = ({
   hideHeader = false,
   sided = [],
   sidingColor,
+  trimColor,
 }: SlidingDoorsProps) => {
   const panes = getPaneLayout(side, halfWidth, stories);
   const delays =
@@ -383,6 +399,7 @@ const SlidingDoors = ({
           {...pane}
           infill={sided.includes(id) ? "siding" : "glass"}
           sidingColor={sidingColor}
+          trimColor={trimColor}
           entrance={
             delays
               ? { from: side * ENTER_DISTANCE, delay: delays.get(id) ?? 0 }
@@ -393,13 +410,18 @@ const SlidingDoors = ({
       {getFloorBandLayouts(side, halfWidth, stories)
         .flatMap((band) => getRevealPieces(band, side))
         .map((piece) => (
-          <Trim key={piece.position.join()} {...piece} />
+          <Trim key={piece.position.join()} {...piece} color={trimColor} />
         ))}
       {getSillLayouts(side, halfWidth, stories).map((sill) => (
-        <Trim key={sill.position.join()} {...sill} />
+        <Trim key={sill.position.join()} {...sill} color={trimColor} />
       ))}
       {!hideHeader && (
-        <DoorHeader side={side} halfWidth={halfWidth} stories={stories} />
+        <DoorHeader
+          side={side}
+          halfWidth={halfWidth}
+          stories={stories}
+          trimColor={trimColor}
+        />
       )}
     </>
   );
