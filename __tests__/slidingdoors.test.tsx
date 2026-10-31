@@ -7,7 +7,10 @@ import {
   getRevealPieces,
   REVEAL,
   getPaneLayout,
+  getSidingBoards,
+  getSillLayouts,
   PANES_PER_HALF,
+  SIDING,
 } from "../components/slidingdoors";
 import { getWalkBounds } from "../components/walkcontrols";
 
@@ -183,6 +186,64 @@ describe("sliding doors", () => {
       expect(midway).toBeLessThan(1);
       expect(getEntranceProgress(1 + ENTER_DURATION, 1)).toBe(1);
       expect(getEntranceProgress(100, 1)).toBe(1);
+    });
+  });
+
+  describe("sills", () => {
+    it("lays one along the foot of each story's doors", () => {
+      [1, 2].forEach((stories) => {
+        expect(getSillLayouts(1, 8, stories)).toHaveLength(stories);
+      });
+    });
+
+    it("runs from the floor's edge to the beam's face, flush with the floor", () => {
+      [-1, 1].forEach((side) => {
+        getSillLayouts(side, 12, 2).forEach(({ position, size }, story) => {
+          const [x0, x1] = [
+            position[0] - size[0] / 2,
+            position[0] + size[0] / 2,
+          ].map((x) => side * x);
+          expect(Math.min(x0, x1)).toBeCloseTo(12);
+          expect(Math.max(x0, x1)).toBeCloseTo(12.55);
+          expect(position[1] + size[1] / 2).toBeCloseTo(10 * story - 3.95);
+          expect(position[1] - size[1] / 2).toBeCloseTo(10 * story - 4);
+        });
+      });
+    });
+
+    it("spans every pane's foot along the opening", () => {
+      const [sill] = getSillLayouts(1, 8, 1);
+      getPaneLayout(1, 8, 1).forEach(
+        ({ position: [x, y, z], width, height }) => {
+          expect(Math.abs(z) + width / 2).toBeLessThanOrEqual(
+            sill.size[2] / 2 + 1e-9
+          );
+          expect(x).toBeLessThan(sill.position[0] + sill.size[0] / 2);
+          expect(y - height / 2).toBeCloseTo(
+            sill.position[1] - sill.size[1] / 2
+          );
+        }
+      );
+    });
+  });
+
+  describe("siding infill", () => {
+    const [pane] = getPaneLayout(1, 8, 1);
+    const boards = getSidingBoards(pane.height);
+    const [bottom, top] = [-pane.height / 2 + 0.12, pane.height / 2 - 0.12];
+
+    it("runs 6 inch boards from the bottom rail to the top rail", () => {
+      expect(boards[0][0]).toBeCloseTo(bottom);
+      expect(boards[boards.length - 1][1]).toBeCloseTo(top);
+      boards.slice(0, -1).forEach(([y0, y1]) => {
+        expect(y1 - y0 + SIDING.joint).toBeCloseTo(0.5);
+      });
+    });
+
+    it("leaves a shadow joint between neighbouring boards", () => {
+      boards.slice(1).forEach(([y0], i) => {
+        expect(y0 - boards[i][1]).toBeCloseTo(SIDING.joint);
+      });
     });
   });
 });

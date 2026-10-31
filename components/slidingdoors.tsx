@@ -13,6 +13,9 @@ const TRACKS = [0.15, 0.35];
 // Neighbouring panes overlap like real sliding doors
 const OVERLAP = 0.08;
 const FRAME = 0.12;
+// Each pane's width, so the panes in each half span the opening
+const PANE_WIDTH =
+  (OPENING_END + (PANES_PER_HALF - 1) * OVERLAP) / PANES_PER_HALF;
 // As deep as the track spacing, so frames on neighbouring tracks meet
 const FRAME_DEPTH = TRACKS[1] - TRACKS[0];
 const GLASS_DEPTH = 0.03;
@@ -40,7 +43,7 @@ export const getPaneLayout = (
   halfWidth: number,
   stories: number,
 ): PaneLayout[] => {
-  const width = (OPENING_END + (PANES_PER_HALF - 1) * OVERLAP) / PANES_PER_HALF;
+  const width = PANE_WIDTH;
   const height = CEILING - FLOOR;
   const panes: PaneLayout[] = [];
 
@@ -64,6 +67,15 @@ export const getPaneLayout = (
   }
   return panes;
 };
+
+// Where neighbouring panes overlap, out along z from the middle column in
+// either half: the vertical lines across the glass that inside walls line up
+// with
+export const getPaneJoints = () =>
+  Array.from(
+    { length: PANES_PER_HALF - 1 },
+    (_, i) => (i + 1) * (PANE_WIDTH - OVERLAP) + OVERLAP / 2,
+  );
 
 export type HeaderLayout = {
   position: [number, number, number];
@@ -110,6 +122,25 @@ export const getFloorBandLayouts = (
 };
 
 // A 1" tall, 2" deep groove along the middle of each floor band
+// A dark sill along the foot of each story's doors, over the edge beam they
+// stand on, from the floor's edge out to the beam's outer face and flush
+// with the finished floor
+const FINISHED_FLOOR = -3.95;
+
+export const getSillLayouts = (
+  side: number,
+  halfWidth: number,
+  stories: number,
+): HeaderLayout[] =>
+  Array.from({ length: stories }, (_, story) => ({
+    position: [
+      side * (halfWidth + END_WALL_FACE / 2),
+      STORY_HEIGHT * story + (FLOOR + FINISHED_FLOOR) / 2,
+      0,
+    ],
+    size: [END_WALL_FACE, FINISHED_FLOOR - FLOOR, 2 * OPENING_END],
+  }));
+
 export const REVEAL = { height: 1 / 12, depth: 2 / 12 };
 
 // Faces of a box, in the order three.js draws their materials
@@ -179,20 +210,38 @@ export const prefersReducedMotion = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Where a room is built against the glass, its pane is filled with
+// horizontal cedar boards instead: 6" each from the bottom rail up, the top
+// one cut to fit, with a 1/4" shadow joint between them
+export const SIDING = { board: 0.5, joint: 1 / 48, depth: 0.06 };
+
+export const getSidingBoards = (height: number) => {
+  const [bottom, top] = [-height / 2 + FRAME, height / 2 - FRAME];
+  const boards: [number, number][] = [];
+  for (let y = bottom; y < top - 1e-9; y += SIDING.board) {
+    boards.push([y, Math.min(y + SIDING.board - SIDING.joint, top)]);
+  }
+  return boards;
+};
+
 interface GlassPaneProps {
   position: [number, number, number];
   width: number;
   height: number;
   entrance?: PaneEntrance;
+  infill?: "glass" | "siding";
+  sidingColor?: string;
 }
 
-// One sliding door: a glass sheet in a dark frame, kept as its own group so
-// it can be animated on its own
+// One sliding door: a glass sheet, or siding, in a dark frame, kept as its
+// own group so it can be animated on its own
 export const GlassPane = ({
   position,
   width,
   height,
   entrance,
+  infill = "glass",
+  sidingColor = COLORS.siding,
 }: GlassPaneProps) => {
   // three has no type definitions installed here, so the ref is untyped
   const group = useRef<any>(null);
@@ -211,19 +260,37 @@ export const GlassPane = ({
 
   return (
     <group ref={group} position={position}>
-      <mesh>
-        <boxGeometry
-          args={[GLASS_DEPTH, height - 2 * FRAME, width - 2 * FRAME]}
-        />
-        <meshStandardMaterial
-          color={COLORS.glass}
-          transparent
-          opacity={0.22}
-          metalness={0.2}
-          roughness={0.05}
-          depthWrite={false}
-        />
-      </mesh>
+      {infill === "glass" ? (
+        <mesh>
+          <boxGeometry
+            args={[GLASS_DEPTH, height - 2 * FRAME, width - 2 * FRAME]}
+          />
+          <meshStandardMaterial
+            color={COLORS.glass}
+            transparent
+            opacity={0.22}
+            metalness={0.2}
+            roughness={0.05}
+            depthWrite={false}
+          />
+        </mesh>
+      ) : (
+        <>
+          {/* dark behind the boards, so the joints read as shadow lines */}
+          <mesh>
+            <boxGeometry
+              args={[GLASS_DEPTH, height - 2 * FRAME, width - 2 * FRAME]}
+            />
+            <meshStandardMaterial color={COLORS.reveal} roughness={0.9} />
+          </mesh>
+          {getSidingBoards(height).map(([y0, y1]) => (
+            <mesh key={y0} position={[0, (y0 + y1) / 2, 0]}>
+              <boxGeometry args={[SIDING.depth, y1 - y0, width - 2 * FRAME]} />
+              <meshStandardMaterial color={sidingColor} roughness={0.8} />
+            </mesh>
+          ))}
+        </>
+      )}
       {[1, -1].map((edge) => (
         <mesh
           key={`rail${edge}`}
@@ -256,6 +323,9 @@ interface SlidingDoorsProps {
   animateDelay?: number;
   // Leave the header out, for when it's drawn (and animated) separately
   hideHeader?: boolean;
+  // Panes filled with siding instead of glass, by id, and its colour
+  sided?: string[];
+  sidingColor?: string;
 }
 
 interface DoorHeaderProps {
@@ -296,6 +366,8 @@ const SlidingDoors = ({
   animateIn = false,
   animateDelay = 0,
   hideHeader = false,
+  sided = [],
+  sidingColor,
 }: SlidingDoorsProps) => {
   const panes = getPaneLayout(side, halfWidth, stories);
   const delays =
@@ -309,6 +381,8 @@ const SlidingDoors = ({
         <GlassPane
           key={id}
           {...pane}
+          infill={sided.includes(id) ? "siding" : "glass"}
+          sidingColor={sidingColor}
           entrance={
             delays
               ? { from: side * ENTER_DISTANCE, delay: delays.get(id) ?? 0 }
@@ -321,6 +395,9 @@ const SlidingDoors = ({
         .map((piece) => (
           <Trim key={piece.position.join()} {...piece} />
         ))}
+      {getSillLayouts(side, halfWidth, stories).map((sill) => (
+        <Trim key={sill.position.join()} {...sill} />
+      ))}
       {!hideHeader && (
         <DoorHeader side={side} halfWidth={halfWidth} stories={stories} />
       )}

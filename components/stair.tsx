@@ -32,11 +32,11 @@ export const RAIL_HEIGHT = RAIL.height;
 const POSTS_PER_SIDE = 5;
 // Inner face of the columns where the first module meets the next
 export const COLUMN_FACE = 4 - POST_INSET - POST_SIZE;
-// The flight climbs toward the middle of the home, starting 4.5 ft out from
-// the end wall's inner face so there's room to walk around the bottom step.
-// It still stops short of the middle column at z = 0
+// The flight climbs toward the middle of the home and stops 6" short of the
+// middle column at z = 0, leaving 6.5 ft between the bottom step and the end
+// wall's inner face
 const END_WALL_FACE = 19.5;
-export const BOTTOM_CLEARANCE = 4.5;
+export const BOTTOM_CLEARANCE = 6.5;
 const TOP_Z = END_WALL_FACE - BOTTOM_CLEARANCE - TREADS * RUN;
 // The opening between stories: from the ground floor ceiling's underside to
 // the upper floor's surface, lined with 1" boards to hide the slab edges
@@ -70,7 +70,7 @@ export type Box = {
   size: [number, number, number];
 };
 
-const boxBetween = (
+export const boxBetween = (
   [x0, x1]: [number, number],
   [y0, y1]: [number, number],
   [z0, z1]: [number, number]

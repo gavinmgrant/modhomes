@@ -32,12 +32,12 @@ describe("stair", () => {
       // inside the module's floor, short of the columns at its edge
       expect(opening.x[0]).toBeGreaterThan(moduleX - 3.875);
       expect(opening.x[1]).toBeLessThanOrEqual(moduleX + COLUMN_FACE);
-      // clear of the middle column, with 4-5 ft between the bottom step and
+      // clear of the middle column, with 6-7 ft between the bottom step and
       // the end wall's inner face
       expect(footprint.z[0]).toBeGreaterThan(0.25);
       const clearance = 19.5 - footprint.z[1];
-      expect(clearance).toBeGreaterThanOrEqual(4);
-      expect(clearance).toBeLessThanOrEqual(5);
+      expect(clearance).toBeGreaterThanOrEqual(6);
+      expect(clearance).toBeLessThanOrEqual(7);
     }
   );
 
