@@ -328,7 +328,7 @@ interface SlidingDoorsProps {
   // Panes filled with siding instead of glass, by id, and its colour
   sided?: string[];
   sidingColor?: string;
-  // The colour of the door frames and the trim around them
+  // The color of the door frames and the trim around them
   trimColor?: string;
 }
 

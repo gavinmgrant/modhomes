@@ -47,7 +47,7 @@ interface HomeModelProps {
   stories: number;
   color: string;
   floorMaterial: string;
-  // The window and door trim's colour
+  // The window and door trim's color
   trimColor?: string;
   // The wood siding's and the kitchen and bathroom wall tile's colours
   sidingColor?: string;
