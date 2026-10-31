@@ -12,6 +12,8 @@ export const COLORS = {
   ground: "#dbd9d9",
   gyp: "#faf9f6",
   frame: "#2b2c2c",
+  // Statuary Bronze, the default window and door trim
+  trim: "#1c1b1a",
   // The inside of the floor band's reveal, which reads as a shadow line
   reveal: "#121313",
   glass: "#d6e6ec",
@@ -49,6 +51,14 @@ export const METAL_OPTIONS = swatches({
   Grey: COLORS.grey,
 });
 
+// The metal trim around the windows and doors
+export const TRIM_OPTIONS = swatches({
+  "Bone White": "#e6e1e0",
+  "Charcoal Gray": "#30313c",
+  "Fashion Gray": "#878d99",
+  "Statuary Bronze": COLORS.trim,
+});
+
 export const WOOD_OPTIONS = swatches({
   Natural: "#b08d68",
   Cedar: COLORS.siding,
@@ -59,6 +69,8 @@ export const WOOD_OPTIONS = swatches({
 interface ColorProps {
   homeColor: string;
   handleColor: (color: string) => void;
+  trimColor: string;
+  handleTrimColor: (color: string) => void;
   sidingColor: string;
   handleSidingColor: (color: string) => void;
   hasWood: boolean;
@@ -67,16 +79,24 @@ interface ColorProps {
 const Colors = ({
   homeColor,
   handleColor,
+  trimColor,
+  handleTrimColor,
   sidingColor,
   handleSidingColor,
   hasWood,
 }: ColorProps) => (
   <>
     <SwatchPicker
-      label="Metal"
+      label="Panels"
       options={METAL_OPTIONS}
       value={homeColor}
       onChange={handleColor}
+    />
+    <SwatchPicker
+      label="Trim"
+      options={TRIM_OPTIONS}
+      value={trimColor}
+      onChange={handleTrimColor}
     />
     {hasWood && (
       <SwatchPicker

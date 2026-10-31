@@ -58,7 +58,7 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
             <CardContent
               style={{ padding: "0 16px 20px", textAlign: "center" }}
             >
-              <Typography variant="h5" fontWeight={600}>
+              <Typography variant="h5" fontWeight={500}>
                 {model.name}
               </Typography>
               <Typography
@@ -94,7 +94,7 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <Typography variant="h2" fontWeight={700} textAlign="center">
+        <Typography variant="h2" fontWeight={600} textAlign="center">
           Models
         </Typography>
       </motion.div>

@@ -84,6 +84,7 @@ const Homes: FC = () => {
   const [isInside, setIsInside] = useState(false);
   const [homeColor, setHomeColor] = useState(COLORS.white);
   const [floorMaterial, setFloorMaterial] = useState("walnut");
+  const [trimColor, setTrimColor] = useState(COLORS.trim);
   const [sidingColor, setSidingColor] = useState(COLORS.siding);
   const [tileColor, setTileColor] = useState(COLORS.tile);
   const isMobile = useMediaQuery("(max-width:900px)");
@@ -100,6 +101,7 @@ const Homes: FC = () => {
       stories={layout.stories}
       color={homeColor}
       floorMaterial={floorMaterial}
+      trimColor={trimColor}
       sidingColor={sidingColor}
       tileColor={tileColor}
     />
@@ -247,6 +249,8 @@ const Homes: FC = () => {
               <Colors
                 homeColor={homeColor}
                 handleColor={handleColorChange}
+                trimColor={trimColor}
+                handleTrimColor={setTrimColor}
                 sidingColor={sidingColor}
                 handleSidingColor={setSidingColor}
                 hasWood={hasWood}
