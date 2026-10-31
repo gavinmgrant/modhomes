@@ -52,9 +52,12 @@ const ControlDock = ({
         ...PANEL,
         position: "absolute",
         bottom: 16,
-        left: isMobile ? 16 : "50%",
-        right: isMobile ? 16 : "auto",
-        transform: isMobile ? "none" : "translateX(-50%)",
+        left: "50%",
+        transform: "translateX(-50%)",
+        // as wide as its controls, centred, but never past the screen's
+        // 16px margins
+        width: "max-content",
+        maxWidth: "calc(100% - 32px)",
         display: "flex",
         alignItems: "center",
         gap: 8,
@@ -97,9 +100,7 @@ const ControlDock = ({
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: isMobile ? "space-evenly" : "flex-start",
-          flex: isMobile ? 1 : "none",
-          gap: isMobile ? 4 : 12,
+          gap: isMobile ? 8 : 12,
           minWidth: 0,
         }}
       >
