@@ -17,10 +17,12 @@ a {
   text-decoration: none;
 }
 
-/* Fade the 3D view in when switching between inside and outside */
+/* Fade the 3D view in when switching between inside and outside. It's
+   isolated so the appliance dots and cards laid over it stay under the dock */
 .viewer-fade {
   height: 100%;
   animation: viewer-fade 400ms ease-out;
+  isolation: isolate;
 }
 
 @keyframes viewer-fade {
@@ -32,8 +34,34 @@ a {
   }
 }
 
+/* A ring swelling out of each appliance dot and fading, until one's opened */
+.hotspot-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #f9f7f1;
+  animation: hotspot-pulse 1.8s ease-out infinite;
+}
+
+@keyframes hotspot-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .viewer-fade {
     animation: none;
+  }
+
+  .hotspot-pulse::after {
+    animation: none;
+    display: none;
   }
 }

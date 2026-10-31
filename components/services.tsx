@@ -21,8 +21,11 @@ import {
 import {
   COUNTER_DEPTH,
   getGalleyParts,
+  getGalleySpots,
   getKitchenParts,
+  getKitchenSpots,
   getStools,
+  Spot,
   TALL_DEPTH,
 } from "./kitchen";
 import { getPaneJoints, getPaneLayout } from "./slidingdoors";
@@ -150,6 +153,8 @@ export const CLOSET_LENGTH = 3.5;
 export const GALLEY_FACE = -SIDE_OUTER + COUNTER_DEPTH;
 const GALLEY_Z0 = GALLEY_END + WALL / 2;
 const CLOSET_WALL = GALLEY_Z0 + CLOSET_LENGTH;
+// The galley's counter runs from the closet's end wall to the bath's
+const GALLEY_RUN: [number, number] = [GALLEY_Z0, -WALL / 2];
 
 // The galley's tiled floor runs under its counter and on across the whole
 // neighbouring module to its glass, between the cross walls' faces
@@ -220,7 +225,7 @@ export const getGalleyLayout = (cols: number) => {
         [FLOOR + 5.3, FLOOR + 5.36],
         closet.z,
       ),
-      ...getGalleyParts(GALLEY_FACE, [GALLEY_Z0, -WALL / 2]),
+      ...getGalleyParts(GALLEY_FACE, GALLEY_RUN),
     ],
     floors: tileFloor(GALLEY_FLOOR),
     stools: [] as StoolSpot[],
@@ -249,6 +254,20 @@ export const getServicesBlocks = (cols: number): Rect[] => {
       getStoolFootprint({ ...stool, x: stool.x + layout.moduleX }),
     ),
   ];
+};
+
+// Where the kitchen appliances' spec dots sit, in home coordinates
+export const getApplianceSpots = (cols: number): Spot[] => {
+  const spots = hasServices(cols)
+    ? getKitchenSpots(ROOMS.kitchen)
+    : hasGalley(cols)
+      ? getGalleySpots(GALLEY_FACE, GALLEY_RUN)
+      : [];
+  const moduleX = getServicesModuleX(cols);
+  return spots.map(({ position: [x, y, z], ...spot }) => ({
+    ...spot,
+    position: [x + moduleX, y, z],
+  }));
 };
 
 interface ServicesProps {

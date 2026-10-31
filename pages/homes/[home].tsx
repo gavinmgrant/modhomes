@@ -9,10 +9,13 @@ import HomeModel, {
 } from "../../components/homemodel";
 import NavBar from "../../components/navbar";
 import {
+  getApplianceSpots,
   getSidedPanes,
   hasGalley,
   hasServices,
 } from "../../components/services";
+import ApplianceHotspots, { SpecsToggle } from "../../components/hotspots";
+import type { ApplianceId } from "../../lib/appliances";
 import Colors, { COLORS } from "../../components/colors";
 import Materials, {
   CITY_ENVIRONMENT,
@@ -87,6 +90,8 @@ const Homes: FC = () => {
   const [trimColor, setTrimColor] = useState(COLORS.trim);
   const [sidingColor, setSidingColor] = useState(COLORS.siding);
   const [tileColor, setTileColor] = useState(COLORS.tile);
+  const [showSpecs, setShowSpecs] = useState(true);
+  const [openAppliance, setOpenAppliance] = useState<ApplianceId | null>(null);
   const isMobile = useMediaQuery("(max-width:900px)");
   const isTouch = useMediaQuery("(pointer: coarse)");
   const walkInput = useRef<WalkInput>({ ...IDLE_INPUT });
@@ -110,6 +115,7 @@ const Homes: FC = () => {
     !!layout && getSidedPanes(layout.cols, layout.stories).length > 0;
   const hasTile =
     !!layout && (hasServices(layout.cols) || hasGalley(layout.cols));
+  const applianceSpots = layout ? getApplianceSpots(layout.cols) : [];
 
   useEffect(() => {
     setIsInside(loadInsideView());
@@ -118,6 +124,7 @@ const Homes: FC = () => {
   // Swaps the canvas in place; the keyed wrappers below remount it with a fresh camera
   const handleViewChange = (inside: boolean) => {
     setIsInside(inside);
+    setOpenAppliance(null);
     walkInput.current = { ...IDLE_INPUT };
     saveInsideView(inside);
   };
@@ -160,6 +167,9 @@ const Homes: FC = () => {
                 fov: 60,
               }}
               shadows
+              // a click on the view, not a drag to look around, closes an
+              // appliance's card
+              onPointerMissed={() => setOpenAppliance(null)}
             >
               <Suspense fallback={<Loader />}>
                 <WalkControls
@@ -171,7 +181,16 @@ const Homes: FC = () => {
                 <pointLight position={[100, 100, 20]} />
                 <Environment {...LANDSCAPE} />
                 <FloorTextures />
-                <group position={[0, GROUND_LIFT, 0]}>{home}</group>
+                <group position={[0, GROUND_LIFT, 0]}>
+                  {home}
+                  {showSpecs && (
+                    <ApplianceHotspots
+                      spots={applianceSpots}
+                      open={openAppliance}
+                      onOpen={setOpenAppliance}
+                    />
+                  )}
+                </group>
               </Suspense>
             </Canvas>
           </div>
@@ -236,6 +255,18 @@ const Homes: FC = () => {
             isInside={isInside}
             onViewChange={handleViewChange}
             label={isInside ? "Interior finishes" : "Exterior colors"}
+            aside={
+              isInside &&
+              applianceSpots.length > 0 && (
+                <SpecsToggle
+                  on={showSpecs}
+                  onChange={(on) => {
+                    setShowSpecs(on);
+                    setOpenAppliance(null);
+                  }}
+                />
+              )
+            }
           >
             {isInside ? (
               <Materials

@@ -2,6 +2,10 @@ import React, { forwardRef } from "react";
 import { ButtonBase, Tooltip, useMediaQuery } from "@mui/material";
 import { FOCUS_RING, INK, PAPER } from "./panel";
 
+// 40-44px tap target around a smaller visible circle
+export const getSwatchSize = (isMobile: boolean) =>
+  isMobile ? { target: 40, dot: 28 } : { target: 44, dot: 30 };
+
 interface SwatchProps {
   name: string;
   background: string;
@@ -16,9 +20,7 @@ const Swatch = forwardRef<HTMLButtonElement, SwatchProps>(
   ({ name, background, selected, onSelect, expanded, controls }, ref) => {
     const isMobile = useMediaQuery("(max-width:900px)");
     const opens = expanded !== undefined;
-    // 40-44px tap target around a smaller visible circle
-    const target = isMobile ? 40 : 44;
-    const dot = isMobile ? 28 : 30;
+    const { target, dot } = getSwatchSize(isMobile);
 
     return (
       // No tooltip while its options are showing, so it doesn't cover them
