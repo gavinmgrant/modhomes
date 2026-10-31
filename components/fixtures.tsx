@@ -55,7 +55,9 @@ export const FINISHES = {
     opacity: 0.22,
   },
   mirror: { color: COLORS.mirror, metalness: 0.8, roughness: 0.15 },
-  cooktop: { color: COLORS.cooktop, roughness: 0.2 },
+  // The range's glass top faces the sky, and reflecting it fully reads blue
+  // rather than black
+  cooktop: { color: COLORS.cooktop, roughness: 0.2, envMapIntensity: 0.25 },
   grout: { color: COLORS.grout, roughness: 0.8 },
   plywood: { color: COLORS.plywood, roughness: 0.6 },
   blackSteel: { color: COLORS.blackSteel, metalness: 0.6, roughness: 0.4 },
@@ -118,6 +120,13 @@ export const place = (
         return part(finish, [x - d1, x - d0], y, [z + u0, z + u1], round);
     }
   });
+
+// Places a single point given in a wall's u, y and d, as `place` does parts
+export const placePoint = (
+  [u, y, d]: [number, number, number],
+  at: [number, number],
+  facing: Facing,
+) => place([local("reveal", [u, u], [y, y], [d, d])], at, facing)[0].position;
 
 // Cabinet doors and drawer fronts: `count` panels across u, standing 3/4"
 // proud of the carcass at d with 1/4" gaps, dark behind so they read, each

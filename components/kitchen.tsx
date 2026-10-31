@@ -4,6 +4,7 @@ import {
   doors,
   DRAWER_HEIGHT,
   drawersOverDoors,
+  Facing,
   FLOOR,
   fronts,
   local,
@@ -11,9 +12,11 @@ import {
   part,
   Part,
   place,
+  placePoint,
 } from "./fixtures";
 import type { Rect } from "./stair";
 import type { StoolSpot } from "./stool";
+import type { ApplianceId } from "../lib/appliances";
 
 // Units are feet. Base cabinets are 2 ft deep with a 36" quartz counter;
 // wall cabinets start 18" above it and run up to the ceiling
@@ -24,11 +27,39 @@ export const COUNTER_DEPTH = 2.08;
 const UPPER = { bottom: COUNTER_TOP + 1.5, depth: 1.17 };
 // A 30" range, centred on the end wall run
 const RANGE_HALF = 1.25;
+// The hood's canopy runs out this far from the wall
+const HOOD_DEPTH = 1.7;
 // Clear floor between the island and the end wall run
 export const AISLE = 3.5;
 export const ISLAND = { length: 7, depth: 3.5, overhang: 1 };
 export const TALL_DEPTH = 2.25;
 const FRIDGE_WIDTH = 3;
+// The island's counter overhangs its base on the aisle side by 2"
+const ISLAND_LIP = 0.16;
+
+// Each appliance's spec dot sits just proud of its front, at a height
+// on the part of it people know it by: the oven door, the hood's front
+// edge, the middle of the dishwasher door and the fridge's upper doors
+export type Spot = {
+  appliance: ApplianceId;
+  position: [number, number, number];
+  // the way its appliance faces, so the dot shows only from in front of it
+  facing: Facing;
+};
+const PROUD = 0.01;
+const SPOT_Y = {
+  range: FLOOR + 1.5,
+  hood: UPPER.bottom - 0.1,
+  dishwasher: FLOOR + 1.6,
+  fridge: FLOOR + 4.25,
+};
+
+const spot = (
+  appliance: ApplianceId,
+  point: [number, number, number],
+  at: [number, number],
+  facing: Facing,
+): Spot => ({ appliance, position: placePoint(point, at, facing), facing });
 
 // Wall tile on the backsplash, the same as the bathrooms', 3" high by 6" wide in a stacked grid:
 // 3/16" grout lines standing just proud of its face, the columns centred on
@@ -75,7 +106,8 @@ const baseCabinet = (u: Span, count: number, lone: -1 | 1 = 1): LocalPart[] => [
   local("quartz", u, [COUNTER_TOP - COUNTER, COUNTER_TOP], [0, COUNTER_DEPTH]),
 ];
 
-// A 30" stainless range centred on c, with dark burners and oven door
+// A 30" stainless induction range centred on c, with a flat black glass
+// top inset in a thin stainless rim, and a dark oven door
 const range = (c: number): LocalPart[] => {
   const cooktop = COUNTER_TOP - 0.05;
   return [
@@ -85,18 +117,7 @@ const range = (c: number): LocalPart[] => {
       [FLOOR, cooktop],
       [0, COUNTER_DEPTH],
     ),
-    local("stainless", [c - 1.2, c + 1.2], [cooktop, COUNTER_TOP], [0.05, 2]),
-    ...[-0.6, 0.6].flatMap((u) =>
-      [0.55, 1.45].map((d) =>
-        local(
-          "cooktop",
-          [c + u - 0.3, c + u + 0.3],
-          [COUNTER_TOP, COUNTER_TOP + 0.02],
-          [d - 0.3, d + 0.3],
-          true,
-        ),
-      ),
-    ),
+    local("cooktop", [c - 1.2, c + 1.2], [cooktop, COUNTER_TOP], [0.05, 2]),
     local(
       "cooktop",
       [c - 0.9, c + 0.9],
@@ -129,7 +150,7 @@ const uppers = (u: Span, c: number): LocalPart[] => [
     "stainless",
     [c - RANGE_HALF, c + RANGE_HALF],
     [UPPER.bottom - 0.2, UPPER.bottom],
-    [0, 1.7],
+    [0, HOOD_DEPTH],
   ),
 ];
 
@@ -198,7 +219,7 @@ const tallUnit = (half: number): LocalPart[] => {
 const island = (z1: number): Part[] => {
   const half = ISLAND.length / 2;
   const z0 = z1 - ISLAND.depth;
-  const base: [number, number] = [z0 + ISLAND.overhang, z1 - 0.16];
+  const base: [number, number] = [z0 + ISLAND.overhang, z1 - ISLAND_LIP];
   const counter = COUNTER_TOP - COUNTER;
   // the sink sits toward the aisle, in counter coordinates centred on 0
   const sink = {
@@ -427,7 +448,7 @@ const counterDepthFridge = ([u0, u1]: Span): LocalPart[] => {
   ];
 };
 
-const galleyRun = (length: number): LocalPart[] => {
+const galleySpans = (length: number) => {
   let u = -length / 2;
   const next = (width: number): Span => [u, (u += width)];
   const base = next(GALLEY.base);
@@ -437,6 +458,11 @@ const galleyRun = (length: number): LocalPart[] => {
   const dw = next(GALLEY.dishwasher);
   const fridge: Span = [u, length / 2];
   const c = (stove[0] + stove[1]) / 2;
+  return { base, filler, sink, dw, fridge, c };
+};
+
+const galleyRun = (length: number): LocalPart[] => {
+  const { base, filler, sink, dw, fridge, c } = galleySpans(length);
   return [
     ...baseCabinet(base, 2),
     ...range(c),
@@ -452,3 +478,68 @@ const galleyRun = (length: number): LocalPart[] => {
 // fridge at z1, the range toward z0
 export const getGalleyParts = (x: number, [z0, z1]: Span): Part[] =>
   place(galleyRun(z1 - z0), [x, (z0 + z1) / 2], "-x");
+
+// The range's dot on its oven door and the hood's on its front edge, for a
+// range centred on c
+type LocalSpot = [ApplianceId, [number, number, number]];
+
+const cookingSpots = (c: number): LocalSpot[] => [
+  ["range", [c, SPOT_Y.range, COUNTER_DEPTH + 0.02 + PROUD]],
+  ["hood", [c, SPOT_Y.hood, HOOD_DEPTH + PROUD]],
+];
+
+const placeSpots = (
+  spots: LocalSpot[],
+  at: [number, number],
+  facing: Facing,
+): Spot[] =>
+  spots.map(([appliance, point]) => spot(appliance, point, at, facing));
+
+// The dots in the full kitchen: the range and hood on the end wall run, the
+// dishwasher on the island's aisle side, and the French door fridge's left
+// door in the tall unit
+export const getKitchenSpots = ({ x, z: [z0, z1] }: Rect): Spot[] => {
+  const half = (x[1] - x[0]) / 2;
+  const centerX = (x[0] + x[1]) / 2;
+  const islandBack = z1 - COUNTER_DEPTH - AISLE - ISLAND_LIP;
+  const fridgeDoor = half - 0.1 - (FRIDGE_WIDTH * 3) / 4;
+  return [
+    ...placeSpots(cookingSpots(0), [centerX, z1], "-z"),
+    ...placeSpots(
+      [
+        [
+          "dishwasher",
+          [(1.5 + ISLAND.length / 2) / 2, SPOT_Y.dishwasher, 0.06 + PROUD],
+        ],
+      ],
+      [0, islandBack],
+      "+z",
+    ),
+    ...placeSpots(
+      [["frenchDoorFridge", [fridgeDoor, SPOT_Y.fridge, TALL_DEPTH + PROUD]]],
+      [centerX, z0],
+      "+z",
+    ),
+  ];
+};
+
+// The galley's dots, along the same face as its parts
+export const getGalleySpots = (x: number, [z0, z1]: Span): Spot[] => {
+  const { dw, fridge, c } = galleySpans(z1 - z0);
+  const middle = ([a, b]: Span) => (a + b) / 2;
+  return placeSpots(
+    [
+      ...cookingSpots(c),
+      [
+        "dishwasher",
+        [middle(dw), SPOT_Y.dishwasher, BASE_DEPTH + 0.06 + PROUD],
+      ],
+      [
+        "bottomFreezerFridge",
+        [middle(fridge), SPOT_Y.fridge, COUNTER_DEPTH + PROUD],
+      ],
+    ],
+    [x, (z0 + z1) / 2],
+    "-x",
+  );
+};

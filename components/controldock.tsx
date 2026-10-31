@@ -2,12 +2,15 @@ import React, { ReactNode } from "react";
 import { ToggleButton, ToggleButtonGroup, useMediaQuery } from "@mui/material";
 import { IconSun, IconDoor } from "@tabler/icons-react";
 import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
+import { getSwatchSize } from "./swatch";
 
 interface ControlDockProps {
   isInside: boolean;
   onViewChange: (inside: boolean) => void;
   label: string;
   children: ReactNode;
+  // more controls after the finishes, set apart from them
+  aside?: ReactNode;
 }
 
 const ControlDock = ({
@@ -15,6 +18,7 @@ const ControlDock = ({
   onViewChange,
   label,
   children,
+  aside,
 }: ControlDockProps) => {
   const isMobile = useMediaQuery("(max-width:900px)");
 
@@ -42,6 +46,21 @@ const ControlDock = ({
       {icon}
       {!isMobile && text}
     </ToggleButton>
+  );
+
+  // A swatch's circle sits inside its tap target, so the divider after the
+  // view toggle stands off it by as much again, to sit midway between them
+  const { target, dot } = getSwatchSize(isMobile);
+  const divider = (before = 4) => (
+    <div
+      style={{
+        width: 1,
+        height: 24,
+        flexShrink: 0,
+        margin: `0 4px 0 ${before}px`,
+        background: "rgba(19, 20, 20, 0.25)",
+      }}
+    />
   );
 
   return (
@@ -84,16 +103,7 @@ const ControlDock = ({
         {view("inside", "Inside", <IconDoor size={20} aria-hidden />)}
       </ToggleButtonGroup>
 
-      <div
-        style={{
-          width: 1,
-          height: 24,
-          flexShrink: 0,
-          // tighter on phones so the swatches still fit at 320px
-          margin: isMobile ? "0 4px" : "0 10px",
-          background: "rgba(19, 20, 20, 0.25)",
-        }}
-      />
+      {divider(4 + (target - dot) / 2)}
 
       <div
         role="group"
@@ -101,12 +111,21 @@ const ControlDock = ({
         style={{
           display: "flex",
           alignItems: "center",
-          gap: isMobile ? 8 : 12,
+          // 20px between the circles either way, as desktop's tap
+          // targets are bigger
+          gap: isMobile ? 8 : 6,
           minWidth: 0,
         }}
       >
         {children}
       </div>
+
+      {aside && (
+        <>
+          {divider()}
+          {aside}
+        </>
+      )}
     </div>
   );
 };

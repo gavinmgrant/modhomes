@@ -229,6 +229,12 @@ interface WalkPadProps {
 }
 
 // Desktop: small arrow keys plus a hint that fades once someone starts walking
+// The desktop arrows: four round keys at the edge of one frosted disc, a
+// little bigger than the touch joystick's, in px
+const PAD = { size: 112, key: 36, inset: 4, hub: 10 };
+// How far a key moves from the middle of the pad toward its edge
+const REACH = (PAD.size - PAD.key - 2 * PAD.inset) / 2;
+
 export const WalkPad = ({ input }: WalkPadProps) => {
   const [hasWalked, setHasWalked] = useState(false);
 
@@ -241,12 +247,12 @@ export const WalkPad = ({ input }: WalkPadProps) => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [hasWalked]);
 
+  // Each arrow sits at the edge of the pad, toward the way it walks
   const arrow = (
     direction: WalkKey,
     label: string,
     icon: React.ReactNode,
-    column: number,
-    row: number
+    [x, y]: [number, number]
   ) => {
     const hold = (pressed: boolean) => () => {
       input.current[direction] = pressed;
@@ -262,14 +268,15 @@ export const WalkPad = ({ input }: WalkPadProps) => {
         onPointerCancel={hold(false)}
         onContextMenu={(event) => event.preventDefault()}
         sx={{
-          ...PANEL,
-          gridColumn: column,
-          gridRow: row,
-          width: 40,
-          height: 40,
-          borderRadius: "10px",
+          position: "absolute",
+          left: PAD.inset + REACH * (1 + x),
+          top: PAD.inset + REACH * (1 + y),
+          width: PAD.key,
+          height: PAD.key,
+          borderRadius: "50%",
+          color: INK,
           userSelect: "none",
-          "&:hover": { background: "rgba(249, 247, 241, 0.95)" },
+          "&:hover": { background: "rgba(19, 20, 20, 0.08)" },
           "&:active": { background: INK, color: "#f9f7f1" },
           ...FOCUS_RING,
         }}
@@ -305,16 +312,31 @@ export const WalkPad = ({ input }: WalkPadProps) => {
         WASD or arrows to walk
       </span>
       <div
+        role="group"
+        aria-label="Walk"
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 40px)",
-          gap: 6,
+          ...PANEL,
+          position: "relative",
+          width: PAD.size,
+          height: PAD.size,
+          borderRadius: "50%",
         }}
       >
-        {arrow("forward", "Walk forward", <IconChevronUp size={20} />, 2, 1)}
-        {arrow("left", "Step left", <IconChevronLeft size={20} />, 1, 2)}
-        {arrow("back", "Walk back", <IconChevronDown size={20} />, 2, 2)}
-        {arrow("right", "Step right", <IconChevronRight size={20} />, 3, 2)}
+        {arrow("forward", "Walk forward", <IconChevronUp size={20} />, [0, -1])}
+        {arrow("left", "Step left", <IconChevronLeft size={20} />, [-1, 0])}
+        {arrow("back", "Walk back", <IconChevronDown size={20} />, [0, 1])}
+        {arrow("right", "Step right", <IconChevronRight size={20} />, [1, 0])}
+        {/* a small hub in the middle, like the joystick's knob at rest */}
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: (PAD.size - PAD.hub) / 2,
+            borderRadius: "50%",
+            background: "rgba(19, 20, 20, 0.12)",
+            pointerEvents: "none",
+          }}
+        />
       </div>
     </div>
   );

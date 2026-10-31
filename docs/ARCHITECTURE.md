@@ -22,6 +22,7 @@ pages/
 components/           3D parts and UI controls
 lib/
   models.js           The model catalogue (slug, name, area)
+  appliances.ts       The kitchen appliances shown in the inside view's spec dots
   viewposition.ts     Remembers whether the viewer was last inside or outside
 public/images/        Floor textures (CC0) and HDR environment maps
 __tests__/            Jest tests, one file per component
@@ -34,7 +35,7 @@ __tests__/            Jest tests, one file per component
 **Model viewer (`/homes/[slug]`).** This page has two views, and each one has its own `<Canvas>`:
 
 - **Outside:** `OrbitControls` around the home, set inside drei's `Stage` with a sky and a city HDR for lighting. The dock offers colors for the metal siding and, on two-wide homes, the wood siding.
-- **Inside:** first-person walking with `WalkControls`, using the keyboard and arrow pad on desktop or a joystick on touch screens. Movement is limited to the home's footprint and goes around the columns and the stair. A landscape HDR is projected onto the ground so the view outside looks real. The dock offers the floor material and, on homes with a kitchen and bathrooms, the color of their wall tile.
+- **Inside:** first-person walking with `WalkControls`, using the keyboard and arrow pad on desktop or a joystick on touch screens. Movement is limited to the home's footprint and goes around the columns and the stair. A landscape HDR is projected onto the ground so the view outside looks real. The dock offers the floor material and, on homes with a kitchen and bathrooms, the color of their wall tile. In homes with a kitchen, a dot on the range, hood, dishwasher and fridge opens a card with the appliance's standard Bosch model, its key specs and a link to its product page (`hotspots.tsx`). The dots are drei `Html` overlays placed from the same layout math as the kitchen (`getApplianceSpots`). Each one shows only from in front of its appliance, so none shows through a wall, and fades out with distance. They pulse to draw the eye, and a Specs switch in the dock hides them.
 
 ## How a home is generated
 
