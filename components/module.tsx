@@ -1,7 +1,6 @@
-import { useTexture } from "@react-three/drei";
 import Wall from "./wall";
 import { COLORS } from "./colors";
-import { TEXTURES } from "./materials";
+import { TEXTURES, useFloorTexture } from "./materials";
 import AssembleIn, {
   ASSEMBLY,
   CEILING_OFFSET,
@@ -82,8 +81,9 @@ const Module = ({
   ceilingOpening,
   animateIn = false,
 }: ModuleProps) => {
-  const texture = (TEXTURES as any)[floorMaterial];
-  const floorMaterialProps = useTexture(texture);
+  const floorMaterialProps = useFloorTexture(
+    floorMaterial as keyof typeof TEXTURES,
+  );
 
   return (
     <mesh position={position}>

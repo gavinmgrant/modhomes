@@ -45,27 +45,45 @@ export const getFloorRepeat = (material: keyof typeof TEXTURES) => {
   return size ? [SLAB.length / size, SLAB.width / size] : [1, 1];
 };
 
+// three's NoColorSpace, for textures that hold data rather than colors
+const NO_COLOR_SPACE = "";
+
+// The color space for each of a set of maps: sRGB for the color map, and
+// none for the normal and roughness maps, which hold data. R3F would put
+// them all in sRGB, and decoding a roughness map as a color darkens it, so
+// the surface shines like a mirror with the sky in it
+const getColorSpace = (key: string, gl: any) =>
+  key === "map" ? gl.outputColorSpace : NO_COLOR_SPACE;
+
 // useTexture uploads to the GPU straight away, but R3F only sets a texture's
 // color space once it's put on a material, and an uploaded texture keeps the
-// one it went up with. Set it first, as R3F would, or finishes not yet on the
-// floor render washed out when picked. Tiling is set before upload too
-const FloorTexture = ({ material }: { material: keyof typeof TEXTURES }) => {
+// one it went up with. Set it first, or finishes not yet on the floor render
+// washed out when picked. Tiling is set before upload too. Module loads its
+// floor with this as well, for views without FloorTextures
+export const useFloorTexture = (material: keyof typeof TEXTURES) => {
   const gl = useThree((state) => state.gl);
   const [u, v] = getFloorRepeat(material);
-  useTexture(TEXTURES[material], (textures) => {
-    (textures as any[]).forEach((texture) => {
-      texture.colorSpace = gl.outputColorSpace;
+  return useTexture(TEXTURES[material], (textures) => {
+    (textures as any[]).forEach((texture, i) => {
+      texture.colorSpace = getColorSpace(
+        Object.keys(TEXTURES[material])[i],
+        gl,
+      );
       if (TILE_SIZE[material]) {
         texture.wrapS = texture.wrapT = REPEAT_WRAPPING;
         texture.repeat.set(u, v);
       }
     });
   });
+};
+
+const FloorTexture = ({ material }: { material: keyof typeof TEXTURES }) => {
+  useFloorTexture(material);
   return null;
 };
 
 // Loads every floor finish under the scene's Suspense, keyed the same as
-// Module's useTexture call, so picking another finish swaps it in place
+// Module's, so picking another finish swaps it in place
 // instead of suspending the model back to the loader
 export const FloorTextures = () => (
   <>
@@ -87,20 +105,14 @@ const VENEER = {
 // One copy of the veneer covers this many feet square
 export const VENEER_SIZE = 4;
 
-// three's NoColorSpace, for textures that hold data rather than colors
-const NO_COLOR_SPACE = "";
-
 // Veneer is laid out by position in feet, so its texture coordinates run
-// well past 1 and it's always tiled. Its color space is set before upload,
-// as FloorTexture's is, but only the color map is in sRGB. R3F would put the
-// normal and roughness maps in it too, and decoding them as colors darkens
-// the roughness, so the satin wood shone like a mirror with the sky in it
+// well past 1 and it's always tiled. Its color spaces are set before upload,
+// as FloorTexture's are
 export const useVeneer = () => {
   const gl = useThree((state) => state.gl);
   return useTexture(VENEER, (textures) => {
     (textures as any[]).forEach((texture, i) => {
-      texture.colorSpace =
-        Object.keys(VENEER)[i] === "map" ? gl.outputColorSpace : NO_COLOR_SPACE;
+      texture.colorSpace = getColorSpace(Object.keys(VENEER)[i], gl);
       texture.wrapS = texture.wrapT = REPEAT_WRAPPING;
     });
   });
