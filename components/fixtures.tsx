@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { COLORS } from "./colors";
+import { useVeneer, VENEER_SIZE } from "./materials";
 import { boxBetween, Box, Rect } from "./stair";
 
 // Units are feet. The ground floor's finished surface and the underside of
@@ -35,7 +36,8 @@ export const tileColors = (color: string) => ({
   floorTile: shadeColor(color, FLOOR_SHADE),
 });
 
-// Plain colours for now, standing in for real finishes
+// Plain colors for now, standing in for real finishes. Walnut boxes are
+// drawn in veneer instead (see Parts); its plain color is for the stools
 export const FINISHES = {
   gyp: { color: COLORS.gyp, metalness: 0.1, roughness: 0.1 },
   walnut: { color: COLORS.walnut, roughness: 0.6 },
@@ -301,25 +303,73 @@ interface PartsProps {
   colors?: Partial<Record<Finish, string>>;
 }
 
-export const Parts = ({ parts, colors }: PartsProps) => (
-  <>
-    {parts.map(({ position, size, finish, round }) => (
-      <mesh
-        key={`${finish}-${position.join()}-${size.join()}`}
-        position={position}
-        scale={round ? size : undefined}
-        receiveShadow
-      >
-        {round ? (
-          <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
-        ) : (
-          <boxGeometry args={size} />
-        )}
-        <meshStandardMaterial
-          {...FINISHES[finish]}
-          {...(colors?.[finish] && { color: colors[finish] })}
-        />
-      </mesh>
-    ))}
-  </>
-);
+// Veneer is laid out by where it is in the services module rather than
+// stretched over each box, so the grain runs on from one door to the next and
+// from each drawer front down into the door below it. The grain runs up the
+// fronts and sides, and along z on tops; a point's texture coordinates count
+// copies of the veneer, along the grain then across it
+export const veneerUv = (
+  [x, y, z]: [number, number, number],
+  [nx, ny]: [number, number, number],
+): [number, number] => {
+  const top = Math.abs(ny) > 0.5;
+  const along = top ? z : y;
+  const across = Math.abs(nx) > 0.5 ? z : x;
+  return [along / VENEER_SIZE, across / VENEER_SIZE];
+};
+
+const VeneerBox = ({ position, size }: Box) => {
+  const geometry = useRef<any>(null);
+  const [px, py, pz] = position;
+  useLayoutEffect(() => {
+    const { position: points, normal, uv } = geometry.current.attributes;
+    for (let i = 0; i < uv.count; i++) {
+      const [u, v] = veneerUv(
+        [points.getX(i) + px, points.getY(i) + py, points.getZ(i) + pz],
+        [normal.getX(i), normal.getY(i), normal.getZ(i)],
+      );
+      uv.setXY(i, u, v);
+    }
+    uv.needsUpdate = true;
+  }, [px, py, pz, size]);
+  return <boxGeometry ref={geometry} args={size} />;
+};
+
+// The veneer's roughness map averages about a third, glossier than the
+// satin lacquer on walnut cabinets, so it's scaled up to about a half
+const VENEER_ROUGHNESS = 1.5;
+
+export const Parts = ({ parts, colors }: PartsProps) => {
+  const veneer = useVeneer();
+  return (
+    <>
+      {parts.map(({ position, size, finish, round }) => {
+        const veneered = finish === "walnut" && !round;
+        return (
+          <mesh
+            key={`${finish}-${position.join()}-${size.join()}`}
+            position={position}
+            scale={round ? size : undefined}
+            receiveShadow
+          >
+            {round ? (
+              <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
+            ) : veneered ? (
+              <VeneerBox position={position} size={size} />
+            ) : (
+              <boxGeometry args={size} />
+            )}
+            {veneered ? (
+              <meshStandardMaterial {...veneer} roughness={VENEER_ROUGHNESS} />
+            ) : (
+              <meshStandardMaterial
+                {...FINISHES[finish]}
+                {...(colors?.[finish] && { color: colors[finish] })}
+              />
+            )}
+          </mesh>
+        );
+      })}
+    </>
+  );
+};
