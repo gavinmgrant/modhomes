@@ -75,6 +75,31 @@ export const FloorTextures = () => (
   </>
 );
 
+// Walnut veneer for the cabinets and the bathroom vanity and linen
+// cupboard: ambientCG's Wood066, a straight grain running along the image's
+// width
+const VENEER = {
+  map: "/images/materials/Wood066_1K_Color.jpg",
+  normalMap: "/images/materials/Wood066_1K_Normal.jpg",
+  roughnessMap: "/images/materials/Wood066_1K_Roughness.jpg",
+};
+
+// One copy of the veneer covers this many feet square
+export const VENEER_SIZE = 4;
+
+// Veneer is laid out by position in feet, so its texture coordinates run
+// well past 1 and it's always tiled. Its color space is set as
+// FloorTexture's is, before upload
+export const useVeneer = () => {
+  const gl = useThree((state) => state.gl);
+  return useTexture(VENEER, (textures) => {
+    (textures as any[]).forEach((texture) => {
+      texture.colorSpace = gl.outputColorSpace;
+      texture.wrapS = texture.wrapT = REPEAT_WRAPPING;
+    });
+  });
+};
+
 // drei's "city" lighting preset (Poly Haven's Potsdamer Platz, CC0), served
 // from this site rather than drei's development CDN
 export const CITY_ENVIRONMENT = "/images/environments/potsdamer_platz_1k.hdr";

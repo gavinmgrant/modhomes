@@ -11,7 +11,9 @@ import {
   tileColors,
   Part,
   tileFloor,
+  veneerUv,
 } from "../components/fixtures";
+import { VENEER_SIZE } from "../components/materials";
 
 const middle = ({ u }: LocalPart) => (u[0] + u[1]) / 2;
 const pulls = (parts: LocalPart[]) =>
@@ -125,5 +127,23 @@ describe("floor tile", () => {
         FLOOR - 1e-9,
       );
     });
+  });
+});
+
+describe("veneer", () => {
+  it("runs the grain up a front and its side, and along z on a top", () => {
+    const point: [number, number, number] = [1, 2, 3];
+    const along = (normal: [number, number, number]) =>
+      veneerUv(point, normal)[0] * VENEER_SIZE;
+    expect(along([0, 0, 1])).toBeCloseTo(2);
+    expect(along([-1, 0, 0])).toBeCloseTo(2);
+    expect(along([0, 1, 0])).toBeCloseTo(3);
+  });
+
+  it("carries the grain across the gap from one door to the next", () => {
+    // the right edge of one door and the left edge of the next, 1/4" apart
+    const [, left] = veneerUv([2 - 1 / 96, 0, 0.1], [0, 0, 1]);
+    const [, right] = veneerUv([2 + 1 / 96, 0, 0.1], [0, 0, 1]);
+    expect((right - left) * VENEER_SIZE).toBeCloseTo(1 / 48);
   });
 });
