@@ -39,7 +39,7 @@ describe("colors", () => {
   it("starts with one swatch per finish, showing the current choice", () => {
     const { getAllByRole, getByLabelText } = renderColors(true);
     expect(getAllByRole("button")).toHaveLength(3);
-    expect(getByLabelText("Panels: White")).toBeTruthy();
+    expect(getByLabelText("Metal: White")).toBeTruthy();
     expect(getByLabelText("Trim: Statuary Bronze")).toBeTruthy();
     expect(getByLabelText("Wood: Cedar")).toBeTruthy();
   });
@@ -69,11 +69,11 @@ describe("colors", () => {
       true,
       handleColor
     );
-    const metal = getByLabelText("Panels: White");
+    const metal = getByLabelText("Metal: White");
     expect(metal.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(metal);
     expect(metal.getAttribute("aria-expanded")).toBe("true");
-    expect(queryByRole("group", { name: "Panels" })).toBeTruthy();
+    expect(queryByRole("group", { name: "Metal" })).toBeTruthy();
     fireEvent.click(getByTestId("taupe-option"));
     expect(handleColor).toHaveBeenCalledWith(COLORS.taupe);
     expect(metal.getAttribute("aria-expanded")).toBe("false");
