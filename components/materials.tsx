@@ -87,14 +87,20 @@ const VENEER = {
 // One copy of the veneer covers this many feet square
 export const VENEER_SIZE = 4;
 
+// three's NoColorSpace, for textures that hold data rather than colors
+const NO_COLOR_SPACE = "";
+
 // Veneer is laid out by position in feet, so its texture coordinates run
-// well past 1 and it's always tiled. Its color space is set as
-// FloorTexture's is, before upload
+// well past 1 and it's always tiled. Its color space is set before upload,
+// as FloorTexture's is, but only the color map is in sRGB. R3F would put the
+// normal and roughness maps in it too, and decoding them as colors darkens
+// the roughness, so the satin wood shone like a mirror with the sky in it
 export const useVeneer = () => {
   const gl = useThree((state) => state.gl);
   return useTexture(VENEER, (textures) => {
-    (textures as any[]).forEach((texture) => {
-      texture.colorSpace = gl.outputColorSpace;
+    (textures as any[]).forEach((texture, i) => {
+      texture.colorSpace =
+        Object.keys(VENEER)[i] === "map" ? gl.outputColorSpace : NO_COLOR_SPACE;
       texture.wrapS = texture.wrapT = REPEAT_WRAPPING;
     });
   });
