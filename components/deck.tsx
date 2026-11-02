@@ -220,6 +220,12 @@ export const isDeckUp = (phase?: DeckPhase) =>
 export const isDeckMoving = (decks: Decks) =>
   Object.values(decks).some((phase) => phase !== "landed");
 
+// How much the decks widen the home's footprint, counting one from the
+// moment it's added, as each stands its full depth off a long side
+export const getDecksWidth = (decks: Decks) =>
+  ([-1, 1] as DeckSide[]).filter((side) => isDeckUp(decks[side])).length *
+  DECK.depth;
+
 // Adds a deck to a side, or takes away the one there
 export const toggleDeck = (decks: Decks, side: DeckSide): Decks => ({
   ...decks,

@@ -21,6 +21,7 @@ import {
   Decks,
   DeckToggle,
   FacingSide,
+  getDecksWidth,
   isDeckMoving,
   landDecks,
   settleDeck,
@@ -31,7 +32,7 @@ import Colors, { COLORS } from "../../components/colors";
 import Materials, { FloorTextures } from "../../components/materials";
 import HomeStage from "../../components/homestage";
 import Loader from "../../components/loader";
-import InfoChip from "../../components/infochip";
+import ModelCard from "../../components/modelcard";
 import PageMeta from "../../components/pagemeta";
 import ControlDock from "../../components/controldock";
 import WalkControls, {
@@ -174,7 +175,17 @@ const Homes: FC = () => {
         style={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}
       >
         <NavBar />
-        {model && <InfoChip name={model.name} area={model.area} />}
+        {model && (
+          <ModelCard
+            model={{
+              ...model,
+              footprint: [
+                model.footprint[0] + getDecksWidth(decks),
+                model.footprint[1],
+              ],
+            }}
+          />
+        )}
       </div>
       <div style={{ height: "100vh", width: "100vw", margin: 0 }}>
         {isInside ? (
