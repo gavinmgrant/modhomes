@@ -1,6 +1,8 @@
 // Shared frosted-glass look for the controls that float over the 3D view
 export const INK = "#131414";
 export const PAPER = "#f9f7f1";
+// Corner radius shared by the navbar and the model card under it
+export const PANEL_RADIUS = 18;
 
 export const PANEL = {
   background: "rgba(249, 247, 241, 0.78)",

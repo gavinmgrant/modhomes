@@ -10,6 +10,7 @@ import {
   getBoxesGeometry,
   getDeckLayout,
   getDeckOffset,
+  getDecksWidth,
   getFoundationRise,
   getTrianglesGeometry,
   HIP_RISE,
@@ -339,6 +340,15 @@ describe("deck state", () => {
     expect(isDeckMoving({ 1: "landed", [-1]: "landed" })).toBe(false);
     expect(isDeckMoving({ 1: "landed", [-1]: "dropping" })).toBe(true);
     expect(isDeckMoving({ 1: "lifting" })).toBe(true);
+  });
+
+  it("widens the footprint by a deck's depth from when it's added", () => {
+    expect(getDecksWidth({})).toBe(0);
+    expect(getDecksWidth({ 1: "dropping" })).toBe(DECK.depth);
+    expect(getDecksWidth({ 1: "landed", [-1]: "landed" })).toBe(
+      2 * DECK.depth
+    );
+    expect(getDecksWidth({ 1: "landed", [-1]: "lifting" })).toBe(DECK.depth);
   });
 
   it("knows which glass side faces the camera", () => {

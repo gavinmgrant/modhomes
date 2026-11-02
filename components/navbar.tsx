@@ -14,7 +14,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import { IconLayoutGrid, IconX } from "@tabler/icons-react";
 import MODELS from "../lib/models";
-import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
+import { FOCUS_RING, INK, PANEL, PANEL_RADIUS, PAPER } from "./panel";
 
 const HOVER = { "&:hover": { background: "rgba(19, 20, 20, 0.06)" } };
 
@@ -50,7 +50,7 @@ const NavBar = () => {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        borderRadius: 999,
+        borderRadius: PANEL_RADIUS,
       }}
     >
       <Typography
@@ -61,7 +61,7 @@ const NavBar = () => {
         <Link href="/">ModHomes</Link>
       </Typography>
       {/* Right inset matches the space above and below the 40px button
-          (56px toolbar on xs, 64px from sm), so it sits centred in the end cap */}
+          (56px toolbar on xs, 64px from sm), so it sits centred in the bar's end */}
       <Toolbar sx={{ paddingRight: { xs: "8px", sm: "12px" } }}>
         {isMobile ? (
           <IconButton
