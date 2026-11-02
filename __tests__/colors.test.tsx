@@ -14,7 +14,7 @@ import { render, fireEvent } from "@testing-library/react";
 const renderColors = (
   hasWood: boolean,
   handleColor = jest.fn(),
-  handleTrimColor = jest.fn()
+  handleTrimColor = jest.fn(),
 ) =>
   render(
     <Colors
@@ -25,7 +25,7 @@ const renderColors = (
       sidingColor={COLORS.siding}
       handleSidingColor={() => {}}
       hasWood={hasWood}
-    />
+    />,
   );
 
 describe("colors", () => {
@@ -54,12 +54,12 @@ describe("colors", () => {
     const { getByLabelText, getByTestId } = renderColors(
       true,
       jest.fn(),
-      handleTrimColor
+      handleTrimColor,
     );
     fireEvent.click(getByLabelText("Trim: Statuary Bronze"));
     fireEvent.click(getByTestId("bone white-option"));
     expect(handleTrimColor).toHaveBeenCalledWith(
-      TRIM_OPTIONS.find(({ name }) => name === "Bone White")?.value
+      TRIM_OPTIONS.find(({ name }) => name === "Bone White")?.value,
     );
   });
 
@@ -67,7 +67,7 @@ describe("colors", () => {
     const handleColor = jest.fn();
     const { getByLabelText, getByTestId, queryByRole } = renderColors(
       true,
-      handleColor
+      handleColor,
     );
     const metal = getByLabelText("Metal: White");
     expect(metal.getAttribute("aria-expanded")).toBe("false");
@@ -89,10 +89,16 @@ describe("colors", () => {
 });
 
 describe("materials", () => {
-  it("tiles concrete and carpet in square tiles, but stretches wood boards", () => {
-    (["concrete", "carpet"] as const).forEach((material) => {
+  it("tiles concrete and carpet in their images' proportions, but stretches wood boards", () => {
+    // concrete's image is 2:1, carpet's square
+    (
+      [
+        ["concrete", 2],
+        ["carpet", 1],
+      ] as const
+    ).forEach(([material, aspect]) => {
       const [u, v] = getFloorRepeat(material);
-      expect(39 / u).toBeCloseTo(8 / v);
+      expect(39 / u).toBeCloseTo(aspect * (8 / v));
     });
     expect(getFloorRepeat("walnut")).toEqual([1, 1]);
   });
@@ -106,7 +112,7 @@ describe("materials", () => {
         tileColor={COLORS.tile}
         handleTileColor={handleTileColor}
         hasTile
-      />
+      />,
     );
     expect(getByLabelText("Floor: Walnut")).toBeTruthy();
     fireEvent.click(getByLabelText("Tile: Urban Putty"));

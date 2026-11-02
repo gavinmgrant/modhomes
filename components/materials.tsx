@@ -18,9 +18,9 @@ export const TEXTURES = {
     roughnessMap: "/images/materials/WoodFloor051_1K_Roughness.jpg",
   },
   concrete: {
-    map: "/images/materials/Concrete036_1K_Color.jpg",
-    normalMap: "/images/materials/Concrete036_1K_Normal.jpg",
-    roughnessMap: "/images/materials/Concrete036_1K_Roughness.jpg",
+    map: "/images/materials/Concrete034_1K_Color.jpg",
+    normalMap: "/images/materials/Concrete034_1K_Normal.jpg",
+    roughnessMap: "/images/materials/Concrete034_1K_Roughness.jpg",
   },
   carpet: {
     map: "/images/materials/Carpet014_1K_Color.jpg",
@@ -31,10 +31,11 @@ export const TEXTURES = {
 
 // Each floor slab stretches its texture over 39 x 8 ft, which suits the
 // long boards of the wood floors. Concrete and carpet are tiled instead,
-// each tile covering this many feet square
-const TILE_SIZE: Partial<Record<keyof typeof TEXTURES, number>> = {
-  concrete: 8,
-  carpet: 2,
+// each tile covering this many feet along the slab's length and across it,
+// in the proportions of its image: concrete's is twice as wide as it's tall
+const TILE_SIZE: Partial<Record<keyof typeof TEXTURES, [number, number]>> = {
+  concrete: [16, 8],
+  carpet: [2, 2],
 };
 const SLAB = { length: 39, width: 8 };
 // three's RepeatWrapping, as three has no type definitions installed here
@@ -42,7 +43,7 @@ const REPEAT_WRAPPING = 1000;
 
 export const getFloorRepeat = (material: keyof typeof TEXTURES) => {
   const size = TILE_SIZE[material];
-  return size ? [SLAB.length / size, SLAB.width / size] : [1, 1];
+  return size ? [SLAB.length / size[0], SLAB.width / size[1]] : [1, 1];
 };
 
 // three's NoColorSpace, for textures that hold data rather than colors
