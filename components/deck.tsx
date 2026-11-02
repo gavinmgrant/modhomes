@@ -31,6 +31,10 @@ export const DECK = { depth: 8, length: 40 };
 const BOARD = { width: 5.5 / 12, gap: 0.25 / 12, thickness: 1 / 12 };
 // 3" square soffit slats, 2" apart, running out from the home
 const SLAT = { width: 3 / 12, gap: 2 / 12, depth: 3 / 12 };
+// The boards face the open sky, which lights them far more than the upright
+// siding of the same color, so they came out much lighter. They take a tenth
+// of its light, and render within a few levels of the siding in each wood
+const BOARD_LIGHTING = { envMapIntensity: 0.1 };
 // A 1 ft deep frame under the boards, like a module's floor frame
 const RIM_HEIGHT = 1;
 // The fascia's underside lines up with the underside of the home's top beam
@@ -394,13 +398,9 @@ const Deck = ({
   const from = useRef(offset.current);
   const start = useRef<number | null>(null);
   const settled = useRef(phase === "landed");
-  const { foundation, frame, roof, hip, wood } = useMemo(() => {
-    const { boards, slats, roof, ...layout } = getDeckLayout(
-      side,
-      halfWidth,
-      stories,
-    );
-    return { ...layout, roof: [roof], wood: [...boards, ...slats] };
+  const { foundation, frame, roof, hip, boards, slats } = useMemo(() => {
+    const { roof, ...layout } = getDeckLayout(side, halfWidth, stories);
+    return { ...layout, roof: [roof] };
   }, [side, halfWidth, stories]);
   // The stem walls grow up out of the ground from their base, and are
   // hidden while they're below it
@@ -457,7 +457,14 @@ const Deck = ({
             roughness={0.5}
           />
         </Boxes>
-        <Boxes boxes={wood}>
+        <Boxes boxes={boards}>
+          <meshStandardMaterial
+            color={woodColor}
+            roughness={0.8}
+            {...BOARD_LIGHTING}
+          />
+        </Boxes>
+        <Boxes boxes={slats}>
           <meshStandardMaterial color={woodColor} roughness={0.8} />
         </Boxes>
       </group>
