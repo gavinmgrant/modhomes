@@ -72,6 +72,12 @@ interface ModuleProps {
   animateIn?: boolean;
 }
 
+// The views light the home with an open-sky environment that nothing in the
+// room shades, so the floor took in as much light as if it were outdoors and
+// came out far lighter than its swatch. It takes a fifth of that light, and
+// its texture is darkened a little, so it reads close to its swatch
+const FLOOR_LIGHTING = { envMapIntensity: 0.2, color: "#bbbbbb" };
+
 const Module = ({
   color,
   position,
@@ -133,7 +139,7 @@ const Module = ({
             rotation={[0, -Math.PI / 2, 0]}
           >
             <boxGeometry args={[piece.depth, 0.1, piece.width]} />
-            <meshStandardMaterial {...floorMaterialProps} />
+            <meshStandardMaterial {...floorMaterialProps} {...FLOOR_LIGHTING} />
           </mesh>
         ))}
       </AssembleIn>
