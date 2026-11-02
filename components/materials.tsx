@@ -18,9 +18,9 @@ export const TEXTURES = {
     roughnessMap: "/images/materials/WoodFloor051_1K_Roughness.jpg",
   },
   concrete: {
-    map: "/images/materials/Concrete036_1K_Color.jpg",
-    normalMap: "/images/materials/Concrete036_1K_Normal.jpg",
-    roughnessMap: "/images/materials/Concrete036_1K_Roughness.jpg",
+    map: "/images/materials/Concrete034_1K_Color.jpg",
+    normalMap: "/images/materials/Concrete034_1K_Normal.jpg",
+    roughnessMap: "/images/materials/Concrete034_1K_Roughness.jpg",
   },
   carpet: {
     map: "/images/materials/Carpet014_1K_Color.jpg",
@@ -31,10 +31,11 @@ export const TEXTURES = {
 
 // Each floor slab stretches its texture over 39 x 8 ft, which suits the
 // long boards of the wood floors. Concrete and carpet are tiled instead,
-// each tile covering this many feet square
-const TILE_SIZE: Partial<Record<keyof typeof TEXTURES, number>> = {
-  concrete: 8,
-  carpet: 2,
+// each tile covering this many feet along the slab's length and across it,
+// in the proportions of its image: concrete's is twice as wide as it's tall
+const TILE_SIZE: Partial<Record<keyof typeof TEXTURES, [number, number]>> = {
+  concrete: [16, 8],
+  carpet: [2, 2],
 };
 const SLAB = { length: 39, width: 8 };
 // three's RepeatWrapping, as three has no type definitions installed here
@@ -42,30 +43,48 @@ const REPEAT_WRAPPING = 1000;
 
 export const getFloorRepeat = (material: keyof typeof TEXTURES) => {
   const size = TILE_SIZE[material];
-  return size ? [SLAB.length / size, SLAB.width / size] : [1, 1];
+  return size ? [SLAB.length / size[0], SLAB.width / size[1]] : [1, 1];
 };
+
+// three's NoColorSpace, for textures that hold data rather than colors
+const NO_COLOR_SPACE = "";
+
+// The color space for each of a set of maps: sRGB for the color map, and
+// none for the normal and roughness maps, which hold data. R3F would put
+// them all in sRGB, and decoding a roughness map as a color darkens it, so
+// the surface shines like a mirror with the sky in it
+const getColorSpace = (key: string, gl: any) =>
+  key === "map" ? gl.outputColorSpace : NO_COLOR_SPACE;
 
 // useTexture uploads to the GPU straight away, but R3F only sets a texture's
 // color space once it's put on a material, and an uploaded texture keeps the
-// one it went up with. Set it first, as R3F would, or finishes not yet on the
-// floor render washed out when picked. Tiling is set before upload too
-const FloorTexture = ({ material }: { material: keyof typeof TEXTURES }) => {
+// one it went up with. Set it first, or finishes not yet on the floor render
+// washed out when picked. Tiling is set before upload too. Module loads its
+// floor with this as well, for views without FloorTextures
+export const useFloorTexture = (material: keyof typeof TEXTURES) => {
   const gl = useThree((state) => state.gl);
   const [u, v] = getFloorRepeat(material);
-  useTexture(TEXTURES[material], (textures) => {
-    (textures as any[]).forEach((texture) => {
-      texture.colorSpace = gl.outputColorSpace;
+  return useTexture(TEXTURES[material], (textures) => {
+    (textures as any[]).forEach((texture, i) => {
+      texture.colorSpace = getColorSpace(
+        Object.keys(TEXTURES[material])[i],
+        gl,
+      );
       if (TILE_SIZE[material]) {
         texture.wrapS = texture.wrapT = REPEAT_WRAPPING;
         texture.repeat.set(u, v);
       }
     });
   });
+};
+
+const FloorTexture = ({ material }: { material: keyof typeof TEXTURES }) => {
+  useFloorTexture(material);
   return null;
 };
 
 // Loads every floor finish under the scene's Suspense, keyed the same as
-// Module's useTexture call, so picking another finish swaps it in place
+// Module's, so picking another finish swaps it in place
 // instead of suspending the model back to the loader
 export const FloorTextures = () => (
   <>
@@ -88,13 +107,13 @@ const VENEER = {
 export const VENEER_SIZE = 4;
 
 // Veneer is laid out by position in feet, so its texture coordinates run
-// well past 1 and it's always tiled. Its color space is set as
-// FloorTexture's is, before upload
+// well past 1 and it's always tiled. Its color spaces are set before upload,
+// as FloorTexture's are
 export const useVeneer = () => {
   const gl = useThree((state) => state.gl);
   return useTexture(VENEER, (textures) => {
-    (textures as any[]).forEach((texture) => {
-      texture.colorSpace = gl.outputColorSpace;
+    (textures as any[]).forEach((texture, i) => {
+      texture.colorSpace = getColorSpace(Object.keys(VENEER)[i], gl);
       texture.wrapS = texture.wrapT = REPEAT_WRAPPING;
     });
   });

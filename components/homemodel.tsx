@@ -1,12 +1,13 @@
 import React from "react";
 import Module from "./module";
 import EndWall from "./endwall";
-import Foundation from "./foundation";
+import Foundation, { FOUNDATION } from "./foundation";
 import Roof from "./roof";
 import SlidingDoors from "./slidingdoors";
 import Stair, { getStairLayout } from "./stair";
 import Services, { getSidedPanes } from "./services";
 import { COLORS } from "./colors";
+import Deck, { DeckSide, Decks } from "./deck";
 
 // "mod3x2" -> 3 modules wide, 2 stories; null until the slug is known
 export const parseModel = (slug?: string | string[]) => {
@@ -53,6 +54,9 @@ interface HomeModelProps {
   sidingColor?: string;
   tileColor?: string;
   envelopeOn?: boolean;
+  // Covered decks on the glass sides, and what each one is doing
+  decks?: Decks;
+  onDeckSettled?: (side: DeckSide) => void;
 }
 
 // Modules are 8 wide and sit side by side centred on x = 0; upper stories are 10 up
@@ -65,6 +69,8 @@ const HomeModel = ({
   sidingColor,
   tileColor,
   envelopeOn = true,
+  decks = {},
+  onDeckSettled,
 }: HomeModelProps) => {
   const twoStory = stories === 2;
   const halfWidth = 4 * cols;
@@ -138,10 +144,26 @@ const HomeModel = ({
           />
         </>
       )}
+      {envelopeOn &&
+        ([-1, 1] as DeckSide[]).map(
+          (side) =>
+            decks[side] && (
+              <Deck
+                key={side}
+                side={side}
+                halfWidth={halfWidth}
+                stories={stories}
+                color={color}
+                woodColor={sidingColor}
+                phase={decks[side]}
+                onSettled={() => onDeckSettled?.(side)}
+              />
+            ),
+        )}
       <Foundation
         position={[0, -5.7, 0]}
         color={COLORS.foundation}
-        width={8 * cols - 1}
+        width={8 * cols - 2 * FOUNDATION.inset}
       />
       <Roof
         position={[0, twoStory ? 15.3 : 5.3, 0]}

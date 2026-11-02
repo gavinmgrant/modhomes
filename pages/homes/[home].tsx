@@ -15,12 +15,21 @@ import {
   hasServices,
 } from "../../components/services";
 import ApplianceHotspots, { SpecsToggle } from "../../components/hotspots";
+import {
+  createFacingStore,
+  DeckSide,
+  Decks,
+  DeckToggle,
+  FacingSide,
+  isDeckMoving,
+  landDecks,
+  settleDeck,
+  toggleDeck,
+} from "../../components/deck";
 import type { ApplianceId } from "../../lib/appliances";
 import Colors, { COLORS } from "../../components/colors";
-import Materials, {
-  CITY_ENVIRONMENT,
-  FloorTextures,
-} from "../../components/materials";
+import Materials, { FloorTextures } from "../../components/materials";
+import HomeStage from "../../components/homestage";
 import Loader from "../../components/loader";
 import InfoChip from "../../components/infochip";
 import PageMeta from "../../components/pagemeta";
@@ -35,7 +44,7 @@ import WalkControls, {
 } from "../../components/walkcontrols";
 import MODELS from "../../lib/models";
 import { loadInsideView, saveInsideView } from "../../lib/viewposition";
-import { OrbitControls, Sky, Stage, Environment } from "@react-three/drei";
+import { OrbitControls, Sky, Environment } from "@react-three/drei";
 import { useMediaQuery } from "@mui/material";
 
 // The landscape photo is projected onto a ground plane at y = 0 with real
@@ -92,6 +101,8 @@ const Homes: FC = () => {
   const [tileColor, setTileColor] = useState(COLORS.tile);
   const [showSpecs, setShowSpecs] = useState(true);
   const [openAppliance, setOpenAppliance] = useState<ApplianceId | null>(null);
+  const [decks, setDecks] = useState<Decks>({});
+  const [facing] = useState(createFacingStore);
   const isMobile = useMediaQuery("(max-width:900px)");
   const isTouch = useMediaQuery("(pointer: coarse)");
   const walkInput = useRef<WalkInput>({ ...IDLE_INPUT });
@@ -109,10 +120,17 @@ const Homes: FC = () => {
       trimColor={trimColor}
       sidingColor={sidingColor}
       tileColor={tileColor}
+      decks={decks}
+      onDeckSettled={(side: DeckSide) =>
+        setDecks((decks) => settleDeck(decks, side))
+      }
     />
   );
+  // The wood swatch colors the decks as well as the siding
   const hasWood =
-    !!layout && getSidedPanes(layout.cols, layout.stories).length > 0;
+    !!layout &&
+    (getSidedPanes(layout.cols, layout.stories).length > 0 ||
+      Object.keys(decks).length > 0);
   const hasTile =
     !!layout && (hasServices(layout.cols) || hasGalley(layout.cols));
   const applianceSpots = layout ? getApplianceSpots(layout.cols) : [];
@@ -125,6 +143,8 @@ const Homes: FC = () => {
   const handleViewChange = (inside: boolean) => {
     setIsInside(inside);
     setOpenAppliance(null);
+    // The new view draws the decks in place, without replaying their moves
+    setDecks(landDecks);
     walkInput.current = { ...IDLE_INPUT };
     saveInsideView(inside);
   };
@@ -213,6 +233,7 @@ const Homes: FC = () => {
                   maxDistance={100}
                   enableZoom
                 />
+                <FacingSide store={facing} />
                 <ambientLight intensity={0.5} />
                 <pointLight position={[100, 100, 20]} />
                 <Sky
@@ -220,18 +241,7 @@ const Homes: FC = () => {
                   inclination={0}
                   azimuth={0.25}
                 />
-                <Stage
-                  intensity={0.4}
-                  environment={{ files: CITY_ENVIRONMENT }}
-                  adjustCamera={false}
-                  shadows={{
-                    type: "accumulative",
-                    color: COLORS.shadow,
-                    opacity: 0.3,
-                  }}
-                >
-                  {home}
-                </Stage>
+                <HomeStage moving={isDeckMoving(decks)}>{home}</HomeStage>
               </Suspense>
             </Canvas>
           </div>
@@ -256,14 +266,23 @@ const Homes: FC = () => {
             onViewChange={handleViewChange}
             label={isInside ? "Interior finishes" : "Exterior colors"}
             aside={
-              isInside &&
-              applianceSpots.length > 0 && (
-                <SpecsToggle
-                  on={showSpecs}
-                  onChange={(on) => {
-                    setShowSpecs(on);
-                    setOpenAppliance(null);
-                  }}
+              isInside ? (
+                applianceSpots.length > 0 && (
+                  <SpecsToggle
+                    on={showSpecs}
+                    onChange={(on) => {
+                      setShowSpecs(on);
+                      setOpenAppliance(null);
+                    }}
+                  />
+                )
+              ) : (
+                <DeckToggle
+                  decks={decks}
+                  facing={facing}
+                  onToggle={(side) =>
+                    setDecks((decks) => toggleDeck(decks, side))
+                  }
                 />
               )
             }

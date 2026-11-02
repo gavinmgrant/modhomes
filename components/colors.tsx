@@ -87,7 +87,7 @@ const Colors = ({
 }: ColorProps) => (
   <>
     <SwatchPicker
-      label="Panels"
+      label="Metal"
       options={METAL_OPTIONS}
       value={homeColor}
       onChange={handleColor}

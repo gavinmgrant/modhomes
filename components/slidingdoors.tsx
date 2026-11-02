@@ -5,9 +5,9 @@ import { COLORS } from "./colors";
 export const PANES_PER_HALF = 3;
 // The opening runs from the middle column (z = 0) to the end wall column faces
 const OPENING_END = 19.25;
-const FLOOR = -4;
-const CEILING = 3.9;
-const STORY_HEIGHT = 10;
+export const FLOOR = -4;
+export const CEILING = 3.9;
+export const STORY_HEIGHT = 10;
 // Two sliding tracks just outside the module edge, inside the end wall frame
 const TRACKS = [0.15, 0.35];
 // Neighbouring panes overlap like real sliding doors
@@ -21,8 +21,8 @@ const FRAME_DEPTH = TRACKS[1] - TRACKS[0];
 const GLASS_DEPTH = 0.03;
 // The end wall frame's outer face and the bottom of its top beam, measured
 // from the module edge (see EndWall)
-const END_WALL_FACE = 0.55;
-const END_WALL_BEAM_BOTTOM = 4.5;
+export const END_WALL_FACE = 0.55;
+export const END_WALL_BEAM_BOTTOM = 4.5;
 // Units are feet; keep the header 3 inches back from the end wall's face
 export const HEADER_INSET = 0.25;
 // Entrance: panes start 10 ft out from the wall and slide in one at a time
