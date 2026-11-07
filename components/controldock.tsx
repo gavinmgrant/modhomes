@@ -11,6 +11,8 @@ interface ControlDockProps {
   children: ReactNode;
   // more controls after the finishes, set apart from them
   aside?: ReactNode;
+  // For anything that has to keep clear of the dock
+  dockRef?: React.Ref<HTMLDivElement>;
 }
 
 const ControlDock = ({
@@ -19,6 +21,7 @@ const ControlDock = ({
   label,
   children,
   aside,
+  dockRef,
 }: ControlDockProps) => {
   const isMobile = useMediaQuery("(max-width:900px)");
 
@@ -65,6 +68,7 @@ const ControlDock = ({
 
   return (
     <div
+      ref={dockRef}
       role="toolbar"
       aria-label="Home options"
       style={{

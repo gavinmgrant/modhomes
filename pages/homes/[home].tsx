@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import React, { FC, useState, useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/router";
 import type { GetStaticPaths, GetStaticProps } from "next";
@@ -45,6 +46,13 @@ import WalkControls, {
 } from "../../components/walkcontrols";
 import MODELS from "../../lib/models";
 import { loadInsideView, saveInsideView } from "../../lib/viewposition";
+import {
+  SiteAddress,
+  SiteNotice,
+  SiteToggle,
+  useSiteStatus,
+} from "../../components/sitemap";
+import { getSiteKey, SITE_ORBIT_MAX_DISTANCE } from "../../lib/site";
 import { OrbitControls, Sky, Environment } from "@react-three/drei";
 import { useMediaQuery } from "@mui/material";
 
@@ -71,6 +79,24 @@ const LANDSCAPE = {
 };
 
 const COUNTS = ["one", "two", "three", "four", "five", "six", "seven", "eight"];
+
+// The tiles' renderer reaches for the browser's document as it loads, so
+// it's only loaded in the browser, and only once a page has the site key
+const SiteTiles = dynamic(
+  () => import("../../components/sitetiles").then((m) => m.SiteTiles),
+  { ssr: false }
+);
+const SiteCredits = dynamic(
+  () => import("../../components/sitetiles").then((m) => m.SiteCredits),
+  { ssr: false }
+);
+
+// drei's Sky, which passes on props its types leave out, like where it
+// comes in the drawing order
+const Backdrop = Sky as unknown as React.FC<Record<string, unknown>>;
+
+// Without a Google Maps key there's no Site switch, and no tiles
+const SITE_KEY = getSiteKey();
 
 // e.g. "Mod 3x2 is a 1,920 sq ft, two-story modular home built from six modules…"
 const describeModel = (name: string, area: number, slug: string) => {
@@ -104,6 +130,16 @@ const Homes: FC = () => {
   const [openAppliance, setOpenAppliance] = useState<ApplianceId | null>(null);
   const [decks, setDecks] = useState<Decks>({});
   const [facing] = useState(createFacingStore);
+  // The Site switch stands the home on Google's 3D tiles of its lot, drawn
+  // around it once it's been settled onto their ground; if the tiles fail,
+  // the switch goes off and the home stands on its own again
+  const [siteOn, setSiteOn] = useState(false);
+  const siteStatus = useSiteStatus();
+  const groundY = useRef(0);
+  // The dock, which the site's credits keep clear of
+  const dock = useRef<HTMLDivElement>(null);
+  const showSite = !!SITE_KEY && siteOn && siteStatus !== "failed";
+  const siteReady = showSite && siteStatus === "ready";
   const isMobile = useMediaQuery("(max-width:900px)");
   const isTouch = useMediaQuery("(pointer: coarse)");
   const walkInput = useRef<WalkInput>({ ...IDLE_INPUT });
@@ -174,7 +210,11 @@ const Homes: FC = () => {
       <div
         style={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}
       >
-        <NavBar />
+        <NavBar
+          center={
+            SITE_KEY && <SiteAddress shown={siteReady && !isInside} />
+          }
+        />
         {model && (
           <ModelCard
             model={{
@@ -187,7 +227,20 @@ const Homes: FC = () => {
           />
         )}
       </div>
-      <div style={{ height: "100vh", width: "100vw", margin: 0 }}>
+      <div
+        style={{
+          height: "100vh",
+          width: "100vw",
+          margin: 0,
+          // The site's notice and credits sit over the canvas, within this
+          position: "relative",
+          isolation: "isolate",
+        }}
+      >
+        {SITE_KEY && (
+          <SiteNotice status={siteStatus} shown={siteOn && !isInside} />
+        )}
+        {SITE_KEY && <SiteCredits shown={siteReady && !isInside} dock={dock} />}
         {isInside ? (
           // Keyed by model too, so switching models from the menu starts the
           // new one at its own corner rather than wherever the last one ended
@@ -241,18 +294,33 @@ const Homes: FC = () => {
                     layout?.cols ?? 1,
                     layout?.stories ?? 1
                   )}
-                  maxDistance={100}
+                  // With the site drawn there's a neighbourhood to see
+                  maxDistance={siteReady ? SITE_ORBIT_MAX_DISTANCE : 100}
                   enableZoom
                 />
                 <FacingSide store={facing} />
                 <ambientLight intensity={0.5} />
                 <pointLight position={[100, 100, 20]} />
-                <Sky
+                <Backdrop
                   sunPosition={[100, 100, 20]}
                   inclination={0}
                   azimuth={0.25}
+                  // Drawn first, and behind everything, so the site's
+                  // tiles reaching past it to the horizon still show
+                  renderOrder={-1}
+                  material-depthTest={false}
                 />
-                <HomeStage moving={isDeckMoving(decks)}>{home}</HomeStage>
+                {showSite && <SiteTiles apiKey={SITE_KEY} groundY={groundY} />}
+                <HomeStage
+                  moving={isDeckMoving(decks)}
+                  // The stage centres the home on the origin, so the ground
+                  // is half its height down
+                  onSized={({ height }) => {
+                    groundY.current = -height / 2;
+                  }}
+                >
+                  {home}
+                </HomeStage>
               </Suspense>
             </Canvas>
           </div>
@@ -273,6 +341,7 @@ const Homes: FC = () => {
             ))}
 
           <ControlDock
+            dockRef={dock}
             isInside={isInside}
             onViewChange={handleViewChange}
             label={isInside ? "Interior finishes" : "Exterior colors"}
@@ -288,13 +357,22 @@ const Homes: FC = () => {
                   />
                 )
               ) : (
-                <DeckToggle
-                  decks={decks}
-                  facing={facing}
-                  onToggle={(side) =>
-                    setDecks((decks) => toggleDeck(decks, side))
-                  }
-                />
+                <div style={{ display: "flex", gap: isMobile ? 8 : 6 }}>
+                  <DeckToggle
+                    decks={decks}
+                    facing={facing}
+                    onToggle={(side) =>
+                      setDecks((decks) => toggleDeck(decks, side))
+                    }
+                  />
+                  {SITE_KEY && (
+                    <SiteToggle
+                      on={siteOn}
+                      status={siteStatus}
+                      onChange={setSiteOn}
+                    />
+                  )}
+                </div>
               )
             }
           >

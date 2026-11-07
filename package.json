@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "3d-tiles-renderer": "0.3.46",
     "@babel/preset-typescript": "^7.18.6",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
