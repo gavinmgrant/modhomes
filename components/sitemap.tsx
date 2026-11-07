@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { CircularProgress } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconMapPin } from "@tabler/icons-react";
-import { PANEL } from "./panel";
 import {
   formatCoordinates,
   getSiteKey,
@@ -10,6 +8,7 @@ import {
   SiteLocation,
 } from "../lib/site";
 import DockToggle from "./docktoggle";
+import ViewNotice from "./viewnotice";
 
 // The Site view's controls and word from it: the dock's switch, the address
 // naming the lot, and the notice while it loads. The tiles themselves are
@@ -154,9 +153,9 @@ interface SiteNoticeProps {
   shown: boolean;
 }
 
-// Word from the site, over the middle of the view, like the inside view's
-// loader: that it's on its way, since the tiles are hidden until the home
-// stands on them, or, for a few seconds, that they couldn't be had
+// Word from the site, over the middle of the view: that it's on its way,
+// since the tiles are hidden until the home stands on them, or, for a few
+// seconds, that they couldn't be had
 export const SiteNotice = ({ status, shown }: SiteNoticeProps) => {
   const [failedRecently, setFailedRecently] = useState(false);
   useEffect(() => {
@@ -171,29 +170,8 @@ export const SiteNotice = ({ status, shown }: SiteNoticeProps) => {
   if (!loading && !failed) return null;
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{
-        ...PANEL,
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        // Over the canvas, which is positioned and comes after it
-        zIndex: 1,
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "10px 16px",
-        borderRadius: 999,
-        fontSize: 14,
-        whiteSpace: "nowrap",
-        pointerEvents: "none",
-      }}
-    >
-      {loading && <CircularProgress size={16} thickness={5} color="inherit" />}
+    <ViewNotice loading={loading}>
       {loading ? "Loading the site…" : "The site map isn't available right now"}
-    </div>
+    </ViewNotice>
   );
 };
