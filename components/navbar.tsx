@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import {
@@ -22,7 +22,13 @@ const HOVER = { "&:hover": { background: "rgba(19, 20, 20, 0.06)" } };
 // (56px on phones, 64px from sm up) plus the panel's 1px border top and bottom
 export const NAVBAR_HEIGHT = { xs: 58, sm: 66 };
 
-const NavBar = () => {
+interface NavBarProps {
+  // Anything to stand in the middle of the bar, like where the home is. Left
+  // out on phones and tablets, where the name and the menu leave no room
+  center?: ReactNode;
+}
+
+const NavBar = ({ center }: NavBarProps) => {
   const isMobile = useMediaQuery("(max-width:900px)");
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -60,6 +66,18 @@ const NavBar = () => {
       >
         <Link href="/">ModHomes</Link>
       </Typography>
+      {center && !isMobile && (
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          {center}
+        </div>
+      )}
       {/* Right inset matches the space above and below the 40px button
           (56px toolbar on xs, 64px from sm), so it sits centred in the bar's end */}
       <Toolbar sx={{ paddingRight: { xs: "8px", sm: "12px" } }}>

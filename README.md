@@ -24,3 +24,7 @@ To learn how the app is structured and how the homes are generated, see [docs/AR
 * Run the application locally: `yarn dev`
 * Open `http://localhost:3000/` in your browser.
 * Run the tests: `yarn test`
+
+### Site view (optional)
+
+The viewer's Site switch stands a home on Google's photorealistic 3D tiles of its lot. It only appears when a Google Maps key is set. Enable the Map Tiles API on your Cloud project, then copy `.env.example` to `.env.local` and fill in `NEXT_PUBLIC_GOOGLE_MAPS_KEY` with a key for that API. The key is sent from the browser, so restrict it in the Cloud console to the site's domains and to that API, and cap the API's daily root tile set requests to stay within the free tier. The Site view section of [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) has the details.

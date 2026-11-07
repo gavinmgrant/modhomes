@@ -64,17 +64,28 @@ export const getShadowExposure = (passes: number) => {
   return reached(Math.max(passes, SHADOW.frames)) / reached(SHADOW.frames);
 };
 
+export type StageSize = { radius: number; height: number };
+
 interface HomeStageProps {
   children: ReactNode;
   // Whether anything in the home is moving, so the shadow should follow it
   moving?: boolean;
+  // Told the home's size whenever it's measured, for anything outside the
+  // stage that needs to know where its ground is
+  onSized?: (size: StageSize) => void;
 }
 
-const HomeStage = ({ children, moving = false }: HomeStageProps) => {
+const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
   const [{ radius, height }, setSize] = useState({ radius: 0, height: 0 });
+  // The latest callback, so a new one each render doesn't recentre the home
+  const sized = useRef(onSized);
+  sized.current = onSized;
   const onCentered = useCallback(
-    ({ height, boundingSphere }: OnCenterCallbackProps) =>
-      setSize({ radius: boundingSphere.radius, height }),
+    ({ height, boundingSphere }: OnCenterCallbackProps) => {
+      const size = { radius: boundingSphere.radius, height };
+      setSize(size);
+      sized.current?.(size);
+    },
     [],
   );
   // three has no type definitions installed here, so the refs are untyped
@@ -105,12 +116,22 @@ const HomeStage = ({ children, moving = false }: HomeStageProps) => {
     const api = shadow.current;
     if (refresh.current <= 0 || !api) return;
     refresh.current--;
+    // Anything at the top of the scene marked off the stage, like the
+    // site's tiles, is hidden while the shadow is drawn, so only the home
+    // casts it
+    const offStage = scene.children.filter(
+      (object: any) => object.userData.offStage && object.visible
+    );
+    offStage.forEach((object: any) => {
+      object.visible = false;
+    });
     // drei's shadow only knows the meshes there were when it was cleared,
     // and draws any others into itself as they look, so for each pass every
-    // mesh is drawn as nothing but its shadow
+    // mesh is drawn as nothing but its shadow. Hidden ones aren't drawn
+    // anyway, so they're passed over
     const plane = api.getMesh();
     const drawn: [any, any][] = [];
-    scene.traverse((object: any) => {
+    scene.traverseVisible((object: any) => {
       if (!object.isMesh || object === plane) return;
       drawn.push([object, object.material]);
       object.material = discard;
@@ -120,6 +141,9 @@ const HomeStage = ({ children, moving = false }: HomeStageProps) => {
     passes.current += count;
     drawn.forEach(([object, material]) => {
       object.material = material;
+    });
+    offStage.forEach((object: any) => {
+      object.visible = true;
     });
     if (passes.current > SHADOW.frames) {
       const exposure = getShadowExposure(passes.current);
