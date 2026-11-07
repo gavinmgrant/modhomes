@@ -1,4 +1,5 @@
 import {
+  batchParts,
   doors,
   DRAWER_HEIGHT,
   drawersOverDoors,
@@ -6,7 +7,9 @@ import {
   FLOOR_TILE,
   fronts,
   getFootprints,
+  getPartsGeometry,
   LocalPart,
+  part,
   shadeColor,
   tileColors,
   Part,
@@ -14,6 +17,7 @@ import {
   veneerUv,
 } from "../components/fixtures";
 import { VENEER_SIZE } from "../components/materials";
+import { getServicesLayout } from "../components/services";
 
 const middle = ({ u }: LocalPart) => (u[0] + u[1]) / 2;
 const pulls = (parts: LocalPart[]) =>
@@ -145,5 +149,74 @@ describe("veneer", () => {
     const [, left] = veneerUv([2 - 1 / 96, 0, 0.1], [0, 0, 1]);
     const [, right] = veneerUv([2 + 1 / 96, 0, 0.1], [0, 0, 1]);
     expect((right - left) * VENEER_SIZE).toBeCloseTo(1 / 48);
+  });
+});
+
+describe("drawing parts in batches", () => {
+  const box = part("quartz", [0, 1], [0, 1], [0, 1]);
+
+  it("draws a kitchen's parts in a dozen or so meshes", () => {
+    const layout = getServicesLayout(3)!;
+    const parts = [...layout.walls, ...layout.fixtures, ...layout.floors];
+    const batches = batchParts(parts);
+    expect(parts.length).toBeGreaterThan(200);
+    expect(batches.length).toBeLessThan(20);
+    // Every part is drawn, once
+    expect(batches.flatMap((batch) => batch.parts)).toHaveLength(parts.length);
+  });
+
+  it("keeps veneered walnut apart from round walnut, and see-through parts each on their own", () => {
+    const keys = batchParts([
+      part("walnut", [0, 1], [0, 1], [0, 1]),
+      part("walnut", [2, 3], [0, 1], [0, 1]),
+      part("walnut", [4, 5], [0, 1], [0, 1], true),
+      part("glass", [0, 1], [0, 1], [2, 3]),
+      part("glass", [2, 3], [0, 1], [2, 3]),
+    ]).map(({ key, veneered, parts }) => [key, veneered, parts.length]);
+    expect(keys).toEqual([
+      ["walnut-veneer", true, 2],
+      ["walnut", false, 1],
+      ["glass-3", false, 1],
+      ["glass-4", false, 1],
+    ]);
+  });
+
+  it("moves each part into place in the merged geometry", () => {
+    const moved = part("quartz", [10, 12], [0, 1], [-1, 0]);
+    const geometry = getPartsGeometry([box, moved]);
+    const points = geometry.attributes.position;
+    // A box is 24 corners, four to each face, and 36 indices
+    expect(points.count).toBe(48);
+    expect(geometry.index!.count).toBe(72);
+    geometry.computeBoundingBox();
+    expect(geometry.boundingBox!.min.toArray()).toEqual([0, 0, -1]);
+    expect(geometry.boundingBox!.max.toArray()).toEqual([12, 1, 1]);
+    // The second box's indices point at its own corners
+    const indices = Array.from(geometry.index!.array);
+    expect(Math.min(...indices.slice(36))).toBe(24);
+  });
+
+  it("lays veneer by where each corner is", () => {
+    const geometry = getPartsGeometry([box], true);
+    const { position, normal, uv } = geometry.attributes;
+    for (let i = 0; i < uv.count; i++) {
+      const [u, v] = veneerUv(
+        [position.getX(i), position.getY(i), position.getZ(i)],
+        [normal.getX(i), normal.getY(i), normal.getZ(i)],
+      );
+      expect(uv.getX(i)).toBeCloseTo(u);
+      expect(uv.getY(i)).toBeCloseTo(v);
+    }
+  });
+
+  it("stretches a round part's cylinder over its footprint", () => {
+    const geometry = getPartsGeometry([
+      part("porcelain", [0, 2], [0, 1], [0, 1], true),
+    ]);
+    geometry.computeBoundingBox();
+    const size = geometry.boundingBox!.getSize(geometry.boundingBox!.min.clone());
+    expect(size.x).toBeCloseTo(2);
+    expect(size.y).toBeCloseTo(1);
+    expect(size.z).toBeCloseTo(1, 1);
   });
 });

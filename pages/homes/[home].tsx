@@ -1,5 +1,11 @@
 import dynamic from "next/dynamic";
-import React, { useEffect, useReducer, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import type { GetStaticPaths, GetStaticProps } from "next";
 import HomeModel from "../../components/homemodel";
 import NavBar from "../../components/navbar";
@@ -12,6 +18,7 @@ import {
 import { SpecsToggle } from "../../components/hotspots";
 import {
   createFacingStore,
+  DeckSide,
   DeckToggle,
   getDecksWidth,
   isDeckMoving,
@@ -91,6 +98,13 @@ const Homes = ({ slug }: HomesProps) => {
     dispatch({ type: "view", inside: loadInsideView() });
   }, []);
 
+  // The same function every render, so the memoized home only re-renders
+  // when its own props change
+  const handleDeckSettled = useCallback(
+    (side: DeckSide) => dispatch({ type: "settleDeck", side }),
+    [],
+  );
+
   // The paths are the models, so the slug always names one
   const model = findModel(slug);
   if (!model) return null;
@@ -116,7 +130,7 @@ const Homes = ({ slug }: HomesProps) => {
       sidingColor={finishes.wood}
       tileColor={finishes.tile}
       decks={decks}
-      onDeckSettled={(side) => dispatch({ type: "settleDeck", side })}
+      onDeckSettled={handleDeckSettled}
     />
   );
   // The wood swatch colors the decks as well as the siding

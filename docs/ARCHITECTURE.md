@@ -79,6 +79,11 @@ The tiles bill under Google Maps Platform's Map Tiles API: Photorealistic 3D Til
 - The landing page preloads the hero's floor textures and its HDR in `<Head>`, so they download in parallel with the JavaScript.
 - Textures are 1K. Environment maps are served from `public/` instead of drei's CDN.
 - The model cards share one WebGL canvas.
+- The model page's two canvases render on demand (`frameloop="demand"`), so a view that isn't changing draws nothing. Orbiting and looking around ask for frames as they move, and anything that animates asks for them while it runs: the stage's ground shadow while it builds or follows a deck, a deck while the crane moves it, the site's tiles while any are downloading or parsing, and walking while a key, arrow or the joystick is held. Anything new that changes the scene from a frame loop or from outside React has to call `invalidate()` the same way, or it won't show until something else draws a frame.
+- The kitchens' and bathrooms' hundreds of parts are drawn as one mesh per finish (`batchParts` and `getPartsGeometry` in `fixtures.tsx`), about a dozen draw calls instead of over 200. See-through parts are kept a mesh each, so three can sort them.
+- The inside view shows once the floor it's drawn with has loaded; the other floor finishes load in the background (`FloorTextures`).
+- Inter is self-hosted with `next/font`, rather than loaded from Google's stylesheet. `next/font` needs Next's SWC compiler, so Babel is only configured for Jest, in `package.json`.
+- `/images/*` is cached for a day, then refreshed in the background (`next.config.js`). Images keep their names when they change, so a replaced image can take a day to reach returning visitors.
 
 ## Development
 

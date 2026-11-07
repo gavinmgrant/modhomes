@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { invalidate, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { POST_INSET, POST_SIZE } from "./module";
 import { IconButton } from "@mui/material";
@@ -164,6 +164,8 @@ const WalkControls = ({
       if (!direction) return;
       event.preventDefault();
       input.current[direction] = pressed;
+      // The canvas only draws when asked; walking asks for frames from here
+      invalidate();
     };
     const handleDown = handleKey(true);
     const handleUp = handleKey(false);
@@ -186,6 +188,8 @@ const WalkControls = ({
     const ahead = clamp(Number(f) - Number(back) + stickY, 1);
     const across = clamp(Number(right) - Number(left) + stickX, 1);
     if (!controls.current || (!ahead && !across)) return;
+    // Still walking, so another frame
+    invalidate();
 
     // The camera always faces its orbit target, so that gives the walk direction
     const { target } = controls.current;
@@ -256,6 +260,7 @@ export const WalkPad = ({ input }: WalkPadProps) => {
   ) => {
     const hold = (pressed: boolean) => () => {
       input.current[direction] = pressed;
+      invalidate();
       if (pressed) setHasWalked(true);
     };
 
@@ -365,6 +370,7 @@ export const Joystick = ({ input }: WalkPadProps) => {
     const live = Math.hypot(x, y) / STICK_RADIUS > STICK_DEADZONE;
     input.current.stickX = live ? x / STICK_RADIUS : 0;
     input.current.stickY = live ? -y / STICK_RADIUS : 0;
+    invalidate();
   };
 
   const release = () => {

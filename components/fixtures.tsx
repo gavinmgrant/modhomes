@@ -1,5 +1,10 @@
-import React, { useLayoutEffect, useRef } from "react";
-import { BoxGeometry } from "three";
+import React, { useEffect, useMemo } from "react";
+import {
+  BoxGeometry,
+  BufferGeometry,
+  CylinderGeometry,
+  Float32BufferAttribute,
+} from "three";
 import { COLORS } from "./colors";
 import { useVeneer, VENEER_SIZE } from "./materials";
 import { boxBetween, Box, Rect } from "./stair";
@@ -320,59 +325,124 @@ export const veneerUv = (
   return [along / VENEER_SIZE, across / VENEER_SIZE];
 };
 
-const VeneerBox = ({ position, size }: Box) => {
-  const geometry = useRef<BoxGeometry>(null);
-  const [px, py, pz] = position;
-  useLayoutEffect(() => {
-    if (!geometry.current) return;
-    const { position: points, normal, uv } = geometry.current.attributes;
-    for (let i = 0; i < uv.count; i++) {
-      const [u, v] = veneerUv(
-        [points.getX(i) + px, points.getY(i) + py, points.getZ(i) + pz],
-        [normal.getX(i), normal.getY(i), normal.getZ(i)],
-      );
-      uv.setXY(i, u, v);
-    }
-    uv.needsUpdate = true;
-  }, [px, py, pz, size]);
-  return <boxGeometry ref={geometry} args={size} />;
-};
-
 // The veneer's roughness map averages about a third, glossier than the
 // satin lacquer on walnut cabinets, so it's scaled up to about a half
 const VENEER_ROUGHNESS = 1.5;
 
-export const Parts = ({ parts, colors }: PartsProps) => {
+// See-through finishes are drawn a part to a mesh, as three sorts them by
+// mesh, and two panes in one could cover each other wrongly
+const SEE_THROUGH = new Set<Finish>(
+  (Object.keys(FINISHES) as Finish[]).filter(
+    (finish) => "transparent" in FINISHES[finish],
+  ),
+);
+
+export type PartsBatch = {
+  key: string;
+  finish: Finish;
+  // Walnut boxes, drawn in veneer rather than the finish's plain color
+  veneered: boolean;
+  parts: Part[];
+};
+
+// Groups parts that can be drawn as one mesh: those of one finish, with
+// walnut boxes apart from round walnut parts, and see-through ones each on
+// their own. A kitchen's hundreds of parts become a dozen or so draws
+export const batchParts = (parts: Part[]): PartsBatch[] => {
+  const batches = new Map<string, PartsBatch>();
+  parts.forEach((part, i) => {
+    const veneered = part.finish === "walnut" && !part.round;
+    const key = SEE_THROUGH.has(part.finish)
+      ? `${part.finish}-${i}`
+      : `${part.finish}${veneered ? "-veneer" : ""}`;
+    const batch = batches.get(key);
+    if (batch) batch.parts.push(part);
+    else batches.set(key, { key, finish: part.finish, veneered, parts: [part] });
+  });
+  return Array.from(batches.values());
+};
+
+// One geometry for a batch of parts, each a box, or a cylinder scaled to its
+// footprint, moved into place. Veneered parts get texture coordinates from
+// where they are, as `veneerUv` lays them out
+export const getPartsGeometry = (parts: Part[], veneered = false) => {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+  parts.forEach(({ position, size, round }) => {
+    const piece = round
+      ? new CylinderGeometry(0.5, 0.5, 1, 32).scale(...size)
+      : new BoxGeometry(...size);
+    piece.translate(...position);
+    const offset = positions.length / 3;
+    const { position: points, normal, uv } = piece.attributes;
+    for (let i = 0; i < points.count; i++) {
+      const point: [number, number, number] = [
+        points.getX(i),
+        points.getY(i),
+        points.getZ(i),
+      ];
+      const facing: [number, number, number] = [
+        normal.getX(i),
+        normal.getY(i),
+        normal.getZ(i),
+      ];
+      positions.push(...point);
+      normals.push(...facing);
+      uvs.push(...(veneered ? veneerUv(point, facing) : [uv.getX(i), uv.getY(i)]));
+    }
+    piece.index?.array.forEach((index) => indices.push(index + offset));
+    piece.dispose();
+  });
+  const geometry = new BufferGeometry();
+  geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+  geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  return geometry;
+};
+
+const PartsMesh = ({
+  batch: { parts, finish, veneered },
+  color,
+}: {
+  batch: PartsBatch;
+  color?: string;
+}) => {
   const veneer = useVeneer();
+  const geometry = useMemo(
+    () => getPartsGeometry(parts, veneered),
+    [parts, veneered],
+  );
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return (
+    <mesh geometry={geometry} receiveShadow>
+      {veneered ? (
+        <meshStandardMaterial {...veneer} roughness={VENEER_ROUGHNESS} />
+      ) : (
+        <meshStandardMaterial
+          {...FINISHES[finish]}
+          {...(color && { color })}
+        />
+      )}
+    </mesh>
+  );
+};
+
+// Draws parts a batch to a mesh. Their geometry is built again only when the
+// parts do, so pass the same array while they're unchanged
+export const Parts = ({ parts, colors }: PartsProps) => {
+  const batches = useMemo(() => batchParts(parts), [parts]);
   return (
     <>
-      {parts.map(({ position, size, finish, round }) => {
-        const veneered = finish === "walnut" && !round;
-        return (
-          <mesh
-            key={`${finish}-${position.join()}-${size.join()}`}
-            position={position}
-            scale={round ? size : undefined}
-            receiveShadow
-          >
-            {round ? (
-              <cylinderGeometry args={[0.5, 0.5, 1, 32]} />
-            ) : veneered ? (
-              <VeneerBox position={position} size={size} />
-            ) : (
-              <boxGeometry args={size} />
-            )}
-            {veneered ? (
-              <meshStandardMaterial {...veneer} roughness={VENEER_ROUGHNESS} />
-            ) : (
-              <meshStandardMaterial
-                {...FINISHES[finish]}
-                {...(colors?.[finish] && { color: colors[finish] })}
-              />
-            )}
-          </mesh>
-        );
-      })}
+      {batches.map((batch) => (
+        <PartsMesh
+          key={batch.key}
+          batch={batch}
+          color={colors?.[batch.finish]}
+        />
+      ))}
     </>
   );
 };

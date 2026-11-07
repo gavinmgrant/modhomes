@@ -66,6 +66,9 @@ const InsideScene = ({
         fov: 60,
       }}
       shadows
+      // Drawn only when something changes: looking around asks for frames,
+      // and so does walking, while it lasts
+      frameloop="demand"
       // a click on the view, not a drag to look around, closes an
       // appliance's card
       onPointerMissed={() => onOpenAppliance(null)}

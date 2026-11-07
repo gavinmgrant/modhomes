@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import {
   AccumulativeShadows,
   Center,
@@ -91,13 +91,17 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
   // left to keep adding them
   const passes = useRef(0);
   const refresh = useRef(0);
+  // The canvas only draws when asked, so the shadow asks for frames while
+  // it has passes left to add
+  const invalidate = useThree((state) => state.invalidate);
 
   // The shadow starts over when it's drawn again, once the home's size is
   // known
   useEffect(() => {
     passes.current = 0;
     refresh.current = SHADOW.frames;
-  }, [radius]);
+    invalidate();
+  }, [radius, invalidate]);
 
   // Following a deck for as long as it moves, then until its old shadow
   // has all but gone
@@ -106,11 +110,15 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
     else if (refresh.current === Infinity) {
       refresh.current = SHADOW_REFRESH.settleFrames;
     }
-  }, [moving]);
+    invalidate();
+  }, [moving, invalidate]);
 
   useFrame(({ scene }) => {
     const api = shadow.current;
-    if (refresh.current <= 0 || !api) return;
+    if (refresh.current <= 0) return;
+    // Until the shadow is in place, and for each frame it has left
+    invalidate();
+    if (!api) return;
     refresh.current--;
     // Anything at the top of the scene marked off the stage, like the
     // site's tiles, is hidden while the shadow is drawn, so only the home

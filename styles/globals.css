@@ -2,7 +2,7 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  font-family: "Inter", sans-serif !important;
+  font-family: var(--font-inter), sans-serif !important;
 }
 
 html,

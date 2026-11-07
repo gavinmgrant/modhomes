@@ -4,7 +4,7 @@ import React, {
   useRef,
   useSyncExternalStore,
 } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Group } from "three";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { COLORS } from "./colors";
@@ -410,15 +410,19 @@ const Deck = ({
   // hidden while they're below it
   const rise = getFoundationRise(offset.current);
 
-  // Each phase picks up from wherever the last one left the deck
+  // Each phase picks up from wherever the last one left the deck. The
+  // canvas only draws when asked, so a deck asks for frames while it moves
+  const invalidate = useThree((state) => state.invalidate);
   useLayoutEffect(() => {
     from.current = offset.current;
     start.current = null;
     settled.current = phase === "landed";
-  }, [phase]);
+    invalidate();
+  }, [phase, invalidate]);
 
   useFrame((state) => {
     if (settled.current || !group.current) return;
+    state.invalidate();
     const startedAt = (start.current ??= state.clock.elapsedTime);
     const target = phase === "lifting" ? DECK_DROP.height : 0;
     offset.current = prefersReducedMotion()
