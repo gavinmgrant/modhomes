@@ -10,6 +10,7 @@ import { COLORS } from "./colors";
 import type { FloorMaterial } from "./materials";
 import Deck, { DeckSide, Decks } from "./deck";
 import {
+  FINISHED_FLOOR,
   getParapetTop,
   MODEL_BASE,
   MODULE,
@@ -34,14 +35,26 @@ export const getModelSize = (cols: number, stories: number) => {
   };
 };
 
-// Closest the outside view may zoom to the model's centre, which Stage puts at
-// the orbit target: just beyond the corners of its box, so the camera stops
-// short of the home from any angle
+// The outside view looks at the home from this far above its ground floor,
+// about eye level for someone standing on it, on any number of stories
+export const EYE_HEIGHT = 6;
+
+// The orbit target's height, and the camera's when it opens. The stage
+// centres the model's box on the origin, so this is where eye level comes
+// to once it's moved down by the box's centre
+export const getOrbitTargetY = (stories: number) =>
+  FINISHED_FLOOR + EYE_HEIGHT - getModelSize(1, stories).centerY;
+
+// Closest the outside view may zoom to the orbit target: just beyond the
+// box's farthest corner from it, so the camera stops short of the home from
+// any angle
 const ORBIT_CLEARANCE = 2;
 
 export const getOrbitMinDistance = (cols: number, stories: number) => {
   const { width, depth, height } = getModelSize(cols, stories);
-  return Math.hypot(width, depth, height) / 2 + ORBIT_CLEARANCE;
+  const target = getOrbitTargetY(stories);
+  const farthest = Math.max(height / 2 - target, height / 2 + target);
+  return Math.hypot(width / 2, depth / 2, farthest) + ORBIT_CLEARANCE;
 };
 
 interface HomeModelProps {

@@ -9,16 +9,23 @@ import { Group } from "three";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { COLORS } from "./colors";
 import { FLOOR } from "./fixtures";
-import { FOUNDATION, getStemWalls } from "./foundation";
+import { FOUNDATION } from "./foundation";
 import { POST_SIZE } from "./module";
 import {
   END_WALL_BEAM_BOTTOM,
   FLOOR as DOOR_FLOOR,
   END_WALL_FACE,
+  getPaneJoints,
 } from "./slidingdoors";
 import { getHipRoofTriangles, getNormal, Point } from "./roof";
+import { WALL_PANEL_DEPTH } from "./wall";
 import DockToggle from "./docktoggle";
-import { getParapetTop, MODEL_BASE, STORY_HEIGHT } from "../lib/dimensions";
+import {
+  getParapetTop,
+  MODEL_BASE,
+  MODULE,
+  STORY_HEIGHT,
+} from "../lib/dimensions";
 import { prefersReducedMotion } from "../lib/media";
 
 // A covered deck is a module of its own, craned onto one of the home's long
@@ -47,6 +54,30 @@ export const HIP_RISE = 0.825;
 // Where the foundation meets the ground
 const GROUND = MODEL_BASE;
 
+// A deck doesn't line up with the home: it slides one glass pane along it,
+// mullion to mullion, so its middle post stands in front of the first
+// mullion out from the middle. The decks on the two sides slide opposite
+// ways, the right one toward +z and the left toward -z
+export const DECK_SLIDE = getPaneJoints()[0];
+// Where a deck runs on past the home's end, a stair runs down from its inner
+// edge to the ground, along the home's end wall. It's as wide as the stretch
+// past the wall: four 7 1/2" risers, and three treads of two deck boards
+// each, an 11 1/4" run, between steel channel stringers
+export const DECK_STAIR = { risers: 4 };
+// The outer face of the home's end wall, along z from the middle
+export const HOME_END = MODULE.length / 2 + WALL_PANEL_DEPTH / 2;
+const STAIR_RUN = 2 * BOARD.width + BOARD.gap;
+const STRINGER = {
+  thickness: 2.5 / 12,
+  // Measured square to the slope
+  depth: 10 / 12,
+  // The top edge runs this far above the treads' nosings
+  above: 2 / 12,
+  // The toe's upright end, cut back off the long point the slope meets the
+  // ground in
+  toe: 4 / 12,
+};
+
 // The top of the fascia and the roof's ridge. On a one-story home it's level
 // with the parapet. A two-story home's deck stays one story tall,
 // level with the top of the band under the upper story's glass
@@ -71,10 +102,50 @@ export type DeckLayout = {
   hip: Point[][];
   boards: DeckBox[];
   slats: DeckBox[];
+  // The stair's wood treads, and its steel stringers as triangles
+  treads: DeckBox[];
+  stringers: Point[][];
+};
+
+// A convex prism as triangles wound counter-clockwise from outside: a
+// polygon in the (a, y) plane, run across c from c0 to c1, and moved into
+// place by `toWorld`
+const getPrismTriangles = (
+  profile: [number, number][],
+  [u0, u1]: number[],
+  toWorld: (c: number, y: number, a: number) => Point,
+): Point[][] => {
+  const corner = (c: number, k: number) =>
+    toWorld(c, profile[k % profile.length][1], profile[k % profile.length][0]);
+  const faces: Point[][] = [
+    // The two caps, as fans
+    ...[u0, u1].flatMap((u) =>
+      profile
+        .slice(1, -1)
+        .map((_, k) => [corner(u, 0), corner(u, k + 1), corner(u, k + 2)]),
+    ),
+    // A quad along each edge of the polygon
+    ...profile.flatMap((_, k) => [
+      [corner(u0, k), corner(u0, k + 1), corner(u1, k + 1)],
+      [corner(u0, k), corner(u1, k + 1), corner(u1, k)],
+    ]),
+  ];
+  const centroid = (points: Point[]) =>
+    [0, 1, 2].map(
+      (axis) => points.reduce((sum, p) => sum + p[axis], 0) / points.length,
+    );
+  const middle = centroid(faces.flat());
+  // Turned round where they'd face in
+  return faces.map((triangle) => {
+    const normal = getNormal(triangle);
+    const out = centroid(triangle).map((value, axis) => value - middle[axis]);
+    const facing = normal.reduce((sum, n, axis) => sum + n * out[axis], 0);
+    return facing < 0 ? [...triangle].reverse() : triangle;
+  });
 };
 
 // The deck's parts, in home coordinates. It stands against the glass side's
-// frame, from its outer face out
+// frame, from its outer face out, slid along it by DECK_SLIDE
 export const getDeckLayout = (
   side: DeckSide,
   halfWidth: number,
@@ -83,13 +154,19 @@ export const getDeckLayout = (
   const top = getDeckTop(stories);
   const inner = halfWidth + END_WALL_FACE;
   const [depth, half, post] = [DECK.depth, DECK.length / 2, POST_SIZE];
-  // A box from u0 to u1 out from the deck's inner edge
+  const slide = side * DECK_SLIDE;
+  // A box from u0 to u1 out from the deck's inner edge, and from z0 to z1
+  // along it before it's slid
   const box = (
     [u0, u1]: number[],
     [y0, y1]: number[],
     [z0, z1]: number[],
   ): DeckBox => ({
-    position: [side * (inner + (u0 + u1) / 2), (y0 + y1) / 2, (z0 + z1) / 2],
+    position: [
+      side * (inner + (u0 + u1) / 2),
+      (y0 + y1) / 2,
+      (z0 + z1) / 2 + slide,
+    ],
     size: [u1 - u0, y1 - y0, z1 - z0],
   });
 
@@ -103,7 +180,7 @@ export const getDeckLayout = (
   const rim = [FLOOR - BOARD.thickness - RIM_HEIGHT, FLOOR - BOARD.thickness];
   const fascia = [FASCIA_BOTTOM, top];
   // Posts at the corners and the middle of both long sides, like a module's,
-  // the inner ones in front of the home's own columns. They stand on the
+  // the inner middle one in front of a mullion. They stand on the
   // floor frame, from the top of the boards over it, so their faces don't
   // lie in the same planes as the boards' edges
   const posts = [0, depth - post].flatMap((u) =>
@@ -111,26 +188,33 @@ export const getDeckLayout = (
       box([u, u + post], [FLOOR, FASCIA_BOTTOM], [z, z + post]),
     ),
   );
-  // The frame cantilevers past its stem walls at the outer edge and ends by
-  // as much as the home's does past its own. There's no wall on the home's
-  // side: the end walls run in under the glass side's frame to meet the
-  // home's stem wall
+  // From c0 to c1 along the home from its middle, toward the end the deck
+  // slides to, as a z range for `box`
+  const along = (c0: number, c1: number) =>
+    (side > 0 ? [c0, c1] : [-c1, -c0]).map((z) => z - slide);
+  const end = half + DECK_SLIDE;
+
+  // The frame cantilevers past its stem walls, by as much as the home's
+  // does past its own. Along the home there's no wall on its side: the end
+  // wall there runs in under the glass side's frame to meet the home's stem
+  // wall. Past the home's end the deck's inner edge cantilevers too, clear
+  // of the stair, and the home's end stem wall runs on out to meet it
   const inset = FOUNDATION.inset;
-  const footprint = box(
-    [-(END_WALL_FACE + inset), depth - inset],
-    [GROUND, GROUND + FOUNDATION.height],
-    [-half + inset, half - inset],
-  );
-  const foundation = getStemWalls(
-    footprint.size[0],
-    footprint.size[2],
-    -side as DeckSide,
-  ).map(({ position, size }) => ({
-    position: position.map(
-      (value, axis) => value + footprint.position[axis],
-    ) as DeckBox["position"],
-    size,
-  }));
+  const { height, wall } = FOUNDATION;
+  const stem = [GROUND, GROUND + height];
+  const [homeEdge, outer] = [-(END_WALL_FACE + inset), depth - inset];
+  const [first, last, homeEnd] = [
+    -half + DECK_SLIDE + inset,
+    end - inset,
+    MODULE.length / 2 - inset,
+  ];
+  const foundation = [
+    box([outer - wall, outer], stem, along(first, last)),
+    box([homeEdge, outer - wall], stem, along(first, first + wall)),
+    box([inset, outer - wall], stem, along(last - wall, last)),
+    box([inset, inset + wall], stem, along(homeEnd, last - wall)),
+    box([homeEdge, inset + wall], stem, along(homeEnd - wall, homeEnd)),
+  ];
 
   // Boards from the home out, the last one cut to fit
   const boards: DeckBox[] = [];
@@ -149,14 +233,62 @@ export const getDeckLayout = (
   const soffit = eaves - ROOF_THICKNESS;
   const pitch = SLAT.width + SLAT.gap;
   const count = Math.floor((2 * (half - post) + SLAT.gap) / pitch);
-  const first = -(count * pitch - SLAT.gap) / 2;
+  const firstSlat = -(count * pitch - SLAT.gap) / 2;
   const slats = Array.from({ length: count }, (_, i) =>
     box(
       [post, depth - post],
       [soffit - SLAT.depth, soffit],
-      [first + i * pitch, first + i * pitch + SLAT.width],
+      [firstSlat + i * pitch, firstSlat + i * pitch + SLAT.width],
     ),
   );
+
+  // The stair runs down from the deck's inner edge, past the home's end, in
+  // along the end wall. `a` is how far in from that edge, and its stringers
+  // stand against the wall and flush with the deck's end
+  const { risers } = DECK_STAIR;
+  const rise = (FLOOR - GROUND) / risers;
+  const slope = rise / STAIR_RUN;
+  const [s0, s1] = [HOME_END + STRINGER.thickness, end - STRINGER.thickness];
+  // Each tread's two boards, from the top one down, running across the stair
+  // with a gap between them like the deck's
+  const treads = Array.from({ length: risers - 1 }, (_, i) => {
+    const y = FLOOR - (i + 1) * rise;
+    const a = i * STAIR_RUN;
+    return [
+      [a, a + BOARD.width],
+      [a + BOARD.width + BOARD.gap, a + STAIR_RUN],
+    ].map(([a0, a1]) =>
+      box([-a1, -a0], [y - BOARD.thickness, y], along(s0, s1)),
+    );
+  }).flat();
+  // A steel channel either side of the treads, its top edge running parallel
+  // to the nosings, which meet the deck's boards at its edge. It's cut
+  // upright against the deck's edge, and level with the deck's floor at the
+  // top. At the bottom it bears level on the ground, its toe chamfered off
+  // with an upright end
+  const stringerTop = FLOOR + STRINGER.above;
+  const stringerBottom =
+    stringerTop - STRINGER.depth * Math.sqrt(1 + slope * slope);
+  // How far in the top edge is at a height
+  const topAt = (y: number) => (stringerTop - y) / slope;
+  const toe = topAt(GROUND + STRINGER.toe);
+  const profile: [number, number][] = [
+    [0, FLOOR],
+    [topAt(FLOOR), FLOOR],
+    [toe, GROUND + STRINGER.toe],
+    [toe, GROUND],
+    [(stringerBottom - GROUND) / slope, GROUND],
+    [0, stringerBottom],
+  ];
+  const toWorld = (c: number, y: number, a: number): Point => [
+    side * (inner - a),
+    y,
+    side * c,
+  ];
+  const stringers = [
+    [HOME_END, s0],
+    [s1, end],
+  ].flatMap((cs) => getPrismTriangles(profile, cs, toWorld));
 
   return {
     foundation,
@@ -174,11 +306,13 @@ export const getDeckLayout = (
         triangle.map(([x, y, z]): Point => [
           x + side * (inner + depth / 2),
           y + eaves,
-          z,
+          z + slide,
         ]),
     ),
     boards,
     slats,
+    treads,
+    stringers,
   };
 };
 
@@ -224,6 +358,14 @@ export const isDeckMoving = (decks: Decks) =>
 export const getDecksWidth = (decks: Decks) =>
   ([-1, 1] as DeckSide[]).filter((side) => isDeckUp(decks[side])).length *
   DECK.depth;
+
+// How much the decks lengthen it, as each runs on past one end of the home
+// by its slide, to the nearest foot. The stairs aren't counted
+export const getDecksLength = (decks: Decks) =>
+  Math.round(
+    ([-1, 1] as DeckSide[]).filter((side) => isDeckUp(decks[side])).length *
+      DECK_SLIDE,
+  );
 
 // Adds a deck to a side, or takes away the one there
 export const toggleDeck = (decks: Decks, side: DeckSide): Decks => ({
@@ -402,10 +544,16 @@ const Deck = ({
   const from = useRef(offset.current);
   const start = useRef<number | null>(null);
   const settled = useRef(phase === "landed");
-  const { foundation, frame, roof, hip, boards, slats } = useMemo(() => {
-    const { roof, ...layout } = getDeckLayout(side, halfWidth, stories);
-    return { ...layout, roof: [roof] };
-  }, [side, halfWidth, stories]);
+  const { foundation, frame, stringers, roof, hip, boards, slats } =
+    useMemo(() => {
+      const { roof, boards, treads, ...layout } = getDeckLayout(
+        side,
+        halfWidth,
+        stories,
+      );
+      // The stair's treads are deck boards too
+      return { ...layout, roof: [roof], boards: [...boards, ...treads] };
+    }, [side, halfWidth, stories]);
   // The stem walls grow up out of the ground from their base, and are
   // hidden while they're below it
   const rise = getFoundationRise(offset.current);
@@ -455,7 +603,7 @@ const Deck = ({
         </group>
       </group>
       <group ref={group} position={[0, offset.current, 0]}>
-        <Boxes boxes={frame}>
+        <Boxes boxes={frame} triangles={stringers}>
           <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
         </Boxes>
         <Boxes boxes={roof} triangles={hip}>

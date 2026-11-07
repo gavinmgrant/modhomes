@@ -5,11 +5,15 @@ import {
   createFacingStore,
   DECK,
   DECK_DROP,
+  DECK_SLIDE,
+  DECK_STAIR,
+  HOME_END,
   DeckBox,
   DeckToggle,
   getBoxesGeometry,
   getDeckLayout,
   getDeckOffset,
+  getDecksLength,
   getDecksWidth,
   getFoundationRise,
   getTrianglesGeometry,
@@ -22,13 +26,15 @@ import {
 } from "../components/deck";
 import { FLOOR } from "../components/fixtures";
 import { FOUNDATION, getStemWalls } from "../components/foundation";
-import { getParapetTop, MODEL_BASE } from "../lib/dimensions";
+import { getParapetTop, MODEL_BASE, MODULE } from "../lib/dimensions";
 import { POST_SIZE } from "../components/module";
 import {
   END_WALL_FACE,
   getFloorBandLayouts,
   getHeaderLayout,
+  getPaneJoints,
 } from "../components/slidingdoors";
+import { getNormal, Point } from "../components/roof";
 
 const extent = (boxes: DeckBox[], axis: number) => [
   Math.min(...boxes.map((b) => b.position[axis] - b.size[axis] / 2)),
@@ -99,7 +105,12 @@ describe("deck layout", () => {
       expect([x0, x1]).toEqual(
         expected.sort((a, b) => a - b).map((x) => expect.closeTo(x)),
       );
-      expect(extent(all, 2)).toEqual([-DECK.length / 2, DECK.length / 2]);
+      // slid along the home
+      const slide = side * DECK_SLIDE;
+      expect(extent(all, 2)).toEqual([
+        expect.closeTo(-DECK.length / 2 + slide),
+        expect.closeTo(DECK.length / 2 + slide),
+      ]);
     },
   );
 
@@ -107,7 +118,7 @@ describe("deck layout", () => {
     "has no two parts flickering where they meet, side %i",
     (side) => {
       const halfWidth = 8;
-      const { foundation, frame, roof, boards, slats } = getDeckLayout(
+      const { foundation, frame, roof, boards, slats, treads } = getDeckLayout(
         side,
         halfWidth,
       );
@@ -130,6 +141,7 @@ describe("deck layout", () => {
         roof,
         ...boards,
         ...slats,
+        ...treads,
       ];
       const clashes = parts.flatMap((a, i) =>
         parts
@@ -182,9 +194,10 @@ describe("deck layout", () => {
       expect(outer).toBeCloseTo(
         halfWidth + END_WALL_FACE + DECK.depth - FOUNDATION.inset,
       );
+      const slide = side * DECK_SLIDE;
       expect(extent(foundation, 2)).toEqual([
-        expect.closeTo(-DECK.length / 2 + FOUNDATION.inset),
-        expect.closeTo(DECK.length / 2 - FOUNDATION.inset),
+        expect.closeTo(-DECK.length / 2 + FOUNDATION.inset + slide),
+        expect.closeTo(DECK.length / 2 - FOUNDATION.inset + slide),
       ]);
       // meeting the home's own stem wall, from the ground up to its top
       expect(inner).toBeCloseTo(halfWidth - FOUNDATION.inset);
@@ -192,17 +205,26 @@ describe("deck layout", () => {
         expect.closeTo(MODEL_BASE),
         expect.closeTo(MODEL_BASE + FOUNDATION.height),
       ]);
-      // 8" walls along the outer edge and the ends, but none along the
-      // home's side, where the home's own wall stands
+      // 8" walls along the outer edge, and along the inner edge only past
+      // the home's end, set in from the deck's edge, from the home's end
+      // stem wall on out
       const sideWalls = foundation.filter(
         ({ size }) => Math.abs(size[0] - FOUNDATION.wall) < 1e-6,
       );
-      expect(sideWalls).toHaveLength(1);
-      expect(side * sideWalls[0].position[0]).toBeCloseTo(
-        outer - FOUNDATION.wall / 2,
-      );
+      expect(sideWalls.map(({ position }) => side * position[0])).toEqual([
+        expect.closeTo(outer - FOUNDATION.wall / 2),
+        expect.closeTo(
+          halfWidth + END_WALL_FACE + FOUNDATION.inset + FOUNDATION.wall / 2,
+        ),
+      ]);
+      const [, past] = sideWalls;
+      expect(
+        extent([past], 2)
+          .map((z) => side * z)
+          .sort((a, b) => a - b)[0],
+      ).toBeCloseTo(MODULE.length / 2 - FOUNDATION.inset);
       foundation
-        .filter((wall) => wall !== sideWalls[0])
+        .filter((wall) => !sideWalls.includes(wall))
         .forEach(({ size }) => expect(size[2]).toBeCloseTo(FOUNDATION.wall));
     },
   );
@@ -237,8 +259,144 @@ describe("deck layout", () => {
       expect(position[1] + size[1] / 2).toBeCloseTo(roofBottom),
     );
     const [z0, z1] = extent(slats, 2);
-    expect(z0).toBeCloseTo(-z1);
+    expect((z0 + z1) / 2).toBeCloseTo(DECK_SLIDE);
   });
+
+  it("slides the two sides' decks a pane in opposite directions", () => {
+    const middle = (side: -1 | 1) => {
+      const [z0, z1] = extent(getDeckLayout(side, 8).boards, 2);
+      return (z0 + z1) / 2;
+    };
+    expect(middle(1)).toBeCloseTo(DECK_SLIDE);
+    expect(middle(-1)).toBeCloseTo(-DECK_SLIDE);
+    // its inner middle post in front of the first mullion out from the middle
+    const [mullion] = getPaneJoints();
+    const posts = getDeckLayout(1, 8).frame.filter(isPost);
+    expect(posts.map(({ position }) => position[2])).toContainEqual(
+      expect.closeTo(mullion),
+    );
+  });
+});
+
+describe("deck stair", () => {
+  const points = (triangles: Point[][]) => triangles.flat();
+  const range = (values: number[]) => [
+    Math.min(...values),
+    Math.max(...values),
+  ];
+  const halfWidth = 8;
+  const inner = halfWidth + END_WALL_FACE;
+  const deckEnd = DECK.length / 2 + DECK_SLIDE;
+  // Along the home, toward the end the deck slides to
+  const along = (side: -1 | 1, [z0, z1]: number[]) =>
+    [side * z0, side * z1].sort((a, b) => a - b);
+  const overlap = (a: DeckBox, b: DeckBox) =>
+    [0, 1, 2].every((axis) => {
+      const [a0, a1] = extent([a], axis);
+      const [b0, b1] = extent([b], axis);
+      return Math.min(a1, b1) - Math.max(a0, b0) > 1e-6;
+    });
+
+  it.each([-1, 1] as const)(
+    "steps down from the deck's edge past the home, along its end wall, side %i",
+    (side) => {
+      const { treads, stringers } = getDeckLayout(side, halfWidth);
+      // as wide as the deck past the home's end wall, stringers and all
+      const [c0, c1] = along(
+        side,
+        range(points(stringers).map(([, , z]) => z)),
+      );
+      expect(c0).toBeCloseTo(HOME_END);
+      expect(c1).toBeCloseTo(deckEnd);
+      const [t0, t1] = along(side, extent(treads, 2));
+      expect(t0).toBeGreaterThan(c0);
+      expect(t1).toBeLessThan(c1);
+      // running in from the deck's inner edge, under the home's glass side
+      const [x0, x1] = extent(treads, 0)
+        .map((x) => side * x)
+        .sort((a, b) => a - b);
+      expect(x1).toBeCloseTo(inner);
+      expect(x0).toBeLessThan(inner);
+      // equal risers, the deck's boards the top step and the ground the last
+      const tops = Array.from(new Set(treads.map((t) => top(t).toFixed(6))))
+        .map(Number)
+        .sort((a, b) => b - a);
+      expect(tops).toHaveLength(DECK_STAIR.risers - 1);
+      const rise = (FLOOR - MODEL_BASE) / DECK_STAIR.risers;
+      [...tops, MODEL_BASE].forEach((y, i, steps) =>
+        expect((i === 0 ? FLOOR : steps[i - 1]) - y).toBeCloseTo(rise),
+      );
+      // two boards a tread, running across the stair
+      expect(treads).toHaveLength(2 * (DECK_STAIR.risers - 1));
+      treads.forEach(({ size }) => expect(size[2]).toBeCloseTo(t1 - t0));
+    },
+  );
+
+  it.each([-1, 1] as const)(
+    "is clear of the deck's stem walls and frame, side %i",
+    (side) => {
+      const { treads, foundation, frame } = getDeckLayout(side, halfWidth);
+      const clashes = treads.flatMap((tread) =>
+        [...foundation, ...frame].filter((part) => overlap(tread, part)),
+      );
+      expect(clashes).toEqual([]);
+    },
+  );
+
+  it.each([-1, 1] as const)(
+    "carries the treads on stringers from the deck to the ground, side %i",
+    (side) => {
+      const { treads, stringers } = getDeckLayout(side, halfWidth);
+      const corners = points(stringers);
+      const [y0, y1] = range(corners.map(([, y]) => y));
+      // level with the deck's floor at the top
+      expect(y0).toBeCloseTo(MODEL_BASE);
+      expect(y1).toBeCloseTo(FLOOR);
+      // either side of the treads, meeting their ends
+      const [t0, t1] = extent(treads, 2);
+      const zs = corners.map(([, , z]) => z);
+      expect(zs.filter((z) => z > t0 + 1e-6 && z < t1 - 1e-6)).toEqual([]);
+      expect(zs).toContainEqual(expect.closeTo(t0));
+      expect(zs).toContainEqual(expect.closeTo(t1));
+      // from the deck's edge to past the last tread
+      const [x0, x1] = range(corners.map(([x]) => side * x));
+      const [tx0] = extent(treads, 0)
+        .map((x) => side * x)
+        .sort((a, b) => a - b);
+      expect(x1).toBeCloseTo(inner);
+      expect(x0).toBeLessThan(tx0);
+      // its toe chamfered off: an upright end, from the ground up a little
+      // way, not a point
+      const toeHeights = corners
+        .filter(([x]) => Math.abs(side * x - x0) < 1e-6)
+        .map(([, y]) => y);
+      const [toe0, toe1] = range(toeHeights);
+      expect(toe0).toBeCloseTo(MODEL_BASE);
+      expect(toe1 - toe0).toBeGreaterThan(0.1);
+      expect(toe1).toBeLessThan(FLOOR - (FLOOR - MODEL_BASE) / 2);
+      // every face turned out, from the middle of its stringer
+      const stringerOf = (triangle: Point[]) =>
+        triangle[0][2] < (t0 + t1) / 2 ? 0 : 1;
+      const middles = [0, 1].map((s) => {
+        const own = points(stringers.filter((t) => stringerOf(t) === s));
+        return [0, 1, 2].map(
+          (axis) => own.reduce((sum, p) => sum + p[axis], 0) / own.length,
+        );
+      });
+      stringers.forEach((triangle) => {
+        const normal = getNormal(triangle);
+        const middle = middles[stringerOf(triangle)];
+        const out = [0, 1, 2].map(
+          (axis) =>
+            (triangle[0][axis] + triangle[1][axis] + triangle[2][axis]) / 3 -
+            middle[axis],
+        );
+        expect(
+          normal.reduce((sum, n, axis) => sum + n * out[axis], 0),
+        ).toBeGreaterThan(0);
+      });
+    },
+  );
 });
 
 describe("box geometry", () => {
@@ -345,10 +503,16 @@ describe("deck state", () => {
   it("widens the footprint by a deck's depth from when it's added", () => {
     expect(getDecksWidth({})).toBe(0);
     expect(getDecksWidth({ 1: "dropping" })).toBe(DECK.depth);
-    expect(getDecksWidth({ 1: "landed", [-1]: "landed" })).toBe(
-      2 * DECK.depth
-    );
+    expect(getDecksWidth({ 1: "landed", [-1]: "landed" })).toBe(2 * DECK.depth);
     expect(getDecksWidth({ 1: "landed", [-1]: "lifting" })).toBe(DECK.depth);
+  });
+
+  it("lengthens the footprint by each deck's slide past the home", () => {
+    expect(getDecksLength({})).toBe(0);
+    expect(getDecksLength({ 1: "dropping" })).toBe(Math.round(DECK_SLIDE));
+    expect(getDecksLength({ 1: "landed", [-1]: "landed" })).toBe(
+      Math.round(2 * DECK_SLIDE),
+    );
   });
 
   it("knows which glass side faces the camera", () => {

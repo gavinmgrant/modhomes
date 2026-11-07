@@ -20,6 +20,7 @@ import {
   createFacingStore,
   DeckSide,
   DeckToggle,
+  getDecksLength,
   getDecksWidth,
   isDeckMoving,
 } from "../../components/deck";
@@ -163,7 +164,7 @@ const Homes = ({ slug }: HomesProps) => {
             ...model,
             footprint: [
               model.footprint[0] + getDecksWidth(decks),
-              model.footprint[1],
+              model.footprint[1] + getDecksLength(decks),
             ],
           }}
         />
