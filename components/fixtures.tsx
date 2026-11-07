@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useRef } from "react";
+import { BoxGeometry } from "three";
 import { COLORS } from "./colors";
 import { useVeneer, VENEER_SIZE } from "./materials";
 import { boxBetween, Box, Rect } from "./stair";
@@ -320,9 +321,10 @@ export const veneerUv = (
 };
 
 const VeneerBox = ({ position, size }: Box) => {
-  const geometry = useRef<any>(null);
+  const geometry = useRef<BoxGeometry>(null);
   const [px, py, pz] = position;
   useLayoutEffect(() => {
+    if (!geometry.current) return;
     const { position: points, normal, uv } = geometry.current.attributes;
     for (let i = 0; i < uv.count; i++) {
       const [u, v] = veneerUv(

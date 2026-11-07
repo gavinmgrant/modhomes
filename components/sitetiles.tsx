@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Raycaster, Vector3 } from "three";
+import { Group, Material, Raycaster, Vector3 } from "three";
 import { TilesRenderer } from "3d-tiles-renderer";
 import {
   GoogleCloudAuthPlugin,
@@ -28,8 +28,9 @@ import {
 const READY_TIMEOUT = 30000;
 // A ray from this far above the lot, in feet, finds its ground
 const RAY_HEIGHT = 100000;
-// The renderer's loading state for a root that wouldn't load, its FAILED,
-// which its types leave out
+// The renderer's loading state for its root, and its value for a root that
+// wouldn't load, its FAILED, both of which its types leave out
+type RootLoadingState = { rootLoadingState: number };
 const FAILED = -1;
 // Changes to the ground's height smaller than this, in feet, are left alone,
 // so the home doesn't twitch as finer tiles come in
@@ -39,7 +40,7 @@ const SETTLE = 0.05;
 // made once and kept, with every tile it has loaded, across views, models,
 // and the switch being turned off and on again. Its root session lasts three
 // hours, after which it's loaded again
-let tiles: any = null;
+let tiles: TilesRenderer | null = null;
 // Feet the tiles are raised by to stand their ground on the scene's
 let lift = 0;
 let groundFound = false;
@@ -61,19 +62,20 @@ const startLoading = () => {
 
 const getTiles = (apiKey: string, site: SiteLocation) => {
   if (!tiles) {
-    tiles = new TilesRenderer();
+    const created = new TilesRenderer();
+    tiles = created;
     const auth = new GoogleCloudAuthPlugin({ apiToken: apiKey });
-    tiles.registerPlugin(auth);
+    created.registerPlugin(auth);
     // Once the root has loaded, an expired session is renewed by loading it
     // again. Not before: the plugin would retry a refused key, and trip
     // over the error it gets back
     const renew = () => {
       auth.autoRefreshToken = true;
-      tiles.removeEventListener("load-tile-set", renew);
+      created.removeEventListener("load-tile-set", renew);
     };
-    tiles.addEventListener("load-tile-set", renew);
+    created.addEventListener("load-tile-set", renew);
     // Recentres the tiles on the lot, with its ground at about the origin
-    tiles.registerPlugin(
+    created.registerPlugin(
       new ReorientationPlugin({
         lat: toRadians(site.lat),
         lon: toRadians(site.lng),
@@ -81,14 +83,16 @@ const getTiles = (apiKey: string, site: SiteLocation) => {
         recenter: true,
       })
     );
-    tiles.addEventListener("load-model", ({ scene }: any) => {
+    created.addEventListener("load-model", ({ scene }) => {
       // The tiles are photographs, already lit and graded, so the home's
       // tone mapping is kept off them
-      scene.traverse((object: any) => {
-        if (object.material) object.material.toneMapped = false;
+      scene.traverse((object) => {
+        if ("material" in object && object.material instanceof Material) {
+          object.material.toneMapped = false;
+        }
       });
     });
-    tiles.addEventListener("tiles-load-end", () => {
+    created.addEventListener("tiles-load-end", () => {
       groundStale = true;
     });
   }
@@ -111,7 +115,7 @@ interface SiteTilesProps {
 export const SiteTiles = ({ apiKey, groundY, site = SITE }: SiteTilesProps) => {
   const { camera, gl } = useThree();
   const tileSet = getTiles(apiKey, site);
-  const raised = useRef<any>(null);
+  const raised = useRef<Group>(null);
   const lastGroundY = useRef<number | null>(null);
 
   useEffect(startLoading, []);
@@ -126,22 +130,23 @@ export const SiteTiles = ({ apiKey, groundY, site = SITE }: SiteTilesProps) => {
 
   // Out to the horizon while the site shows
   useEffect(() => {
-    const { near, far } = camera as any;
+    const { near, far } = camera;
     Object.assign(camera, SITE_CLIP);
-    (camera as any).updateProjectionMatrix();
+    camera.updateProjectionMatrix();
     return () => {
       Object.assign(camera, { near, far });
-      (camera as any).updateProjectionMatrix();
+      camera.updateProjectionMatrix();
     };
   }, [camera]);
 
   useFrame(() => {
-    if (tileSet.rootLoadingState === FAILED) {
+    const { rootLoadingState } = tileSet as TilesRenderer & RootLoadingState;
+    if (rootLoadingState === FAILED) {
       setSiteStatus("failed");
       return;
     }
     tileSet.setResolutionFromRenderer(camera, gl);
-    (camera as any).updateMatrixWorld();
+    camera.updateMatrixWorld();
     tileSet.update();
 
     const group = raised.current;
@@ -184,7 +189,7 @@ export const SiteTiles = ({ apiKey, groundY, site = SITE }: SiteTilesProps) => {
   // raised here stays raised, looking down a little more steeply
   const lastCamera = useRef(new Vector3(NaN, NaN, NaN));
   useFrame(() => {
-    const position = (camera as any).position;
+    const position = camera.position;
     if (!groundFound || position.equals(lastCamera.current)) return;
     ray.set(new Vector3(position.x, RAY_HEIGHT, position.z), down);
     const [hit] = ray.intersectObject(tileSet.group, true);
@@ -264,11 +269,12 @@ export const SiteCredits = ({ shown, dock }: SiteCreditsProps) => {
   }, [shown, dock]);
   useEffect(() => {
     if (!shown || !tiles) return;
+    const tileSet = tiles;
     const gather = () => {
-      const text = tiles
+      const text = tileSet
         .getAttributions()
-        .filter((credit: any) => credit.type === "string")
-        .map((credit: any) => credit.value)
+        .filter((credit) => credit.type === "string")
+        .map((credit) => credit.value)
         .join("; ");
       setCredits(text);
     };

@@ -61,7 +61,7 @@ export const getNormal = ([a, b, c]: Point[]): Point => {
 
 interface RoofProps {
   color: string;
-  position: number[];
+  position: [number, number, number];
   width: number;
   // Where the hip's ridge tops out, in the same frame as position: level with
   // the tops of the parapets around it

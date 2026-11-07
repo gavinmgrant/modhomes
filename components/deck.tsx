@@ -5,6 +5,7 @@ import React, {
   useSyncExternalStore,
 } from "react";
 import { useFrame } from "@react-three/fiber";
+import { Group } from "three";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { COLORS } from "./colors";
 import { FLOOR } from "./fixtures";
@@ -395,9 +396,8 @@ const Deck = ({
   phase = "landed",
   onSettled,
 }: DeckProps) => {
-  // three has no type definitions installed here, so the ref is untyped
-  const group = useRef<any>(null);
-  const stem = useRef<any>(null);
+  const group = useRef<Group>(null);
+  const stem = useRef<Group>(null);
   const offset = useRef(phase === "dropping" ? DECK_DROP.height : 0);
   const from = useRef(offset.current);
   const start = useRef<number | null>(null);

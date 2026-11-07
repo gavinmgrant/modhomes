@@ -2,7 +2,7 @@ import AssembleIn, { AssemblyStep, SIDE_OFFSET } from "./assembly";
 
 interface EndWallProps {
   color: string;
-  position: number[];
+  position: [number, number, number];
   rotate: boolean;
   twoStory: boolean;
   // Slide the side strips and parapet in from outside on this step of the

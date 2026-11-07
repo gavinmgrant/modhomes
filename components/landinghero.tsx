@@ -1,6 +1,7 @@
 import React, { Suspense, useLayoutEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Stage } from "@react-three/drei";
+import { PerspectiveCamera } from "three";
 import { Typography, Grid, Button } from "@mui/material";
 import Roof from "./roof";
 import Module from "./module";
@@ -27,7 +28,9 @@ import { useIsMobile } from "../lib/media";
 // Keeps the camera on its starting line but far enough back to frame the
 // whole assembly in this canvas, refitting when the canvas changes shape
 const AssemblyCamera = () => {
-  const camera = useThree((state) => state.camera) as any;
+  // R3F types the camera as perspective or orthographic; this canvas's
+  // default is perspective
+  const camera = useThree((state) => state.camera) as PerspectiveCamera;
   const aspect = useThree((state) => state.size.width / state.size.height);
 
   useLayoutEffect(() => {

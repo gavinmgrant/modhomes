@@ -1,6 +1,12 @@
 import React from "react";
 import { useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
+import {
+  NoColorSpace,
+  RepeatWrapping,
+  Texture,
+  WebGLRenderer,
+} from "three";
 import SwatchPicker from "./swatchpicker";
 import { COLORS } from "./colors";
 import type { Finishes, SetFinish } from "../lib/viewerstate";
@@ -41,23 +47,18 @@ const TILE_SIZE: Partial<Record<FloorMaterial, [number, number]>> = {
   carpet: [2, 2],
 };
 const SLAB = { length: 39, width: 8 };
-// three's RepeatWrapping, as three has no type definitions installed here
-const REPEAT_WRAPPING = 1000;
 
 export const getFloorRepeat = (material: FloorMaterial) => {
   const size = TILE_SIZE[material];
   return size ? [SLAB.length / size[0], SLAB.width / size[1]] : [1, 1];
 };
 
-// three's NoColorSpace, for textures that hold data rather than colors
-const NO_COLOR_SPACE = "";
-
 // The color space for each of a set of maps: sRGB for the color map, and
 // none for the normal and roughness maps, which hold data. R3F would put
 // them all in sRGB, and decoding a roughness map as a color darkens it, so
 // the surface shines like a mirror with the sky in it
-const getColorSpace = (key: string, gl: any) =>
-  key === "map" ? gl.outputColorSpace : NO_COLOR_SPACE;
+const getColorSpace = (key: string, gl: WebGLRenderer) =>
+  key === "map" ? gl.outputColorSpace : NoColorSpace;
 
 // useTexture uploads to the GPU straight away, but R3F only sets a texture's
 // color space once it's put on a material, and an uploaded texture keeps the
@@ -68,13 +69,14 @@ export const useFloorTexture = (material: FloorMaterial) => {
   const gl = useThree((state) => state.gl);
   const [u, v] = getFloorRepeat(material);
   return useTexture(TEXTURES[material], (textures) => {
-    (textures as any[]).forEach((texture, i) => {
+    // drei passes a record's textures as an array, but types them as either
+    (textures as Texture[]).forEach((texture, i) => {
       texture.colorSpace = getColorSpace(
         Object.keys(TEXTURES[material])[i],
         gl,
       );
       if (TILE_SIZE[material]) {
-        texture.wrapS = texture.wrapT = REPEAT_WRAPPING;
+        texture.wrapS = texture.wrapT = RepeatWrapping;
         texture.repeat.set(u, v);
       }
     });
@@ -115,9 +117,10 @@ export const VENEER_SIZE = 4;
 export const useVeneer = () => {
   const gl = useThree((state) => state.gl);
   return useTexture(VENEER, (textures) => {
-    (textures as any[]).forEach((texture, i) => {
+    // As in useFloorTexture, drei passes these as an array
+    (textures as Texture[]).forEach((texture, i) => {
       texture.colorSpace = getColorSpace(Object.keys(VENEER)[i], gl);
-      texture.wrapS = texture.wrapT = REPEAT_WRAPPING;
+      texture.wrapS = texture.wrapT = RepeatWrapping;
     });
   });
 };

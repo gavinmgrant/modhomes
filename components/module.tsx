@@ -61,7 +61,7 @@ export const getSlabPieces = (
 
 interface ModuleProps {
   color: string;
-  position: number[];
+  position: [number, number, number];
   envelopeOn: boolean;
   floorMaterial: FloorMaterial;
   // Openings in module coordinates, e.g. where a stair passes between stories
