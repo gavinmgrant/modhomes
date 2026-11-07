@@ -31,6 +31,8 @@ const RAY_HEIGHT = 100000;
 // The renderer's loading state for its root, and its value for a root that
 // wouldn't load, its FAILED, both of which its types leave out
 type RootLoadingState = { rootLoadingState: number };
+// How many tiles it's downloading and parsing, which its types leave out too
+type LoadingStats = { stats: { downloading: number; parsing: number } };
 const FAILED = -1;
 // Changes to the ground's height smaller than this, in feet, are left alone,
 // so the home doesn't twitch as finer tiles come in
@@ -113,7 +115,7 @@ interface SiteTilesProps {
 // Inside the outside view's canvas, while the site is wanted. The tiles
 // stay hidden until the home has been stood on their ground
 export const SiteTiles = ({ apiKey, groundY, site = SITE }: SiteTilesProps) => {
-  const { camera, gl } = useThree();
+  const { camera, gl, invalidate } = useThree();
   const tileSet = getTiles(apiKey, site);
   const raised = useRef<Group>(null);
   const lastGroundY = useRef<number | null>(null);
@@ -148,6 +150,14 @@ export const SiteTiles = ({ apiKey, groundY, site = SITE }: SiteTilesProps) => {
     tileSet.setResolutionFromRenderer(camera, gl);
     camera.updateMatrixWorld();
     tileSet.update();
+    // The canvas only draws when asked, so the tiles ask for frames while
+    // any are on their way, to show them as they come and settle the home
+    // on them
+    const { downloading, parsing } = (tileSet as TilesRenderer & LoadingStats)
+      .stats;
+    if (!groundFound || groundStale || downloading > 0 || parsing > 0) {
+      invalidate();
+    }
 
     const group = raised.current;
     if (!group) return;

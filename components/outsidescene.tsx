@@ -45,7 +45,14 @@ const OutsideScene = ({
   const isMobile = useIsMobile();
 
   return (
-    <Canvas camera={{ position: [60, 0, 60], fov: isMobile ? 70 : 40 }} shadows>
+    <Canvas
+      camera={{ position: [60, 0, 60], fov: isMobile ? 70 : 40 }}
+      shadows
+      // Drawn only when something changes: the orbit asks for frames as it
+      // moves, and the stage's shadow, a moving deck and the site's tiles
+      // each ask for them while they're under way
+      frameloop="demand"
+    >
       <Suspense fallback={<Loader />}>
         <OrbitControls
           maxPolarAngle={Math.PI / 2}

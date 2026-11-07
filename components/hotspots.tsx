@@ -303,11 +303,15 @@ interface ApplianceHotspotsProps {
 // on walking, or when its dot leaves the screen
 const ApplianceHotspots = ({ spots, open, onOpen }: ApplianceHotspotsProps) => {
   const camera = useThree((state) => state.camera);
+  const invalidate = useThree((state) => state.invalidate);
   const dots = useRef<Partial<Record<ApplianceId, HTMLDivElement | null>>>({});
   const openedAt: MutableRefObject<[number, number]> = useRef([0, 0]);
+  // A frame to fade the other dots out or back in, as the canvas only
+  // draws when asked
   useEffect(() => {
     if (open) openedAt.current = [camera.position.x, camera.position.z];
-  }, [camera, open]);
+    invalidate();
+  }, [camera, open, invalidate]);
 
   useFrame(() => {
     const { x, z } = camera.position;

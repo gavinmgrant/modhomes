@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { POST_INSET } from "./module";
 import {
   CEILING,
@@ -276,7 +276,10 @@ interface ServicesProps {
 }
 
 const Services = ({ cols, tileColor }: ServicesProps) => {
-  const layout = getServicesLayout(cols) ?? getGalleyLayout(cols);
+  const layout = useMemo(
+    () => getServicesLayout(cols) ?? getGalleyLayout(cols),
+    [cols],
+  );
   if (!layout) return null;
   const colors = tileColor ? tileColors(tileColor) : undefined;
 

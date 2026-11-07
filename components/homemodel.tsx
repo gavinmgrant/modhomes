@@ -184,4 +184,6 @@ const HomeModel = ({
   );
 };
 
-export default HomeModel;
+// Memoized, so changes elsewhere on the page, like an appliance's card
+// opening, don't re-render every part of the home
+export default React.memo(HomeModel);

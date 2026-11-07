@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import {
@@ -88,13 +88,17 @@ const FloorTexture = ({ material }: { material: FloorMaterial }) => {
   return null;
 };
 
-// Loads every floor finish under the scene's Suspense, keyed the same as
-// Module's, so picking another finish swaps it in place
-// instead of suspending the model back to the loader
+// Loads every floor finish, keyed the same as Module's, so picking another
+// finish swaps it in place instead of suspending the model back to the
+// loader. Each one waits under a Suspense of its own, so the view shows as
+// soon as the floor it's drawn with has loaded, and the rest follow in the
+// background. One picked before it's in still shows the loader meanwhile
 export const FloorTextures = () => (
   <>
     {(Object.keys(TEXTURES) as FloorMaterial[]).map((material) => (
-      <FloorTexture key={material} material={material} />
+      <Suspense key={material} fallback={null}>
+        <FloorTexture material={material} />
+      </Suspense>
     ))}
   </>
 );
