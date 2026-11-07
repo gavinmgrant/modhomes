@@ -1,6 +1,7 @@
 import React, { forwardRef } from "react";
-import { ButtonBase, Tooltip, useMediaQuery } from "@mui/material";
+import { ButtonBase, Tooltip } from "@mui/material";
 import { FOCUS_RING, INK, PAPER } from "./panel";
+import { useIsMobile } from "../lib/media";
 
 // 40-44px tap target around a smaller visible circle
 export const getSwatchSize = (isMobile: boolean) =>
@@ -18,7 +19,7 @@ interface SwatchProps {
 
 const Swatch = forwardRef<HTMLButtonElement, SwatchProps>(
   ({ name, background, selected, onSelect, expanded, controls }, ref) => {
-    const isMobile = useMediaQuery("(max-width:900px)");
+    const isMobile = useIsMobile();
     const opens = expanded !== undefined;
     const { target, dot } = getSwatchSize(isMobile);
 

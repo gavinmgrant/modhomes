@@ -1,13 +1,7 @@
 import dynamic from "next/dynamic";
-import React, { FC, useState, useEffect, useRef, Suspense } from "react";
-import { useRouter } from "next/router";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 import type { GetStaticPaths, GetStaticProps } from "next";
-import { Canvas } from "@react-three/fiber";
-import HomeModel, {
-  MODEL_BASE,
-  getOrbitMinDistance,
-  parseModel,
-} from "../../components/homemodel";
+import HomeModel from "../../components/homemodel";
 import NavBar from "../../components/navbar";
 import {
   getApplianceSpots,
@@ -15,98 +9,58 @@ import {
   hasGalley,
   hasServices,
 } from "../../components/services";
-import ApplianceHotspots, { SpecsToggle } from "../../components/hotspots";
+import { SpecsToggle } from "../../components/hotspots";
 import {
   createFacingStore,
-  DeckSide,
-  Decks,
   DeckToggle,
-  FacingSide,
   getDecksWidth,
   isDeckMoving,
-  landDecks,
-  settleDeck,
-  toggleDeck,
 } from "../../components/deck";
-import type { ApplianceId } from "../../lib/appliances";
-import Colors, { COLORS } from "../../components/colors";
-import Materials, { FloorTextures } from "../../components/materials";
-import HomeStage from "../../components/homestage";
-import Loader from "../../components/loader";
+import Colors from "../../components/colors";
+import Materials from "../../components/materials";
 import ModelCard from "../../components/modelcard";
 import PageMeta from "../../components/pagemeta";
 import ControlDock from "../../components/controldock";
-import WalkControls, {
+import InsideScene from "../../components/insidescene";
+import OutsideScene from "../../components/outsidescene";
+import {
   WalkPad,
   Joystick,
   WalkInput,
   IDLE_INPUT,
-  getWalkBounds,
-  getWalkStart,
 } from "../../components/walkcontrols";
-import MODELS from "../../lib/models";
-import { loadInsideView, saveInsideView } from "../../lib/viewposition";
 import {
   SiteAddress,
   SiteNotice,
   SiteToggle,
-  useSiteStatus,
+  useSiteView,
 } from "../../components/sitemap";
-import { getSiteKey, SITE_ORBIT_MAX_DISTANCE } from "../../lib/site";
-import { OrbitControls, Sky, Environment } from "@react-three/drei";
-import { useMediaQuery } from "@mui/material";
+import MODELS, { findModel, Model } from "../../lib/models";
+import { loadInsideView, saveInsideView } from "../../lib/viewposition";
+import { useIsMobile, useIsTouch } from "../../lib/media";
+import {
+  INITIAL_VIEWER,
+  pickFinish,
+  SetFinish,
+  viewerReducer,
+} from "../../lib/viewerstate";
 
-// The landscape photo is projected onto a ground plane at y = 0 with real
-// parallax, so the inside scene is lifted to stand its foundation on it, and
-// then some more so the grass falls away below the windows. The horizon stays
-// at eye level wherever the ground is.
-// Units are feet. The projection is only true from where the photo was taken,
-// so it's taken at standing eye level; any lower and everything below the
-// photo's horizon stretches down into streaks. The flat ground reaches out to
-// the tree line, 250 ft, and curves up into the sky dome there, so the trees
-// stand on the dome instead of lying smeared across the grass when you walk
-// off centre. The dome mesh itself only needs to sit inside the camera's far
-// plane.
-const GRASS_DROP = 3;
-const GROUND_LIFT = -MODEL_BASE + GRASS_DROP;
-// Standing eye level, 5' 3" above the ground floor's finished surface, which
-// sits at y = -3.95 in the model
-const EYE_LEVEL = -3.95 + 5.25;
-// Poly Haven's Noon Grass (CC0), a mown field ringed by trees
-const LANDSCAPE = {
-  files: "../images/environments/noon_grass_2k.hdr",
-  ground: { height: GROUND_LIFT + EYE_LEVEL, radius: 250, scale: 900 },
-};
-
-const COUNTS = ["one", "two", "three", "four", "five", "six", "seven", "eight"];
-
-// The tiles' renderer reaches for the browser's document as it loads, so
-// it's only loaded in the browser, and only once a page has the site key
-const SiteTiles = dynamic(
-  () => import("../../components/sitetiles").then((m) => m.SiteTiles),
-  { ssr: false }
-);
 const SiteCredits = dynamic(
   () => import("../../components/sitetiles").then((m) => m.SiteCredits),
-  { ssr: false }
+  { ssr: false },
 );
 
-// drei's Sky, which passes on props its types leave out, like where it
-// comes in the drawing order
-const Backdrop = Sky as unknown as React.FC<Record<string, unknown>>;
-
-// Without a Google Maps key there's no Site switch, and no tiles
-const SITE_KEY = getSiteKey();
+const COUNTS = ["one", "two", "three", "four", "five", "six", "seven", "eight"];
+const NUMBER = new Intl.NumberFormat("en-US");
 
 // e.g. "Mod 3x2 is a 1,920 sq ft, two-story modular home built from six modules…"
-const describeModel = (name: string, area: number, slug: string) => {
-  const layout = parseModel(slug);
-  const modules = (layout?.cols ?? 1) * (layout?.stories ?? 1);
-  const story = layout?.stories === 2 ? "two-story" : "single-story";
+const describeModel = ({ name, area, cols, stories }: Model) => {
+  const modules = cols * stories;
+  const story = stories === 2 ? "two-story" : "single-story";
   const built =
     modules === 1 ? "a single module" : `${COUNTS[modules - 1]} modules`;
-  return `${name} is a ${new Intl.NumberFormat("en-US").format(
-    area
+  return `${name} is a ${NUMBER.format(
+    area,
   )} sq ft, ${story} modular home built from ${built}. Orbit it in 3D, try an exterior color, or step inside to walk through and choose a floor finish.`;
 };
 
@@ -116,116 +70,89 @@ export const getStaticPaths: GetStaticPaths = () => ({
   fallback: false,
 });
 
-export const getStaticProps: GetStaticProps = () => ({ props: {} });
+type HomesProps = { slug: string };
 
-const Homes: FC = () => {
-  const router = useRouter();
-  const [isInside, setIsInside] = useState(false);
-  const [homeColor, setHomeColor] = useState(COLORS.white);
-  const [floorMaterial, setFloorMaterial] = useState("walnut");
-  const [trimColor, setTrimColor] = useState(COLORS.trim);
-  const [sidingColor, setSidingColor] = useState(COLORS.siding);
-  const [tileColor, setTileColor] = useState(COLORS.tile);
-  const [showSpecs, setShowSpecs] = useState(true);
-  const [openAppliance, setOpenAppliance] = useState<ApplianceId | null>(null);
-  const [decks, setDecks] = useState<Decks>({});
+export const getStaticProps: GetStaticProps<HomesProps> = ({ params }) => ({
+  props: { slug: String(params?.home) },
+});
+
+const Homes = ({ slug }: HomesProps) => {
+  const [viewer, dispatch] = useReducer(viewerReducer, INITIAL_VIEWER);
+  const { isInside, finishes, decks, showSpecs, openAppliance } = viewer;
   const [facing] = useState(createFacingStore);
-  // The Site switch stands the home on Google's 3D tiles of its lot, drawn
-  // around it once it's been settled onto their ground; if the tiles fail,
-  // the switch goes off and the home stands on its own again
-  const [siteOn, setSiteOn] = useState(false);
-  const siteStatus = useSiteStatus();
-  const groundY = useRef(0);
+  const site = useSiteView();
   // The dock, which the site's credits keep clear of
   const dock = useRef<HTMLDivElement>(null);
-  const showSite = !!SITE_KEY && siteOn && siteStatus !== "failed";
-  const siteReady = showSite && siteStatus === "ready";
-  const isMobile = useMediaQuery("(max-width:900px)");
-  const isTouch = useMediaQuery("(pointer: coarse)");
   const walkInput = useRef<WalkInput>({ ...IDLE_INPUT });
-  const model = MODELS.find((model) => model.slug === router.query.home);
-
-  const layout = parseModel(router.query.home);
-  const walkBounds = getWalkBounds(layout?.cols ?? 1, layout?.stories);
-  const walkStart = getWalkStart(walkBounds);
-  const home = layout && (
-    <HomeModel
-      cols={layout.cols}
-      stories={layout.stories}
-      color={homeColor}
-      floorMaterial={floorMaterial}
-      trimColor={trimColor}
-      sidingColor={sidingColor}
-      tileColor={tileColor}
-      decks={decks}
-      onDeckSettled={(side: DeckSide) =>
-        setDecks((decks) => settleDeck(decks, side))
-      }
-    />
-  );
-  // The wood swatch colors the decks as well as the siding
-  const hasWood =
-    !!layout &&
-    (getSidedPanes(layout.cols, layout.stories).length > 0 ||
-      Object.keys(decks).length > 0);
-  const hasTile =
-    !!layout && (hasServices(layout.cols) || hasGalley(layout.cols));
-  const applianceSpots = layout ? getApplianceSpots(layout.cols) : [];
+  const isMobile = useIsMobile();
+  const isTouch = useIsTouch();
 
   useEffect(() => {
-    setIsInside(loadInsideView());
+    dispatch({ type: "view", inside: loadInsideView() });
   }, []);
 
-  // Swaps the canvas in place; the keyed wrappers below remount it with a fresh camera
+  // The paths are the models, so the slug always names one
+  const model = findModel(slug);
+  if (!model) return null;
+  const { cols, stories } = model;
+
+  // Swaps the canvas in place; the keyed wrappers below remount it with a
+  // fresh camera
   const handleViewChange = (inside: boolean) => {
-    setIsInside(inside);
-    setOpenAppliance(null);
-    // The new view draws the decks in place, without replaying their moves
-    setDecks(landDecks);
+    dispatch({ type: "view", inside });
     walkInput.current = { ...IDLE_INPUT };
     saveInsideView(inside);
   };
 
-  const handleColorChange = (color: string) => {
-    setHomeColor(color);
-  };
+  const setFinish: SetFinish = (key, value) => dispatch(pickFinish(key, value));
 
-  const handleFloorMaterialChange = (floorMaterial: string) => {
-    setFloorMaterial(floorMaterial);
-  };
+  const home = (
+    <HomeModel
+      cols={cols}
+      stories={stories}
+      color={finishes.metal}
+      floorMaterial={finishes.floor}
+      trimColor={finishes.trim}
+      sidingColor={finishes.wood}
+      tileColor={finishes.tile}
+      decks={decks}
+      onDeckSettled={(side) => dispatch({ type: "settleDeck", side })}
+    />
+  );
+  // The wood swatch colors the decks as well as the siding
+  const hasWood =
+    getSidedPanes(cols, stories).length > 0 || Object.keys(decks).length > 0;
+  const hasTile = hasServices(cols) || hasGalley(cols);
+  const hasAppliances = getApplianceSpots(cols).length > 0;
 
   return (
     <>
-      {model && (
-        <PageMeta
-          title={`${model.name} · ${new Intl.NumberFormat("en-US").format(
-            model.area
-          )} sq ft modular home | ModHomes`}
-          description={describeModel(model.name, model.area, model.slug)}
-          path={`/homes/${model.slug}`}
-          image={`/og/${model.slug}.png`}
-          imageAlt={`3D render of the ${model.name} modular home`}
-        />
-      )}
+      <PageMeta
+        title={`${model.name} · ${NUMBER.format(
+          model.area,
+        )} sq ft modular home | ModHomes`}
+        description={describeModel(model)}
+        path={`/homes/${model.slug}`}
+        image={`/og/${model.slug}.png`}
+        imageAlt={`3D render of the ${model.name} modular home`}
+      />
       <div
         style={{ position: "relative", maxWidth: "1200px", margin: "0 auto" }}
       >
         <NavBar
           center={
-            SITE_KEY && <SiteAddress shown={siteReady && !isInside} />
+            site.available && <SiteAddress shown={site.ready && !isInside} />
           }
         />
-        {model && (
-          <ModelCard
-            model={{
-              ...model,
-              footprint: [
-                model.footprint[0] + getDecksWidth(decks),
-                model.footprint[1],
-              ],
-            }}
-          />
-        )}
+        <ModelCard
+          model={{
+            ...model,
+            footprint: [
+              model.footprint[0] + getDecksWidth(decks),
+              model.footprint[1],
+            ],
+          }}
+        />
       </div>
       <div
         style={{
@@ -237,92 +164,40 @@ const Homes: FC = () => {
           isolation: "isolate",
         }}
       >
-        {SITE_KEY && (
-          <SiteNotice status={siteStatus} shown={siteOn && !isInside} />
+        {site.available && (
+          <SiteNotice status={site.status} shown={site.on && !isInside} />
         )}
-        {SITE_KEY && <SiteCredits shown={siteReady && !isInside} dock={dock} />}
+        {site.available && (
+          <SiteCredits shown={site.ready && !isInside} dock={dock} />
+        )}
         {isInside ? (
           // Keyed by model too, so switching models from the menu starts the
           // new one at its own corner rather than wherever the last one ended
-          <div key={`inside-${router.query.home}`} className="viewer-fade">
-            <Canvas
-              camera={{
-                position: [walkStart.x, GROUND_LIFT + EYE_LEVEL, walkStart.z],
-                fov: 60,
-              }}
-              shadows
-              // a click on the view, not a drag to look around, closes an
-              // appliance's card
-              onPointerMissed={() => setOpenAppliance(null)}
+          <div key={`inside-${slug}`} className="viewer-fade">
+            <InsideScene
+              cols={cols}
+              stories={stories}
+              walkInput={walkInput}
+              showSpecs={showSpecs}
+              openAppliance={openAppliance}
+              onOpenAppliance={(appliance) =>
+                dispatch({ type: "openAppliance", appliance })
+              }
             >
-              <Suspense fallback={<Loader />}>
-                <WalkControls
-                  bounds={walkBounds}
-                  input={walkInput}
-                  facing={walkStart.facing}
-                />
-                <ambientLight intensity={0.6} />
-                <pointLight position={[100, 100, 20]} />
-                <Environment {...LANDSCAPE} />
-                <FloorTextures />
-                <group position={[0, GROUND_LIFT, 0]}>
-                  {home}
-                  {showSpecs && (
-                    <ApplianceHotspots
-                      spots={applianceSpots}
-                      open={openAppliance}
-                      onOpen={setOpenAppliance}
-                    />
-                  )}
-                </group>
-              </Suspense>
-            </Canvas>
+              {home}
+            </InsideScene>
           </div>
         ) : (
           <div key="outside" className="viewer-fade">
-            <Canvas
-              camera={{
-                position: [60, 0, 60],
-                fov: isMobile ? 70 : 40,
-              }}
-              shadows
+            <OutsideScene
+              cols={cols}
+              stories={stories}
+              decksMoving={isDeckMoving(decks)}
+              facing={facing}
+              site={site}
             >
-              <Suspense fallback={<Loader />}>
-                <OrbitControls
-                  maxPolarAngle={Math.PI / 2}
-                  minDistance={getOrbitMinDistance(
-                    layout?.cols ?? 1,
-                    layout?.stories ?? 1
-                  )}
-                  // With the site drawn there's a neighbourhood to see
-                  maxDistance={siteReady ? SITE_ORBIT_MAX_DISTANCE : 100}
-                  enableZoom
-                />
-                <FacingSide store={facing} />
-                <ambientLight intensity={0.5} />
-                <pointLight position={[100, 100, 20]} />
-                <Backdrop
-                  sunPosition={[100, 100, 20]}
-                  inclination={0}
-                  azimuth={0.25}
-                  // Drawn first, and behind everything, so the site's
-                  // tiles reaching past it to the horizon still show
-                  renderOrder={-1}
-                  material-depthTest={false}
-                />
-                {showSite && <SiteTiles apiKey={SITE_KEY} groundY={groundY} />}
-                <HomeStage
-                  moving={isDeckMoving(decks)}
-                  // The stage centres the home on the origin, so the ground
-                  // is half its height down
-                  onSized={({ height }) => {
-                    groundY.current = -height / 2;
-                  }}
-                >
-                  {home}
-                </HomeStage>
-              </Suspense>
-            </Canvas>
+              {home}
+            </OutsideScene>
           </div>
         )}
 
@@ -347,13 +222,10 @@ const Homes: FC = () => {
             label={isInside ? "Interior finishes" : "Exterior colors"}
             aside={
               isInside ? (
-                applianceSpots.length > 0 && (
+                hasAppliances && (
                   <SpecsToggle
                     on={showSpecs}
-                    onChange={(on) => {
-                      setShowSpecs(on);
-                      setOpenAppliance(null);
-                    }}
+                    onChange={(on) => dispatch({ type: "specs", on })}
                   />
                 )
               ) : (
@@ -361,15 +233,13 @@ const Homes: FC = () => {
                   <DeckToggle
                     decks={decks}
                     facing={facing}
-                    onToggle={(side) =>
-                      setDecks((decks) => toggleDeck(decks, side))
-                    }
+                    onToggle={(side) => dispatch({ type: "toggleDeck", side })}
                   />
-                  {SITE_KEY && (
+                  {site.available && (
                     <SiteToggle
-                      on={siteOn}
-                      status={siteStatus}
-                      onChange={setSiteOn}
+                      on={site.on}
+                      status={site.status}
+                      onChange={site.setOn}
                     />
                   )}
                 </div>
@@ -378,20 +248,14 @@ const Homes: FC = () => {
           >
             {isInside ? (
               <Materials
-                floorMaterial={floorMaterial}
-                handleFloorMaterial={handleFloorMaterialChange}
-                tileColor={tileColor}
-                handleTileColor={setTileColor}
+                finishes={finishes}
+                onChange={setFinish}
                 hasTile={hasTile}
               />
             ) : (
               <Colors
-                homeColor={homeColor}
-                handleColor={handleColorChange}
-                trimColor={trimColor}
-                handleTrimColor={setTrimColor}
-                sidingColor={sidingColor}
-                handleSidingColor={setSidingColor}
+                finishes={finishes}
+                onChange={setFinish}
                 hasWood={hasWood}
               />
             )}

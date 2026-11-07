@@ -1,12 +1,12 @@
 import React, { Suspense, useLayoutEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Stage } from "@react-three/drei";
-import { Typography, useMediaQuery, Grid, Button } from "@mui/material";
+import { Typography, Grid, Button } from "@mui/material";
 import Roof from "./roof";
 import Module from "./module";
 import EndWall from "./endwall";
 import Foundation from "./foundation";
-import { getParapetTop } from "./homemodel";
+import { getParapetTop } from "../lib/dimensions";
 import Loader from "./loader";
 import SlidingDoors, { DoorHeader } from "./slidingdoors";
 import AssembleIn, {
@@ -22,6 +22,7 @@ import { CITY_ENVIRONMENT } from "./materials";
 import { FOCUS_RING, PANEL } from "./panel";
 import { NAVBAR_HEIGHT } from "./navbar";
 import { motion } from "framer-motion";
+import { useIsMobile } from "../lib/media";
 
 // Keeps the camera on its starting line but far enough back to frame the
 // whole assembly in this canvas, refitting when the canvas changes shape
@@ -41,7 +42,7 @@ type LandingHeroProps = {
 };
 
 const LandingHero = ({ handleScroll }: LandingHeroProps) => {
-  const isMobile = useMediaQuery("(max-width:900px)");
+  const isMobile = useIsMobile();
   // Where Stage moved the model to centre it, so the doors can sit outside
   // Stage (its framing would otherwise include panes that start 10 ft out)
   const [modelOffset, setModelOffset] = useState<

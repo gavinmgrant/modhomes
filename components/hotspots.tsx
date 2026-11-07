@@ -8,14 +8,14 @@ import React, {
 } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
-import { ButtonBase, IconButton, Tooltip, useMediaQuery } from "@mui/material";
+import { ButtonBase, IconButton, Tooltip } from "@mui/material";
 import { motion, useReducedMotion } from "framer-motion";
 import { IconExternalLink, IconInfoSmall, IconX } from "@tabler/icons-react";
 import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
-import { getSwatchSize } from "./swatch";
 import type { Facing } from "./fixtures";
 import type { Spot } from "./kitchen";
 import { Appliance, ApplianceId, APPLIANCES } from "../lib/appliances";
+import DockToggle from "./docktoggle";
 
 // Units are feet. A dot shows in full within `near` of the camera and fades
 // out by `far`, so the kitchen isn't dotted from the far end of the home
@@ -361,57 +361,13 @@ interface SpecsToggleProps {
 }
 
 // The dock's switch for the spec dots, captioned like its swatches
-export const SpecsToggle = ({ on, onChange }: SpecsToggleProps) => {
-  const isMobile = useMediaQuery("(max-width:900px)");
-  const { target, dot: circle } = getSwatchSize(isMobile);
-  const name = on ? "Hide product specs" : "Show product specs";
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column-reverse",
-        alignItems: "center",
-        gap: 2,
-      }}
-    >
-      <span
-        aria-hidden
-        style={{ fontSize: 11, lineHeight: 1.2, opacity: 0.6, marginTop: -6 }}
-      >
-        Specs
-      </span>
-      <Tooltip title={name}>
-        <ButtonBase
-          aria-label="Product specs"
-          aria-pressed={on}
-          onClick={() => onChange(!on)}
-          sx={{
-            width: target,
-            height: target,
-            flexShrink: 0,
-            borderRadius: "50%",
-            ...FOCUS_RING,
-          }}
-        >
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: circle,
-              height: circle,
-              borderRadius: "50%",
-              background: on ? INK : "transparent",
-              color: on ? PAPER : INK,
-              boxShadow: "inset 0 0 0 1px rgba(19, 20, 20, 0.25)",
-              transition: "background 150ms ease-out, color 150ms ease-out",
-            }}
-          >
-            <IconInfoSmall size={26} aria-hidden />
-          </span>
-        </ButtonBase>
-      </Tooltip>
-    </div>
-  );
-};
+export const SpecsToggle = ({ on, onChange }: SpecsToggleProps) => (
+  <DockToggle
+    caption="Specs"
+    label="Product specs"
+    title={on ? "Hide product specs" : "Show product specs"}
+    on={on}
+    onClick={() => onChange(!on)}
+    icon={<IconInfoSmall size={26} aria-hidden />}
+  />
+);

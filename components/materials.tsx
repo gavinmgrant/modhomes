@@ -3,6 +3,7 @@ import { useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import SwatchPicker from "./swatchpicker";
 import { COLORS } from "./colors";
+import type { Finishes, SetFinish } from "../lib/viewerstate";
 
 // All textures are CC0 textures from ambientCG (formerly cc0textures.com):
 // https://ambientcg.com/
@@ -29,11 +30,13 @@ export const TEXTURES = {
   },
 };
 
+export type FloorMaterial = keyof typeof TEXTURES;
+
 // Each floor slab stretches its texture over 39 x 8 ft, which suits the
 // long boards of the wood floors. Concrete and carpet are tiled instead,
 // each tile covering this many feet along the slab's length and across it,
 // in the proportions of its image: concrete's is twice as wide as it's tall
-const TILE_SIZE: Partial<Record<keyof typeof TEXTURES, [number, number]>> = {
+const TILE_SIZE: Partial<Record<FloorMaterial, [number, number]>> = {
   concrete: [16, 8],
   carpet: [2, 2],
 };
@@ -41,7 +44,7 @@ const SLAB = { length: 39, width: 8 };
 // three's RepeatWrapping, as three has no type definitions installed here
 const REPEAT_WRAPPING = 1000;
 
-export const getFloorRepeat = (material: keyof typeof TEXTURES) => {
+export const getFloorRepeat = (material: FloorMaterial) => {
   const size = TILE_SIZE[material];
   return size ? [SLAB.length / size[0], SLAB.width / size[1]] : [1, 1];
 };
@@ -61,7 +64,7 @@ const getColorSpace = (key: string, gl: any) =>
 // one it went up with. Set it first, or finishes not yet on the floor render
 // washed out when picked. Tiling is set before upload too. Module loads its
 // floor with this as well, for views without FloorTextures
-export const useFloorTexture = (material: keyof typeof TEXTURES) => {
+export const useFloorTexture = (material: FloorMaterial) => {
   const gl = useThree((state) => state.gl);
   const [u, v] = getFloorRepeat(material);
   return useTexture(TEXTURES[material], (textures) => {
@@ -78,7 +81,7 @@ export const useFloorTexture = (material: keyof typeof TEXTURES) => {
   });
 };
 
-const FloorTexture = ({ material }: { material: keyof typeof TEXTURES }) => {
+const FloorTexture = ({ material }: { material: FloorMaterial }) => {
   useFloorTexture(material);
   return null;
 };
@@ -88,7 +91,7 @@ const FloorTexture = ({ material }: { material: keyof typeof TEXTURES }) => {
 // instead of suspending the model back to the loader
 export const FloorTextures = () => (
   <>
-    {(Object.keys(TEXTURES) as (keyof typeof TEXTURES)[]).map((material) => (
+    {(Object.keys(TEXTURES) as FloorMaterial[]).map((material) => (
       <FloorTexture key={material} material={material} />
     ))}
   </>
@@ -146,33 +149,26 @@ export const TILE_OPTIONS = [
 ].map((option) => ({ ...option, background: option.value }));
 
 interface MaterialsProps {
-  floorMaterial: string;
-  handleFloorMaterial: (floorMaterial: any) => void;
-  tileColor: string;
-  handleTileColor: (color: string) => void;
+  finishes: Finishes;
+  onChange: SetFinish;
   hasTile: boolean;
 }
 
-const Materials = ({
-  floorMaterial,
-  handleFloorMaterial,
-  tileColor,
-  handleTileColor,
-  hasTile,
-}: MaterialsProps) => (
+// The inside view's finishes
+const Materials = ({ finishes, onChange, hasTile }: MaterialsProps) => (
   <>
     <SwatchPicker
       label="Floor"
       options={FLOOR_OPTIONS}
-      value={floorMaterial}
-      onChange={handleFloorMaterial}
+      value={finishes.floor}
+      onChange={(material) => onChange("floor", material)}
     />
     {hasTile && (
       <SwatchPicker
         label="Tile"
         options={TILE_OPTIONS}
-        value={tileColor}
-        onChange={handleTileColor}
+        value={finishes.tile}
+        onChange={(color) => onChange("tile", color)}
       />
     )}
   </>

@@ -9,23 +9,12 @@ import Materials, {
   getFloorRepeat,
   TILE_OPTIONS,
 } from "../components/materials";
+import { DEFAULT_FINISHES } from "../lib/viewerstate";
 import { render, fireEvent } from "@testing-library/react";
 
-const renderColors = (
-  hasWood: boolean,
-  handleColor = jest.fn(),
-  handleTrimColor = jest.fn(),
-) =>
+const renderColors = (hasWood: boolean, onChange = jest.fn()) =>
   render(
-    <Colors
-      homeColor={COLORS.white}
-      handleColor={handleColor}
-      trimColor={COLORS.trim}
-      handleTrimColor={handleTrimColor}
-      sidingColor={COLORS.siding}
-      handleSidingColor={() => {}}
-      hasWood={hasWood}
-    />,
+    <Colors finishes={DEFAULT_FINISHES} onChange={onChange} hasWood={hasWood} />,
   );
 
 describe("colors", () => {
@@ -50,24 +39,21 @@ describe("colors", () => {
   });
 
   it("picks a trim color from its own swatch", () => {
-    const handleTrimColor = jest.fn();
-    const { getByLabelText, getByTestId } = renderColors(
-      true,
-      jest.fn(),
-      handleTrimColor,
-    );
+    const onChange = jest.fn();
+    const { getByLabelText, getByTestId } = renderColors(true, onChange);
     fireEvent.click(getByLabelText("Trim: Statuary Bronze"));
     fireEvent.click(getByTestId("bone white-option"));
-    expect(handleTrimColor).toHaveBeenCalledWith(
+    expect(onChange).toHaveBeenCalledWith(
+      "trim",
       TRIM_OPTIONS.find(({ name }) => name === "Bone White")?.value,
     );
   });
 
   it("opens the options above a swatch and closes once one is picked", () => {
-    const handleColor = jest.fn();
+    const onChange = jest.fn();
     const { getByLabelText, getByTestId, queryByRole } = renderColors(
       true,
-      handleColor,
+      onChange,
     );
     const metal = getByLabelText("Metal: White");
     expect(metal.getAttribute("aria-expanded")).toBe("false");
@@ -75,7 +61,7 @@ describe("colors", () => {
     expect(metal.getAttribute("aria-expanded")).toBe("true");
     expect(queryByRole("group", { name: "Metal" })).toBeTruthy();
     fireEvent.click(getByTestId("taupe-option"));
-    expect(handleColor).toHaveBeenCalledWith(COLORS.taupe);
+    expect(onChange).toHaveBeenCalledWith("metal", COLORS.taupe);
     expect(metal.getAttribute("aria-expanded")).toBe("false");
   });
 
@@ -104,19 +90,13 @@ describe("materials", () => {
   });
 
   it("picks a wall tile color from its own swatch", () => {
-    const handleTileColor = jest.fn();
+    const onChange = jest.fn();
     const { getByLabelText, getByTestId } = render(
-      <Materials
-        floorMaterial="walnut"
-        handleFloorMaterial={() => {}}
-        tileColor={COLORS.tile}
-        handleTileColor={handleTileColor}
-        hasTile
-      />,
+      <Materials finishes={DEFAULT_FINISHES} onChange={onChange} hasTile />,
     );
     expect(getByLabelText("Floor: Walnut")).toBeTruthy();
     fireEvent.click(getByLabelText("Tile: Urban Putty"));
     fireEvent.click(getByTestId("chalkboard-option"));
-    expect(handleTileColor).toHaveBeenCalledWith("#575b5e");
+    expect(onChange).toHaveBeenCalledWith("tile", "#575b5e");
   });
 });

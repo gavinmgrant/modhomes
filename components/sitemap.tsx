@@ -1,15 +1,15 @@
-import React, { useEffect, useState, useSyncExternalStore } from "react";
-import {
-  ButtonBase,
-  CircularProgress,
-  Tooltip,
-  useMediaQuery,
-} from "@mui/material";
+import React, { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { CircularProgress } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconMapPin } from "@tabler/icons-react";
-import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
-import { getSwatchSize } from "./swatch";
-import { formatCoordinates, SITE, SiteLocation } from "../lib/site";
+import { PANEL } from "./panel";
+import {
+  formatCoordinates,
+  getSiteKey,
+  SITE,
+  SiteLocation,
+} from "../lib/site";
+import DockToggle from "./docktoggle";
 
 // The Site view's controls and word from it: the dock's switch, the address
 // naming the lot, and the notice while it loads. The tiles themselves are
@@ -43,6 +43,36 @@ const getStatus = () => status;
 export const useSiteStatus = () =>
   useSyncExternalStore(subscribe, getStatus, getStatus);
 
+// Without a Google Maps key there's no Site switch, and no tiles
+const SITE_KEY = getSiteKey();
+
+// The Site switch stands the home on Google's 3D tiles of its lot, drawn
+// around it once it's been settled onto their ground; if the tiles fail,
+// the switch goes off and the home stands on its own again
+export const useSiteView = () => {
+  const [on, setOn] = useState(false);
+  const status = useSiteStatus();
+  // Where the outside view's stage stands the home's foundation, for the
+  // tiles to meet. Kept for the page, as the tiles keep their place across
+  // views, so it's never back at 0 while a remounted stage sizes the home
+  const groundY = useRef(0);
+  const available = !!SITE_KEY;
+  // Whether the tiles are drawn, and whether the home stands on them yet
+  const shown = available && on && status !== "failed";
+  return {
+    available,
+    apiKey: SITE_KEY,
+    on,
+    setOn,
+    status,
+    shown,
+    ready: shown && status === "ready",
+    groundY,
+  };
+};
+
+export type SiteView = ReturnType<typeof useSiteView>;
+
 interface SiteToggleProps {
   on: boolean;
   status: SiteStatus;
@@ -51,75 +81,28 @@ interface SiteToggleProps {
 
 // The dock's switch for the site, captioned like its swatches
 export const SiteToggle = ({ on, status, onChange }: SiteToggleProps) => {
-  const isMobile = useMediaQuery("(max-width:900px)");
-  const { target, dot: circle } = getSwatchSize(isMobile);
   const failed = status === "failed";
   const loading = on && status === "loading";
-  const name = failed
-    ? "The site map isn't available right now"
-    : loading
-    ? "Loading the site…"
-    : on
-    ? "Take the home off its site"
-    : "Show the home on its site";
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column-reverse",
-        alignItems: "center",
-        gap: 2,
-      }}
-    >
-      <span
-        aria-hidden
-        style={{ fontSize: 11, lineHeight: 1.2, opacity: 0.6, marginTop: -6 }}
-      >
-        Site
-      </span>
-      <Tooltip title={name}>
-        {/* A span so the tooltip still shows when the button is disabled */}
-        <span style={{ display: "inline-flex" }}>
-          <ButtonBase
-            aria-label="Home on its site"
-            aria-pressed={on && !failed}
-            aria-busy={loading}
-            disabled={failed}
-            onClick={() => onChange(!on)}
-            sx={{
-              width: target,
-              height: target,
-              flexShrink: 0,
-              borderRadius: "50%",
-              opacity: failed ? 0.4 : 1,
-              ...FOCUS_RING,
-            }}
-          >
-            <span
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: circle,
-                height: circle,
-                borderRadius: "50%",
-                background: on && !failed ? INK : "transparent",
-                color: on && !failed ? PAPER : INK,
-                boxShadow: "inset 0 0 0 1px rgba(19, 20, 20, 0.25)",
-                transition: "background 150ms ease-out, color 150ms ease-out",
-              }}
-            >
-              {loading ? (
-                <CircularProgress size={16} thickness={5} color="inherit" />
-              ) : (
-                <IconMapPin size={18} aria-hidden />
-              )}
-            </span>
-          </ButtonBase>
-        </span>
-      </Tooltip>
-    </div>
+    <DockToggle
+      caption="Site"
+      label="Home on its site"
+      title={
+        failed
+          ? "The site map isn't available right now"
+          : loading
+          ? "Loading the site…"
+          : on
+          ? "Take the home off its site"
+          : "Show the home on its site"
+      }
+      on={on && !failed}
+      disabled={failed}
+      busy={loading}
+      onClick={() => onChange(!on)}
+      icon={<IconMapPin size={18} aria-hidden />}
+    />
   );
 };
 

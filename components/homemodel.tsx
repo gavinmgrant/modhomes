@@ -7,7 +7,14 @@ import SlidingDoors from "./slidingdoors";
 import Stair, { getStairLayout } from "./stair";
 import Services, { getSidedPanes } from "./services";
 import { COLORS } from "./colors";
+import type { FloorMaterial } from "./materials";
 import Deck, { DeckSide, Decks } from "./deck";
+import {
+  getParapetTop,
+  MODEL_BASE,
+  MODULE,
+  STORY_HEIGHT,
+} from "../lib/dimensions";
 
 // "mod3x2" -> 3 modules wide, 2 stories; null until the slug is known
 export const parseModel = (slug?: string | string[]) => {
@@ -15,18 +22,12 @@ export const parseModel = (slug?: string | string[]) => {
   return match ? { cols: Number(match[1]), stories: Number(match[2]) } : null;
 };
 
-// Bottom of the foundation, where the model meets the ground
-export const MODEL_BASE = -6.45;
-
-// Top of the walls and the parapets they rise into around the roof
-export const getParapetTop = (stories: number) => 10 * (stories - 1) + 6.5;
-
 // Outer size of the built model, from the foundation base to the end wall tops
 export const getModelSize = (cols: number, stories: number) => {
   const bottom = MODEL_BASE;
   const top = getParapetTop(stories);
   return {
-    width: 8 * cols + 1.2,
+    width: MODULE.width * cols + 1.2,
     depth: 40.6,
     height: top - bottom,
     centerY: (top + bottom) / 2,
@@ -47,7 +48,7 @@ interface HomeModelProps {
   cols: number;
   stories: number;
   color: string;
-  floorMaterial: string;
+  floorMaterial: FloorMaterial;
   // The window and door trim's color
   trimColor?: string;
   // The wood siding's and the kitchen and bathroom wall tile's colours
@@ -73,12 +74,16 @@ const HomeModel = ({
   onDeckSettled,
 }: HomeModelProps) => {
   const twoStory = stories === 2;
-  const halfWidth = 4 * cols;
+  const halfWidth = (MODULE.width / 2) * cols;
   const modules = [];
   for (let story = 0; story < stories; story++) {
     for (let i = 0; i < cols; i++) {
       modules.push({
-        position: [-halfWidth + 4 + 8 * i, 10 * story, 0],
+        position: [
+          -halfWidth + MODULE.width / 2 + MODULE.width * i,
+          STORY_HEIGHT * story,
+          0,
+        ],
         story,
         i,
       });

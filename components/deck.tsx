@@ -5,7 +5,6 @@ import React, {
   useSyncExternalStore,
 } from "react";
 import { useFrame } from "@react-three/fiber";
-import { ButtonBase, Tooltip, useMediaQuery } from "@mui/material";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { COLORS } from "./colors";
 import { FLOOR } from "./fixtures";
@@ -14,13 +13,12 @@ import { POST_SIZE } from "./module";
 import {
   END_WALL_BEAM_BOTTOM,
   FLOOR as DOOR_FLOOR,
-  STORY_HEIGHT,
   END_WALL_FACE,
-  prefersReducedMotion,
 } from "./slidingdoors";
-import { FOCUS_RING, INK, PAPER } from "./panel";
-import { getSwatchSize } from "./swatch";
 import { getHipRoofTriangles, getNormal, Point } from "./roof";
+import DockToggle from "./docktoggle";
+import { getParapetTop, MODEL_BASE, STORY_HEIGHT } from "../lib/dimensions";
+import { prefersReducedMotion } from "../lib/media";
 
 // A covered deck is a module of its own, craned onto one of the home's long
 // glass sides: an 8 ft deep steel frame as long as the home, with a wood
@@ -45,14 +43,14 @@ const ROOF_THICKNESS = 0.25;
 // ridge as the home's does from its slab to the parapet top: 6.5 - 5.675. Its
 // ridge is level with the top of the fascia, which hides it
 export const HIP_RISE = 0.825;
-// Where the foundation meets the ground (MODEL_BASE)
-const GROUND = -6.45;
+// Where the foundation meets the ground
+const GROUND = MODEL_BASE;
 
-// The top of the fascia and the roof's ridge. On a one-story home it's level with the
-// parapet, getParapetTop(1). A two-story home's deck stays one story tall,
+// The top of the fascia and the roof's ridge. On a one-story home it's level
+// with the parapet. A two-story home's deck stays one story tall,
 // level with the top of the band under the upper story's glass
 export const getDeckTop = (stories: number) =>
-  stories > 1 ? STORY_HEIGHT + DOOR_FLOOR : 6.5;
+  stories > 1 ? STORY_HEIGHT + DOOR_FLOOR : getParapetTop(1);
 
 // -1 for the home's left glass side, 1 for its right
 export type DeckSide = -1 | 1;
@@ -489,59 +487,18 @@ interface DeckToggleProps {
 // The dock's button for a deck on the glass side facing the camera,
 // captioned like its swatches: it adds one there, or removes the one there
 export const DeckToggle = ({ decks, facing, onToggle }: DeckToggleProps) => {
-  const isMobile = useMediaQuery("(max-width:900px)");
-  const { target, dot: circle } = getSwatchSize(isMobile);
   const side = useSyncExternalStore(facing.subscribe, facing.get, facing.get);
   const on = isDeckUp(decks[side]);
-  const name = on ? "Remove this deck" : "Add a deck on this side";
   const Icon = on ? IconMinus : IconPlus;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column-reverse",
-        alignItems: "center",
-        gap: 2,
-      }}
-    >
-      <span
-        aria-hidden
-        style={{ fontSize: 11, lineHeight: 1.2, opacity: 0.6, marginTop: -6 }}
-      >
-        Deck
-      </span>
-      <Tooltip title={name}>
-        <ButtonBase
-          aria-label="Deck on this side"
-          aria-pressed={on}
-          onClick={() => onToggle(side)}
-          sx={{
-            width: target,
-            height: target,
-            flexShrink: 0,
-            borderRadius: "50%",
-            ...FOCUS_RING,
-          }}
-        >
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: circle,
-              height: circle,
-              borderRadius: "50%",
-              background: on ? INK : "transparent",
-              color: on ? PAPER : INK,
-              boxShadow: "inset 0 0 0 1px rgba(19, 20, 20, 0.25)",
-              transition: "background 150ms ease-out, color 150ms ease-out",
-            }}
-          >
-            <Icon size={18} aria-hidden />
-          </span>
-        </ButtonBase>
-      </Tooltip>
-    </div>
+    <DockToggle
+      caption="Deck"
+      label="Deck on this side"
+      title={on ? "Remove this deck" : "Add a deck on this side"}
+      on={on}
+      onClick={() => onToggle(side)}
+      icon={<Icon size={18} aria-hidden />}
+    />
   );
 };

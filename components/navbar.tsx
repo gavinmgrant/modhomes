@@ -9,12 +9,12 @@ import {
   IconButton,
   MenuItem,
   Drawer,
-  useMediaQuery,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { IconLayoutGrid, IconX } from "@tabler/icons-react";
 import MODELS from "../lib/models";
 import { FOCUS_RING, INK, PANEL, PANEL_RADIUS, PAPER } from "./panel";
+import { useIsMobile } from "../lib/media";
 
 const HOVER = { "&:hover": { background: "rgba(19, 20, 20, 0.06)" } };
 
@@ -29,7 +29,7 @@ interface NavBarProps {
 }
 
 const NavBar = ({ center }: NavBarProps) => {
-  const isMobile = useMediaQuery("(max-width:900px)");
+  const isMobile = useIsMobile();
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
