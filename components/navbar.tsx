@@ -13,10 +13,10 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import { IconLayoutGrid, IconX } from "@tabler/icons-react";
 import MODELS from "../lib/models";
-import { FOCUS_RING, INK, PANEL, PANEL_RADIUS, PAPER } from "./panel";
+import { FOCUS_RING, INK, PANEL, PANEL_RADIUS, PAPER, ink } from "./panel";
 import { useIsMobile } from "../lib/media";
 
-const HOVER = { "&:hover": { background: "rgba(19, 20, 20, 0.06)" } };
+const HOVER = { "&:hover": { background: ink(0.06) } };
 
 // The bar sits 1rem from the top of the page. Its height is MUI's toolbar
 // (56px on phones, 64px from sm up) plus the panel's 1px border top and bottom

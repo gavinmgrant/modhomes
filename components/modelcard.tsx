@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useMediaQuery } from "@mui/material";
-import { useSpring, animated, config } from "@react-spring/web";
+import { motion, useSpring, useTransform } from "framer-motion";
 import { PANEL, PANEL_RADIUS } from "./panel";
 
 // What the card knows about a model. Floor area is all every model has so
@@ -70,12 +70,12 @@ const CountUp = ({
   value: number;
   format?: (value: number) => string;
 }) => {
-  const count = useSpring({
-    val: value,
-    from: { val: 0 },
-    config: config.molasses,
-  });
-  return <animated.span>{count.val.to(format)}</animated.span>;
+  // starts at zero and eases to the value, slow and without overshoot (the
+  // stiffness and damping of React Spring's "molasses", which it used before)
+  const count = useSpring(0, { stiffness: 280, damping: 120 });
+  const text = useTransform(count, format);
+  useEffect(() => count.set(value), [count, value]);
+  return <motion.span>{text}</motion.span>;
 };
 
 const ModelCard = ({ model }: { model: ModelFacts }) => {

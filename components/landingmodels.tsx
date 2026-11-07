@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import MODELS from "../lib/models";
 import { AnimatePresence, motion } from "framer-motion";
-import { PANEL } from "./panel";
+import { PANEL, ink } from "./panel";
 import ModelPreviews from "./modelpreviews";
 import { saveInsideView } from "../lib/viewposition";
 
@@ -40,7 +40,7 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
               cursor: "pointer",
               transition: "box-shadow 200ms ease-out",
               "&:hover": {
-                boxShadow: "0 8px 24px rgba(19, 20, 20, 0.12)",
+                boxShadow: `0 8px 24px ${ink(0.12)}`,
               },
             }}
             onClick={() => {

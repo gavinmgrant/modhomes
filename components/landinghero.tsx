@@ -19,7 +19,7 @@ import AssembleIn, {
 } from "./assembly";
 import { COLORS } from "./colors";
 import { CITY_ENVIRONMENT } from "./materials";
-import { FOCUS_RING, PANEL } from "./panel";
+import { FOCUS_RING, PANEL, ink } from "./panel";
 import { NAVBAR_HEIGHT } from "./navbar";
 import { motion } from "framer-motion";
 import { useIsMobile } from "../lib/media";
@@ -108,7 +108,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                 borderRadius: 999,
                 "&:hover": {
                   ...PANEL,
-                  boxShadow: "0 8px 24px rgba(19, 20, 20, 0.12)",
+                  boxShadow: `0 8px 24px ${ink(0.12)}`,
                 },
                 ...FOCUS_RING,
               }}

@@ -11,7 +11,7 @@ import { Html } from "@react-three/drei";
 import { ButtonBase, IconButton, Tooltip } from "@mui/material";
 import { motion, useReducedMotion } from "framer-motion";
 import { IconExternalLink, IconInfoSmall, IconX } from "@tabler/icons-react";
-import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
+import { FOCUS_RING, INK, PANEL, PAPER, ink, paper } from "./panel";
 import type { Facing } from "./fixtures";
 import type { Spot } from "./kitchen";
 import { Appliance, ApplianceId, APPLIANCES } from "../lib/appliances";
@@ -105,7 +105,7 @@ export const ApplianceCard = ({
       transition={{ duration: 0.18, ease: "easeOut" }}
       style={{
         ...PANEL,
-        background: "rgba(249, 247, 241, 0.94)",
+        background: paper(0.94),
         position: "absolute",
         left: `calc(50% + ${placing.shift}px)`,
         x: "-50%",
@@ -145,7 +145,7 @@ export const ApplianceCard = ({
             lineHeight: "18px",
             padding: "0 8px",
             borderRadius: 999,
-            background: "rgba(19, 20, 20, 0.08)",
+            background: ink(0.08),
           }}
         >
           Standard
@@ -277,7 +277,7 @@ const Hotspot = ({ spot, isOpen, dot, onToggle, onClose }: HotspotProps) => {
                     : `radial-gradient(circle, ${INK} 0 2.5px, ${PAPER} 3px)`,
                   boxShadow: isOpen
                     ? `0 0 0 2px ${PAPER}, 0 0 0 3px ${INK}`
-                    : "0 0 0 1px rgba(19, 20, 20, 0.35), 0 2px 8px rgba(19, 20, 20, 0.35)",
+                    : `0 0 0 1px ${ink(0.35)}, 0 2px 8px ${ink(0.35)}`,
                   transition: "transform 150ms ease-out",
                 }}
               />

@@ -1,6 +1,6 @@
 import React, { forwardRef, HTMLAttributes, ReactNode } from "react";
 import { ButtonBase, CircularProgress, Tooltip } from "@mui/material";
-import { FOCUS_RING, INK, PAPER } from "./panel";
+import { FOCUS_RING, INK, PAPER, ink } from "./panel";
 import { getSwatchSize } from "./swatch";
 import { useIsMobile } from "../lib/media";
 
@@ -93,7 +93,7 @@ const DockToggle = ({
           borderRadius: "50%",
           background: on ? INK : "transparent",
           color: on ? PAPER : INK,
-          boxShadow: "inset 0 0 0 1px rgba(19, 20, 20, 0.25)",
+          boxShadow: `inset 0 0 0 1px ${ink(0.25)}`,
           transition: "background 150ms ease-out, color 150ms ease-out",
         }}
       >

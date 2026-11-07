@@ -11,7 +11,7 @@ See a live version of this app here: [modhomes.vercel.app](https://modhomes.verc
 * TypeScript, React and Next.js
 * React Three Fiber, drei and three.js for the 3D scenes
 * Material UI for the interface
-* Framer Motion and React Spring for animation
+* Framer Motion for animation
 * Jest and React Testing Library for tests
 * Vercel for hosting
 

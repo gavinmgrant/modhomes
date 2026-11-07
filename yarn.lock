@@ -2014,16 +2014,6 @@
   resolved "https://registry.npmjs.org/@react-spring/types/-/types-9.6.1.tgz"
   integrity sha512-POu8Mk0hIU3lRXB3bGIGe4VHIwwDsQyoD1F394OK7STTiX9w4dG3cTLljjYswkQN+hDSHRrj4O36kuVa7KPU8Q==
 
-"@react-spring/web@^9.6.1":
-  version "9.6.1"
-  resolved "https://registry.npmjs.org/@react-spring/web/-/web-9.6.1.tgz#3e4c03b724d2b545dc2fa2649eb6109318ab9178"
-  integrity sha512-X2zR6q2Z+FjsWfGAmAXlQaoUHbPmfuCaXpuM6TcwXPpLE1ZD4A1eys/wpXboFQmDkjnrlTmKvpVna1MjWpZ5Hw==
-  dependencies:
-    "@react-spring/animated" "~9.6.1"
-    "@react-spring/core" "~9.6.1"
-    "@react-spring/shared" "~9.6.1"
-    "@react-spring/types" "~9.6.1"
-
 "@react-three/drei@^9.79.3":
   version "9.79.3"
   resolved "https://registry.npmjs.org/@react-three/drei/-/drei-9.79.3.tgz#37b74ae0adb8f8b8d3142c17ddd077248b61b627"

@@ -9,7 +9,7 @@ ModHomes is a Next.js site that renders configurable modular homes in 3D with Re
 | Framework | Next.js 13 (Pages Router), React 18, TypeScript | Routing, rendering, build |
 | 3D | three.js, React Three Fiber, drei | Scene graph, cameras, controls, lighting, textures |
 | UI | Material UI with Emotion, Tabler and MUI icons | Navbar, cards, control dock, swatches |
-| Motion | Framer Motion, React Spring | Page and card entrances, the info chip |
+| Motion | Framer Motion | Page and card entrances, the info chip, the model card's count-up |
 | Testing | Jest, React Testing Library (jsdom) | Unit tests in `__tests__/` |
 | Hosting | Vercel | Deploys at [modhomes.vercel.app](https://modhomes.vercel.app/) |
 
@@ -63,7 +63,7 @@ One scene unit is one foot. Each part's layout math (pane positions, stair tread
 
 - `colors.tsx`: the color palette and exterior swatches
 - `materials.tsx`: floor texture sets and the environment map path
-- `panel.ts`: the frosted-glass style for controls that sit over the 3D view
+- `panel.ts`: the frosted-glass style for controls that sit over the 3D view, and the site's ink and paper colors (`INK`, `PAPER`, and `ink(alpha)` and `paper(alpha)` for see-through versions)
 - `swatchpicker.tsx`: the dock's swatches, each showing the current choice and opening a column of its options above it
 
 ## The Site view's key and cost
