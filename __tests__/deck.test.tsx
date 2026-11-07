@@ -22,7 +22,7 @@ import {
 } from "../components/deck";
 import { FLOOR } from "../components/fixtures";
 import { FOUNDATION, getStemWalls } from "../components/foundation";
-import { getParapetTop, MODEL_BASE } from "../components/homemodel";
+import { getParapetTop, MODEL_BASE } from "../lib/dimensions";
 import { POST_SIZE } from "../components/module";
 import {
   END_WALL_FACE,

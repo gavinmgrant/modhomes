@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { getEntranceProgress, prefersReducedMotion } from "./slidingdoors";
+import { getEntranceProgress } from "./slidingdoors";
+import { prefersReducedMotion } from "../lib/media";
 
 export type AssemblyStep = {
   delay: number;

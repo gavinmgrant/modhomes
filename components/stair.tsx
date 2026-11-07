@@ -1,10 +1,11 @@
 import React from "react";
 import { COLORS } from "./colors";
 import { POST_INSET, POST_SIZE } from "./module";
+import { FINISHED_FLOOR, STORY_HEIGHT } from "../lib/dimensions";
 
 // Units are feet. Floor-to-floor is 10 ft: 16 risers of 7.5" and 15 treads
 // with a 10" run, so the flight is 12.5 ft long
-const LOWER_FLOOR = -3.95;
+const LOWER_FLOOR = FINISHED_FLOOR;
 const RISERS = 16;
 const RISE = 10 / RISERS;
 const RUN = 10 / 12;
@@ -41,7 +42,7 @@ const TOP_Z = END_WALL_FACE - BOTTOM_CLEARANCE - TREADS * RUN;
 // The opening between stories: from the ground floor ceiling's underside to
 // the upper floor's surface, lined with 1" boards to hide the slab edges
 const CEILING_UNDERSIDE = 3.85;
-const UPPER_FLOOR = LOWER_FLOOR + 10;
+const UPPER_FLOOR = LOWER_FLOOR + STORY_HEIGHT;
 export const LINING = 1 / 12;
 // A 42" wall around the opening upstairs, open at the end the stair arrives
 export const UPSTAIRS_WALL = { height: 3.5, thickness: 4 / 12 };

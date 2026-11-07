@@ -2,10 +2,11 @@ import React, { useLayoutEffect, useRef } from "react";
 import { COLORS } from "./colors";
 import { useVeneer, VENEER_SIZE } from "./materials";
 import { boxBetween, Box, Rect } from "./stair";
+import { FINISHED_FLOOR } from "../lib/dimensions";
 
 // Units are feet. The ground floor's finished surface and the underside of
 // its ceiling
-export const FLOOR = -3.95;
+export const FLOOR = FINISHED_FLOOR;
 export const CEILING = 3.85;
 
 // The scene lights the floor from above far more strongly than it does the

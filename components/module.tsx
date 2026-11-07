@@ -1,6 +1,6 @@
 import Wall from "./wall";
 import { COLORS } from "./colors";
-import { TEXTURES, useFloorTexture } from "./materials";
+import { FloorMaterial, useFloorTexture } from "./materials";
 import AssembleIn, {
   ASSEMBLY,
   CEILING_OFFSET,
@@ -63,7 +63,7 @@ interface ModuleProps {
   color: string;
   position: number[];
   envelopeOn: boolean;
-  floorMaterial: string;
+  floorMaterial: FloorMaterial;
   // Openings in module coordinates, e.g. where a stair passes between stories
   floorOpening?: Rect;
   ceilingOpening?: Rect;
@@ -87,9 +87,7 @@ const Module = ({
   ceilingOpening,
   animateIn = false,
 }: ModuleProps) => {
-  const floorMaterialProps = useFloorTexture(
-    floorMaterial as keyof typeof TEXTURES,
-  );
+  const floorMaterialProps = useFloorTexture(floorMaterial);
 
   return (
     <mesh position={position}>

@@ -1,5 +1,5 @@
 import { getHipRoofTriangles, getNormal } from "../components/roof";
-import { getParapetTop } from "../components/homemodel";
+import { getParapetTop } from "../lib/dimensions";
 
 // Twice the signed area of a triangle seen from above, positive when it runs
 // counter-clockwise looking down (+x right, -z up the page)

@@ -6,11 +6,11 @@ import LandingHero from "../components/landinghero";
 import Footer from "../components/footer";
 import PageMeta from "../components/pagemeta";
 import { CITY_ENVIRONMENT, TEXTURES } from "../components/materials";
-import { useMediaQuery } from "@mui/material";
+import { useIsMobile } from "../lib/media";
 
 const Home = () => {
   const ref = createRef<HTMLDivElement>();
-  const isMobile = useMediaQuery("(max-width:900px)");
+  const isMobile = useIsMobile();
 
   const handleScroll = () =>
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });

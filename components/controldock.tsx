@@ -1,8 +1,9 @@
 import React, { ReactNode } from "react";
-import { ToggleButton, ToggleButtonGroup, useMediaQuery } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { IconSun, IconDoor } from "@tabler/icons-react";
 import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
 import { getSwatchSize } from "./swatch";
+import { useIsMobile } from "../lib/media";
 
 interface ControlDockProps {
   isInside: boolean;
@@ -23,7 +24,7 @@ const ControlDock = ({
   aside,
   dockRef,
 }: ControlDockProps) => {
-  const isMobile = useMediaQuery("(max-width:900px)");
+  const isMobile = useIsMobile();
 
   const view = (value: string, text: string, icon: ReactNode) => (
     <ToggleButton

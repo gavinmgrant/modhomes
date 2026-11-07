@@ -4,7 +4,7 @@ import { useSpring, animated, config } from "@react-spring/web";
 import { PANEL, PANEL_RADIUS } from "./panel";
 
 // What the card knows about a model. Floor area is all every model has so
-// far; the rest show up on the card as lib/models.js gains them.
+// far; the rest show up on the card as lib/models.ts gains them.
 export interface ModelFacts {
   name: string;
   area: number;

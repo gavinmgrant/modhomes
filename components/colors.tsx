@@ -1,5 +1,6 @@
 import React from "react";
 import SwatchPicker from "./swatchpicker";
+import type { Finishes, SetFinish } from "../lib/viewerstate";
 
 export const COLORS = {
   white: "#e3d7c4",
@@ -67,43 +68,32 @@ export const WOOD_OPTIONS = swatches({
 });
 
 interface ColorProps {
-  homeColor: string;
-  handleColor: (color: string) => void;
-  trimColor: string;
-  handleTrimColor: (color: string) => void;
-  sidingColor: string;
-  handleSidingColor: (color: string) => void;
+  finishes: Finishes;
+  onChange: SetFinish;
   hasWood: boolean;
 }
 
-const Colors = ({
-  homeColor,
-  handleColor,
-  trimColor,
-  handleTrimColor,
-  sidingColor,
-  handleSidingColor,
-  hasWood,
-}: ColorProps) => (
+// The outside view's finishes
+const Colors = ({ finishes, onChange, hasWood }: ColorProps) => (
   <>
     <SwatchPicker
       label="Metal"
       options={METAL_OPTIONS}
-      value={homeColor}
-      onChange={handleColor}
+      value={finishes.metal}
+      onChange={(color) => onChange("metal", color)}
     />
     <SwatchPicker
       label="Trim"
       options={TRIM_OPTIONS}
-      value={trimColor}
-      onChange={handleTrimColor}
+      value={finishes.trim}
+      onChange={(color) => onChange("trim", color)}
     />
     {hasWood && (
       <SwatchPicker
         label="Wood"
         options={WOOD_OPTIONS}
-        value={sidingColor}
-        onChange={handleSidingColor}
+        value={finishes.wood}
+        onChange={(color) => onChange("wood", color)}
       />
     )}
   </>

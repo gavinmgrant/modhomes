@@ -1,20 +1,21 @@
 import React, { useId, useRef, useState } from "react";
-import { ClickAwayListener, Typography } from "@mui/material";
+import { ClickAwayListener } from "@mui/material";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Swatch from "./swatch";
+import { Captioned } from "./docktoggle";
 import { PANEL } from "./panel";
 
-export interface SwatchOption {
+export interface SwatchOption<T extends string = string> {
   name: string;
   background: string;
-  value: string;
+  value: T;
 }
 
-interface SwatchPickerProps {
+interface SwatchPickerProps<T extends string> {
   label: string;
-  options: readonly SwatchOption[];
-  value: string;
-  onChange: (value: string) => void;
+  options: readonly SwatchOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
 }
 
 // How far the options rise as they appear, in px, and the pause between
@@ -23,15 +24,14 @@ const RISE = 10;
 const STAGGER = 0.035;
 
 // One swatch showing the current choice, with its label as a caption under
-// it, so each picker is only as wide as its swatch. Clicking it opens a
-// column of every option rising out of the dock above it; picking one, or
-// clicking anywhere else, or Escape closes it again
-const SwatchPicker = ({
+// it. Clicking it opens a column of every option rising out of the dock
+// above it; picking one, or clicking anywhere else, or Escape closes it again
+const SwatchPicker = <T extends string>({
   label,
   options,
   value,
   onChange,
-}: SwatchPickerProps) => {
+}: SwatchPickerProps<T>) => {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const id = useId();
@@ -46,25 +46,12 @@ const SwatchPicker = ({
 
   return (
     <ClickAwayListener onClickAway={() => setOpen(false)}>
-      <div
-        style={{
-          display: "flex",
-          // The label comes first for screen readers but shows underneath
-          flexDirection: "column-reverse",
-          alignItems: "center",
-          gap: 2,
-        }}
+      <Captioned
+        caption={label}
         onKeyDown={(event) => {
           if (event.key === "Escape" && open) close();
         }}
       >
-        <Typography
-          component="span"
-          // tucked up into the space under the swatch's dot
-          sx={{ fontSize: 11, lineHeight: 1.2, opacity: 0.6, marginTop: -0.75 }}
-        >
-          {label}
-        </Typography>
         <div style={{ position: "relative" }}>
           <Swatch
             ref={trigger}
@@ -126,7 +113,7 @@ const SwatchPicker = ({
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </Captioned>
     </ClickAwayListener>
   );
 };

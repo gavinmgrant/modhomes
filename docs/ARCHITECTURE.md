@@ -20,8 +20,15 @@ pages/
   index.tsx           Landing page: hero + model cards
   homes/[home].tsx    Model viewer, e.g. /homes/mod3x2
 components/           3D parts and UI controls
+  insidescene.tsx     The viewer's inside canvas: walking, landscape, spec dots
+  outsidescene.tsx    The viewer's outside canvas: orbit, sky, stage, site tiles
+  docktoggle.tsx      The dock's round, captioned switches (Deck, Site, Specs)
 lib/
-  models.js           The model catalogue (slug, name, area)
+  models.ts           The model catalogue (slug, name, size, area, footprint)
+  dimensions.ts       Shared dimensions: module size, story height, floor, base
+  viewerstate.ts      The viewer's choices (view, finishes, decks, specs) and
+                      the reducer that keeps them consistent
+  media.ts            Media queries: phone layout, touch, reduced motion
   appliances.ts       The kitchen appliances shown in the inside view's spec dots
   viewposition.ts     Remembers whether the viewer was last inside or outside
   site.ts             The lot the Site view stands a home on, and its tile math

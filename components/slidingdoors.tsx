@@ -1,13 +1,14 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { COLORS } from "./colors";
+import { FINISHED_FLOOR, STORY_HEIGHT } from "../lib/dimensions";
+import { prefersReducedMotion } from "../lib/media";
 
 export const PANES_PER_HALF = 3;
 // The opening runs from the middle column (z = 0) to the end wall column faces
 const OPENING_END = 19.25;
 export const FLOOR = -4;
 export const CEILING = 3.9;
-export const STORY_HEIGHT = 10;
 // Two sliding tracks just outside the module edge, inside the end wall frame
 const TRACKS = [0.15, 0.35];
 // Neighbouring panes overlap like real sliding doors
@@ -125,7 +126,6 @@ export const getFloorBandLayouts = (
 // A dark sill along the foot of each story's doors, over the edge beam they
 // stand on, from the floor's edge out to the beam's outer face and flush
 // with the finished floor
-const FINISHED_FLOOR = -3.95;
 
 export const getSillLayouts = (
   side: number,
@@ -205,10 +205,6 @@ export const getEntranceDelays = (panes: PaneLayout[], start = 0) => {
     order.map((pane, rank) => [pane.id, start + rank * ENTER_STAGGER]),
   );
 };
-
-export const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // Where a room is built against the glass, its pane is filled with
 // horizontal cedar boards instead: 6" each from the bottom rail up, the top
