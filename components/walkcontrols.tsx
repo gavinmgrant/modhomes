@@ -16,7 +16,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from "@tabler/icons-react";
-import { FOCUS_RING, INK, PANEL } from "./panel";
+import { FOCUS_RING, INK, PANEL, PAPER, ink } from "./panel";
 import { getStairLayout, Rect } from "./stair";
 import { getServicesBlocks } from "./services";
 
@@ -276,8 +276,8 @@ export const WalkPad = ({ input }: WalkPadProps) => {
           borderRadius: "50%",
           color: INK,
           userSelect: "none",
-          "&:hover": { background: "rgba(19, 20, 20, 0.08)" },
-          "&:active": { background: INK, color: "#f9f7f1" },
+          "&:hover": { background: ink(0.08) },
+          "&:active": { background: INK, color: PAPER },
           ...FOCUS_RING,
         }}
       >
@@ -333,7 +333,7 @@ export const WalkPad = ({ input }: WalkPadProps) => {
             position: "absolute",
             inset: (PAD.size - PAD.hub) / 2,
             borderRadius: "50%",
-            background: "rgba(19, 20, 20, 0.12)",
+            background: ink(0.12),
             pointerEvents: "none",
           }}
         />

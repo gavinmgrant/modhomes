@@ -7,6 +7,7 @@ import Footer from "../components/footer";
 import PageMeta from "../components/pagemeta";
 import { CITY_ENVIRONMENT, TEXTURES } from "../components/materials";
 import { useIsMobile } from "../lib/media";
+import { INK, PAPER } from "../components/panel";
 
 const Home = () => {
   const ref = createRef<HTMLDivElement>();
@@ -52,8 +53,8 @@ const Home = () => {
           margin: "0 auto",
           padding: "1rem",
           paddingBottom: isMobile ? "1rem" : "8rem",
-          color: "#131414",
-          backgroundColor: "#f9f7f1",
+          color: INK,
+          backgroundColor: PAPER,
         }}
       >
         <NavBar />

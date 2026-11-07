@@ -3,7 +3,7 @@ import { ClickAwayListener } from "@mui/material";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Swatch from "./swatch";
 import { Captioned } from "./docktoggle";
-import { PANEL } from "./panel";
+import { PANEL, paper } from "./panel";
 
 export interface SwatchOption<T extends string = string> {
   name: string;
@@ -76,7 +76,7 @@ const SwatchPicker = <T extends string>({
                   ...PANEL,
                   // nested in the dock's blur, which it can't see past, so
                   // it's made more solid instead
-                  background: "rgba(249, 247, 241, 0.95)",
+                  background: paper(0.95),
                   position: "absolute",
                   bottom: "calc(100% + 14px)",
                   left: "50%",

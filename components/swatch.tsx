@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react";
 import { ButtonBase, Tooltip } from "@mui/material";
-import { FOCUS_RING, INK, PAPER } from "./panel";
+import { FOCUS_RING, INK, PAPER, ink } from "./panel";
 import { useIsMobile } from "../lib/media";
 
 // 40-44px tap target around a smaller visible circle
@@ -50,7 +50,7 @@ const Swatch = forwardRef<HTMLButtonElement, SwatchProps>(
               background,
               boxShadow: selected
                 ? `0 0 0 2px ${PAPER}, 0 0 0 4px ${INK}`
-                : "inset 0 0 0 1px rgba(19, 20, 20, 0.15)",
+                : `inset 0 0 0 1px ${ink(0.15)}`,
               transition: "box-shadow 150ms ease-out",
             }}
           />

@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { IconSun, IconDoor } from "@tabler/icons-react";
-import { FOCUS_RING, INK, PANEL, PAPER } from "./panel";
+import { FOCUS_RING, INK, PANEL, PAPER, ink } from "./panel";
 import { getSwatchSize } from "./swatch";
 import { useIsMobile } from "../lib/media";
 
@@ -62,7 +62,7 @@ const ControlDock = ({
         height: 24,
         flexShrink: 0,
         margin: `0 4px 0 ${before}px`,
-        background: "rgba(19, 20, 20, 0.25)",
+        background: ink(0.25),
       }}
     />
   );
@@ -101,7 +101,7 @@ const ControlDock = ({
           gap: "2px",
           padding: "2px",
           borderRadius: 999,
-          background: "rgba(19, 20, 20, 0.06)",
+          background: ink(0.06),
         }}
       >
         {view("outside", "Outside", <IconSun size={20} aria-hidden />)}
