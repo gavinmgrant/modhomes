@@ -15,6 +15,7 @@ import {
   useThree,
 } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
+import { Group, PerspectiveCamera } from "three";
 import HomeModel, { getModelSize, parseModel } from "./homemodel";
 import { COLORS } from "./colors";
 import { CITY_ENVIRONMENT } from "./materials";
@@ -123,9 +124,8 @@ interface ModelPreviewProps {
 }
 
 const ModelPreview = ({ slug, visible, spinning }: ModelPreviewProps) => {
-  // three has no type definitions installed here, so these refs are untyped
-  const group = useRef<any>(null);
-  const camera = useRef<any>(null);
+  const group = useRef<Group>(null);
+  const camera = useRef<PerspectiveCamera>(null);
   const size = useThree((state) => state.size);
   const set = useThree((state) => state.set);
   const layout = parseModel(slug);
@@ -166,7 +166,7 @@ const ModelPreview = ({ slug, visible, spinning }: ModelPreviewProps) => {
           centerY + distance * Math.sin(ELEVATION),
           distance * Math.cos(ELEVATION) * Math.cos(AZIMUTH),
         ]}
-        onUpdate={(self: any) => self.lookAt(0, centerY, 0)}
+        onUpdate={(self) => self.lookAt(0, centerY, 0)}
       />
       <ambientLight intensity={0.5} />
       <directionalLight position={[40, 60, 30]} intensity={0.8} />
@@ -232,7 +232,9 @@ const PreviewView = ({ track, index, children }: PreviewViewProps) => {
 };
 
 const PreviewViewport = ({ track, index, children }: PreviewViewProps) => {
-  const camera = useThree((state) => state.camera);
+  // R3F types the camera as perspective or orthographic; ModelPreview sets a
+  // perspectiveCamera on every view
+  const camera = useThree((state) => state.camera) as PerspectiveCamera;
   const scene = useThree((state) => state.scene);
 
   useFrame(({ gl }) => {

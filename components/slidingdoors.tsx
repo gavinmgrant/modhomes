@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { Group } from "three";
 import { COLORS } from "./colors";
 import { FINISHED_FLOOR, STORY_HEIGHT } from "../lib/dimensions";
 import { prefersReducedMotion } from "../lib/media";
@@ -241,8 +242,7 @@ export const GlassPane = ({
   sidingColor = COLORS.siding,
   trimColor = COLORS.trim,
 }: GlassPaneProps) => {
-  // three has no type definitions installed here, so the ref is untyped
-  const group = useRef<any>(null);
+  const group = useRef<Group>(null);
   const start = useRef<number | null>(null);
 
   useFrame((state) => {

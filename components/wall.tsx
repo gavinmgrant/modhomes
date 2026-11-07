@@ -1,6 +1,6 @@
 interface WallProps {
   color: string;
-  position: number[];
+  position: [number, number, number];
 }
 
 const Wall = ({ color, position }: WallProps) => {

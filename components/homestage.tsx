@@ -15,6 +15,7 @@ import {
   shaderMaterial,
 } from "@react-three/drei";
 import type { OnCenterCallbackProps } from "@react-three/drei";
+import { Material, Mesh } from "three";
 import { COLORS } from "./colors";
 import { CITY_ENVIRONMENT } from "./materials";
 
@@ -37,12 +38,8 @@ const DiscardMaterial = shaderMaterial(
   "void main() { discard; }",
 );
 
-// drei's types for these lean on three's, which aren't installed here, and
-// without them they ask for every prop a group has
-type Loose = React.ForwardRefExoticComponent<any>;
-const Shadows = AccumulativeShadows as unknown as Loose;
-const ShadowLight = RandomizedLight as unknown as Loose;
-const Centred = Center as unknown as Loose;
+// What drei's shadow hands its ref, a type it doesn't export
+type ShadowApi = React.ElementRef<typeof AccumulativeShadows>;
 
 // Each pass blends a new frame into the ground shadow at 1 / SHADOW.frames.
 // It's built with one pass a frame for SHADOW.frames frames, fading in as it
@@ -88,8 +85,7 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
     },
     [],
   );
-  // three has no type definitions installed here, so the refs are untyped
-  const shadow = useRef<any>(null);
+  const shadow = useRef<ShadowApi>(null);
   const discard = useMemo(() => new DiscardMaterial(), []);
   // Passes blended into the shadow since it was last cleared, and frames
   // left to keep adding them
@@ -120,9 +116,9 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
     // site's tiles, is hidden while the shadow is drawn, so only the home
     // casts it
     const offStage = scene.children.filter(
-      (object: any) => object.userData.offStage && object.visible
+      (object) => object.userData.offStage && object.visible
     );
-    offStage.forEach((object: any) => {
+    offStage.forEach((object) => {
       object.visible = false;
     });
     // drei's shadow only knows the meshes there were when it was cleared,
@@ -130,9 +126,9 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
     // mesh is drawn as nothing but its shadow. Hidden ones aren't drawn
     // anyway, so they're passed over
     const plane = api.getMesh();
-    const drawn: [any, any][] = [];
-    scene.traverseVisible((object: any) => {
-      if (!object.isMesh || object === plane) return;
+    const drawn: [Mesh, Material | Material[]][] = [];
+    scene.traverseVisible((object) => {
+      if (!(object instanceof Mesh) || object === plane) return;
       drawn.push([object, object.material]);
       object.material = discard;
     });
@@ -142,7 +138,7 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
     drawn.forEach(([object, material]) => {
       object.material = material;
     });
-    offStage.forEach((object: any) => {
+    offStage.forEach((object) => {
       object.visible = true;
     });
     if (passes.current > SHADOW.frames) {
@@ -156,7 +152,7 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
   // would clear it, until the home's size is known
   const ground = useMemo(
     () => (
-      <Shadows
+      <AccumulativeShadows
         ref={shadow}
         temporal
         frames={SHADOW.frames}
@@ -169,7 +165,7 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
         toneMapped
         scale={radius * 4}
       >
-        <ShadowLight
+        <RandomizedLight
           amount={8}
           radius={radius}
           ambient={0.5}
@@ -179,7 +175,7 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
           bias={0.0001}
           mapSize={1024}
         />
-      </Shadows>
+      </AccumulativeShadows>
     ),
     [radius],
   );
@@ -200,7 +196,7 @@ const HomeStage = ({ children, moving = false, onSized }: HomeStageProps) => {
         position={FILL.map((v) => v * radius) as [number, number, number]}
         intensity={INTENSITY}
       />
-      <Centred onCentered={onCentered}>{children}</Centred>
+      <Center onCentered={onCentered}>{children}</Center>
       <group position={[0, -height / 2, 0]}>{ground}</group>
       <Environment files={CITY_ENVIRONMENT} />
     </>

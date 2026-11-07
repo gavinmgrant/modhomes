@@ -37,7 +37,7 @@ export const getStemWalls = (
 
 interface FoundationProps {
   color: string;
-  position: number[];
+  position: [number, number, number];
   width: number;
 }
 

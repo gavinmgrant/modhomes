@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { Group } from "three";
 import { getEntranceProgress } from "./slidingdoors";
 import { prefersReducedMotion } from "../lib/media";
 
@@ -73,8 +74,7 @@ interface AssembleInProps {
 // Moves its children into place from `from`. The group itself sits at the final position, so anything measuring
 // the scene on mount (like Stage's centring) sees the finished home
 const AssembleIn = ({ from, step, onDone, children }: AssembleInProps) => {
-  // three has no type definitions installed here, so the ref is untyped
-  const group = useRef<any>(null);
+  const group = useRef<Group>(null);
   const start = useRef<number | null>(null);
   const done = useRef(false);
 

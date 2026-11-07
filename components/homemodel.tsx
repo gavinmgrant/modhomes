@@ -75,7 +75,11 @@ const HomeModel = ({
 }: HomeModelProps) => {
   const twoStory = stories === 2;
   const halfWidth = (MODULE.width / 2) * cols;
-  const modules = [];
+  const modules: {
+    position: [number, number, number];
+    story: number;
+    i: number;
+  }[] = [];
   for (let story = 0; story < stories; story++) {
     for (let i = 0; i < cols; i++) {
       modules.push({
