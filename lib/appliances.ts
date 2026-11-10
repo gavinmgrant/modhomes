@@ -14,6 +14,8 @@ export interface Product {
   // two or three short facts, most telling first
   specs: string[];
   url: string;
+  // Approximate US list price, in dollars, for the home's quote
+  price: number;
 }
 
 export interface Appliance {
@@ -37,6 +39,7 @@ export const APPLIANCES: Record<ApplianceId, Appliance> = {
         "Warming drawer",
       ],
       url: `${BOSCH}/product/cooking-baking/slide-in-ranges/induction-slide-in-ranges/HII8057U`,
+      price: 3699,
     },
   },
   hood: {
@@ -48,6 +51,7 @@ export const APPLIANCES: Record<ApplianceId, Appliance> = {
       model: "DUH80553UC",
       specs: ["600 CFM", "4 fan speeds", "LED lights"],
       url: `${BOSCH}/product/cooking-baking/ventilation/built-in-cooker-hoods/DUH80553UC`,
+      price: 1099,
     },
   },
   dishwasher: {
@@ -59,6 +63,7 @@ export const APPLIANCES: Record<ApplianceId, Appliance> = {
       model: "SHX78CM5N",
       specs: ["42 dBA", "16 place settings", "CrystalDry"],
       url: `${BOSCH}/product/dishwashers/top-controls/SHX78CM5N`,
+      price: 1399,
     },
   },
   frenchDoorFridge: {
@@ -70,6 +75,7 @@ export const APPLIANCES: Record<ApplianceId, Appliance> = {
       model: "B36CT80SNS",
       specs: ["Counter depth", "20.8 cu ft", "Ice maker and filtered water"],
       url: `${BOSCH}/product/refrigerators/french-door/freestanding/B36CT80SNS`,
+      price: 3999,
     },
   },
   bottomFreezerFridge: {
@@ -81,6 +87,7 @@ export const APPLIANCES: Record<ApplianceId, Appliance> = {
       model: "B24CB50ESS",
       specs: ["Counter depth", "12.8 cu ft", "VitaFresh drawer"],
       url: `${BOSCH}/product/refrigerators/fridge-freezers/freestanding-fridge-freezers-with-freezer-at-bottom/B24CB50ESS`,
+      price: 2299,
     },
   },
 };

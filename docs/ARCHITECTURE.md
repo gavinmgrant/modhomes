@@ -31,6 +31,8 @@ lib/
                       the reducer that keeps them consistent
   media.ts            Media queries: phone layout, touch, reduced motion
   appliances.ts       The kitchen appliances shown in the inside view's spec dots
+  pricing.ts          What a home costs as configured: its quantities, the
+                      rate card and the quote's line items
   viewposition.ts     Remembers whether the viewer was last inside or outside
   site.ts             The lot the Site view stands a home on, and its tile math
 public/images/        Floor textures (CC0) and HDR environment maps
@@ -59,6 +61,16 @@ A slug like `mod3x2` means 3 modules wide and 2 stories tall. `parseModel` reads
 - **`Services`:** homes three or more modules wide give their middle module (right of centre in four-wide homes) to two bathrooms and a kitchen on the ground floor. Full-height walls enclose a tub bath at the back end and a shower bath beside it, each with a doorway from a different neighbouring module. Their side walls run on past the module's middle posts, hiding them, to frame a pantry and fridge wall. The rest of the module is an open kitchen with an island with a sink and stools, and a range run with wall cabinets against the front end wall, framed by short walls in line with the bathrooms' side walls. Two-wide homes get a smaller version in the back half of their right module, between the middle column and a joint in the glass doors: a closet and a small bath with a walk-in shower stand against the glass, whose two panes take siding, and a one-wall galley kitchen runs along their inside wall, its counter front on the line where the two modules meet. `bathroom.tsx` and `kitchen.tsx` lay out the fixtures against their walls, `stool.tsx` builds the island's counter stools (a molded walnut shell, generated as a curved mesh, on a splayed steel base), and `fixtures.tsx` holds the shared finishes, which are plain colours for now. The kitchens' and bathrooms' floors are laid in 12" tile with grout lines, matching the wall tile, and the galley's runs on across the next module to the glass. Every part that stands on the floor becomes a footprint that the inside walk goes around, so the bathrooms can be walked into through their doorways.
 
 One scene unit is one foot. Each part's layout math (pane positions, stair treads, walk bounds, camera distances) is kept in exported pure functions, separate from the JSX. This keeps the geometry readable and lets it be unit tested without a WebGL context.
+
+## Pricing
+
+Every home is priced as configured (`lib/pricing.ts`). `getQuantities` counts what a home is built from with the same functions that draw it: its modules and the ones stacked on others, its glass panes and the cedar panels that replace some (`getPaneLayout`, `getSidedPanes`), its end wall panels, its roof area, its foundation's stem wall (`getStemWalls`), its stair, its kitchen and baths and their appliances (`getApplianceSpots`), and its decks, counted from the moment one is added until it starts lifting (`isDeckUp`). `getQuote` multiplies them by the rate card and returns line items in groups (Structure, Envelope, Kitchen and baths, Decks, Finishes) and their total.
+
+Because the quantities follow the geometry, homes with the same number of modules price differently: a Mod 2x2 has twice a Mod 4x1's glass, a stair and stacked modules, which outweigh the 4x1's larger roof and foundation and its full kitchen with two baths, so the 2x2 costs more.
+
+All the rates are in two constants, to tune in one place. `RATES` prices the parts. `FINISH_RATES` gives each swatch's upcharge by its name, in the unit its line is priced in: metal per module, trim per glass pane, wood per cedar panel and per deck, floor per square foot of floor area, and tile once per home. A test checks that every swatch in the dock has an entry. The dock's default finishes are all included, so a model's starting price (`getStartingPrice`), shown as "From" on the landing page's cards, is what it costs when it first opens. Each appliance in `lib/appliances.ts` carries an approximate list price. The rates are placeholders for a concept, not real prices.
+
+The model card shows the price in full dollars, so even a small upcharge moves it, and counts up or down to each new price as finishes and decks change.
 
 ## Linework
 

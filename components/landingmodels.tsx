@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { PANEL, ink } from "./panel";
 import ModelPreviews from "./modelpreviews";
 import { saveInsideView } from "../lib/viewposition";
+import { getStartingPrice, PRICE_SHORT } from "../lib/pricing";
 
 const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   const router = useRouter();
@@ -67,6 +68,9 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
                 sx={{ opacity: 0.7 }}
               >
                 Floor Area: {new Intl.NumberFormat().format(model.area)} sf
+              </Typography>
+              <Typography variant="body2" fontWeight={600} marginTop="0.25rem">
+                From {PRICE_SHORT.format(getStartingPrice(model))}
               </Typography>
             </CardContent>
           </Card>
