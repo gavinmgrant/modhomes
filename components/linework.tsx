@@ -44,8 +44,11 @@ const OVERSHOOT = { share: 0.06, max: 0.3 };
 // jumps by more than this share of how far away it is. Every other edge,
 // a corner or a joint on a surface, is a crease, drawn as a hairline. It's
 // already as narrow as a line can be drawn, a single pixel, so it's made
-// finer by drawing it fainter
-const PROFILE = { weight: 2, gap: 0.015, opacity: 0.9 };
+// finer by drawing it fainter. Either is hidden by anything in front of
+// it, like the site's ground or a neighbor's trees. A heavy line is put at
+// the home's own depth, brought this share of the distance nearer, so the
+// home itself and its light lines never hide it
+const PROFILE = { weight: 2, gap: 0.015, opacity: 0.9, lift: 0.005 };
 const CREASE = { opacity: 0.2 };
 
 // Every segment of a line drawing, lengthened at both ends by its share,
@@ -270,7 +273,9 @@ export default Linework;
 // one most ways, and one further in only across the outer rings, so the
 // line fades off smoothly at its sides and rounds off at its ends, rather
 // than stopping in steps a pixel at a time. A pixel with nothing of the
-// home in it can't be in front of anything, so it's passed over at once
+// home in it can't be in front of anything, so it's passed over at once.
+// Each pixel of the line takes the home's depth there, so it's tested
+// against what the view drew, and is hidden by anything nearer
 const PROFILE_SHADER = {
   vertexShader: `
     varying vec2 vUv;
@@ -286,6 +291,7 @@ const PROFILE_SHADER = {
     uniform float near;
     uniform float far;
     uniform float gap;
+    uniform float lift;
     uniform vec3 ink;
     uniform float opacity;
     varying vec2 vUv;
@@ -320,6 +326,9 @@ const PROFILE_SHADER = {
       }
       float share = found / float(DIRECTIONS * RINGS);
       gl_FragColor = vec4(ink, opacity * smoothstep(0.1, 0.5, share));
+      float lifted = here * (1.0 + lift);
+      float ndc = (far + near - 2.0 * near * far * lifted) / (far - near);
+      gl_FragDepthEXT = ndc * 0.5 + 0.5;
     }
   `,
 };
@@ -336,12 +345,14 @@ const createPass = () => {
       near: { value: 0.1 },
       far: { value: 1000 },
       gap: { value: PROFILE.gap },
+      lift: { value: PROFILE.lift },
       ink: { value: new Color(INK) },
       opacity: { value: PROFILE.opacity },
     },
     transparent: true,
-    depthTest: false,
+    // Tested against the view's depth, but leaving it as it was
     depthWrite: false,
+    extensions: { fragDepth: true },
   });
   const quad = new PlaneGeometry(2, 2);
   const overlay = new Scene();
