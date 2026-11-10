@@ -23,6 +23,7 @@ components/           3D parts and UI controls
   insidescene.tsx     The viewer's inside canvas: walking, landscape, spec dots
   outsidescene.tsx    The viewer's outside canvas: orbit, sky, stage, site tiles
   docktoggle.tsx      The dock's round, captioned switches (Deck, Site, Specs)
+  linework.tsx        The lines drawn over every view of the home
 lib/
   models.ts           The model catalogue (slug, name, size, area, footprint)
   dimensions.ts       Shared dimensions: module size, story height, floor, base
@@ -59,6 +60,17 @@ A slug like `mod3x2` means 3 modules wide and 2 stories tall. `parseModel` reads
 
 One scene unit is one foot. Each part's layout math (pane positions, stair treads, walk bounds, camera distances) is kept in exported pure functions, separate from the JSX. This keeps the geometry readable and lets it be unit tested without a WebGL context.
 
+## Linework
+
+Every view of a home, from the landing page's hero and model cards to the viewer's outside and inside, is drawn with lines over its finishes, in two weights, the way an architect draws (`linework.tsx`):
+
+- **Light lines** run along every edge where faces meet at more than 20°, so boxes are outlined at their corners while curved parts stay smooth. Each line runs a little past its corners, 6% of its length up to 0.3 ft, so short trim only just overshoots while long walls run the full few inches. They're 1px, as thin as WebGL draws a line, and faint. Where two parts share an edge only one line is drawn, so joints don't come out twice as dark.
+- **Heavy lines** mark the edges with space behind them: the home's outline against the sky, a floor that overhangs, a deck post in front of the glass. Whether there's space behind an edge depends on where the camera is, so these are found on screen rather than in the geometry. The home is drawn a second time on its own, as depth only, and a shader draws a 2px line wherever the depth steps back by more than 1.5% of the distance. It samples 18 points around each pixel and uses how many find a step as the line's opacity, so the lines have soft edges and rounded ends. Glass counts as solid in that pass, so what's inside gets only light lines.
+
+`Linework` wraps the parts to draw. It's inside `HomeModel`, so the viewer and the model cards get it, and the hero wraps its assembling pieces in it. It traces each mesh's edges once and again only when the mesh's shape changes. Some parts, like the roof and decks, keep their geometry and swap its points as the home changes size, so a change to the points counts too. The light lines are kept in a scene of their own, outside the home's, so nothing that measures the home or draws its ground shadow counts them, and each one takes its mesh's place and visibility as it's drawn. Every finish is pushed back slightly in depth (`polygonOffset`), so its lines are drawn over it instead of flickering against it.
+
+The lines are drawn after the view itself. A canvas with one view gets `<LineworkRender />`, which takes over its drawing: it draws the scene, then the lines. The model cards draw several views into one canvas, so each card calls `useDrawLinework`'s function after drawing its own.
+
 ## Shared styling
 
 - `colors.tsx`: the color palette and exterior swatches
@@ -79,6 +91,7 @@ The tiles bill under Google Maps Platform's Map Tiles API: Photorealistic 3D Til
 - The landing page preloads the hero's floor textures and its HDR in `<Head>`, so they download in parallel with the JavaScript.
 - Textures are 1K. Environment maps are served from `public/` instead of drei's CDN.
 - The model cards share one WebGL canvas.
+- Linework draws each view twice, once more as depth only for the heavy lines, so it costs most on the landing hero, which turns every frame. The heavy-line shader skips every pixel with no home in it, which is most of the screen in the outside view, the hero and the cards.
 - The model page's two canvases render on demand (`frameloop="demand"`), so a view that isn't changing draws nothing. Orbiting and looking around ask for frames as they move, and anything that animates asks for them while it runs: the stage's ground shadow while it builds or follows a deck, a deck while the crane moves it, the site's tiles while any are downloading or parsing, and walking while a key, arrow or the joystick is held. Anything new that changes the scene from a frame loop or from outside React has to call `invalidate()` the same way, or it won't show until something else draws a frame.
 - The kitchens' and bathrooms' hundreds of parts are drawn as one mesh per finish (`batchParts` and `getPartsGeometry` in `fixtures.tsx`), about a dozen draw calls instead of over 200. See-through parts are kept a mesh each, so three can sort them.
 - The inside view shows once the floor it's drawn with has loaded; the other floor finishes load in the background (`FloorTextures`).

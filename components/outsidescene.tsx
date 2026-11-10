@@ -5,6 +5,7 @@ import { OrbitControls, Sky } from "@react-three/drei";
 import { FacingSide, FacingStore } from "./deck";
 import { getOrbitMinDistance, getOrbitTargetY } from "./homemodel";
 import HomeStage from "./homestage";
+import { LineworkRender } from "./linework";
 import Loader from "./loader";
 import type { SiteView } from "./sitemap";
 import { SITE_ORBIT_MAX_DISTANCE } from "../lib/site";
@@ -71,6 +72,7 @@ const OutsideScene = ({
       frameloop="demand"
     >
       <Suspense fallback={<Loader />}>
+        <LineworkRender />
         <OrbitControls
           target={[0, eye, 0]}
           maxPolarAngle={Math.PI / 2}
