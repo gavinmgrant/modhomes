@@ -19,6 +19,7 @@ import { Group, PerspectiveCamera } from "three";
 import HomeModel, { getModelSize, parseModel } from "./homemodel";
 import { COLORS } from "./colors";
 import { CITY_ENVIRONMENT } from "./materials";
+import { useDrawLinework } from "./linework";
 
 const FOV = 30;
 // Camera sits 45° round from the front and a little above the horizon
@@ -236,6 +237,7 @@ const PreviewViewport = ({ track, index, children }: PreviewViewProps) => {
   // perspectiveCamera on every view
   const camera = useThree((state) => state.camera) as PerspectiveCamera;
   const scene = useThree((state) => state.scene);
+  const drawLinework = useDrawLinework();
 
   useFrame(({ gl }) => {
     if (!track.current) return;
@@ -257,6 +259,7 @@ const PreviewViewport = ({ track, index, children }: PreviewViewProps) => {
     gl.setScissor(left, bottom, box.width, box.height);
     gl.setScissorTest(true);
     gl.render(scene, camera);
+    drawLinework(gl, scene, camera);
   }, index);
 
   return <>{children}</>;

@@ -9,6 +9,7 @@ import Services, { getSidedPanes } from "./services";
 import { COLORS } from "./colors";
 import type { FloorMaterial } from "./materials";
 import Deck, { DeckSide, Decks } from "./deck";
+import Linework from "./linework";
 import {
   FINISHED_FLOOR,
   getParapetTop,
@@ -115,8 +116,9 @@ const HomeModel = ({
     z: stair.opening.z,
   };
 
+  // Drawn with lines along its edges, wherever it's shown
   return (
-    <>
+    <Linework>
       {envelopeOn && (
         <EndWall
           position={[-(halfWidth - 0.5), 0, 0]}
@@ -193,7 +195,7 @@ const HomeModel = ({
         width={8 * cols - 1}
         ridgeHeight={getParapetTop(stories)}
       />
-    </>
+    </Linework>
   );
 };
 

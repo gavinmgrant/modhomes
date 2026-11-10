@@ -17,6 +17,7 @@ import {
 } from "three";
 import { GroundProjectedSkybox } from "three/examples/jsm/objects/GroundProjectedSkybox";
 import ApplianceHotspots from "./hotspots";
+import { LineworkRender } from "./linework";
 import Loader from "./loader";
 import { FloorTextures } from "./materials";
 import { getApplianceSpots } from "./services";
@@ -182,6 +183,7 @@ const InsideScene = ({
         onPointerMissed={() => onOpenAppliance(null)}
       >
         <Suspense fallback={<Loader />}>
+          <LineworkRender />
           <WalkControls
             bounds={bounds}
             input={walkInput}

@@ -8,6 +8,7 @@ import Module from "./module";
 import EndWall from "./endwall";
 import Foundation from "./foundation";
 import { getParapetTop } from "../lib/dimensions";
+import Linework, { LineworkRender } from "./linework";
 import Loader from "./loader";
 import SlidingDoors, { DoorHeader } from "./slidingdoors";
 import AssembleIn, {
@@ -142,6 +143,7 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
         >
           <Canvas camera={{ position: [60, 0, 60], fov: 30 }} shadows>
             <Suspense fallback={<Loader />}>
+              <LineworkRender />
               <AssemblyCamera />
               <OrbitControls
                 autoRotate
@@ -166,68 +168,73 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                   opacity: shellBuilt ? 0.3 : 0,
                 }}
               >
-                <AssembleIn
-                  from={[0, ROOF_OFFSET, 0]}
-                  step={ASSEMBLY.roof}
-                  onDone={() => setShellBuilt(true)}
-                >
-                  <Roof
-                    position={[0, 5.25, 0]}
-                    color={COLORS.roof}
-                    width={7}
-                    ridgeHeight={getParapetTop(1)}
+                {/* The pieces as they fly in, drawn with their lines */}
+                <Linework>
+                  <AssembleIn
+                    from={[0, ROOF_OFFSET, 0]}
+                    step={ASSEMBLY.roof}
+                    onDone={() => setShellBuilt(true)}
+                  >
+                    <Roof
+                      position={[0, 5.25, 0]}
+                      color={COLORS.roof}
+                      width={7}
+                      ridgeHeight={getParapetTop(1)}
+                    />
+                  </AssembleIn>
+                  <EndWall
+                    position={[-3.5, 0, 0]}
+                    color={COLORS.grey}
+                    rotate={false}
+                    twoStory={false}
+                    assembleStep={getWallStep(WALL_ORDER.left)}
                   />
-                </AssembleIn>
-                <EndWall
-                  position={[-3.5, 0, 0]}
-                  color={COLORS.grey}
-                  rotate={false}
-                  twoStory={false}
-                  assembleStep={getWallStep(WALL_ORDER.left)}
-                />
-                <Module
-                  position={[0, 0, 0]}
-                  color={COLORS.grey}
-                  envelopeOn
-                  floorMaterial="walnut"
-                  animateIn
-                ></Module>
-                <EndWall
-                  position={[3.5, 0, 0]}
-                  color={COLORS.grey}
-                  rotate
-                  twoStory={false}
-                  assembleStep={getWallStep(WALL_ORDER.right)}
-                />
-                <Foundation
-                  position={[0, -5.7, 0]}
-                  color={COLORS.foundation}
-                  width={7}
-                />
+                  <Module
+                    position={[0, 0, 0]}
+                    color={COLORS.grey}
+                    envelopeOn
+                    floorMaterial="walnut"
+                    animateIn
+                  ></Module>
+                  <EndWall
+                    position={[3.5, 0, 0]}
+                    color={COLORS.grey}
+                    rotate
+                    twoStory={false}
+                    assembleStep={getWallStep(WALL_ORDER.right)}
+                  />
+                  <Foundation
+                    position={[0, -5.7, 0]}
+                    color={COLORS.foundation}
+                    width={7}
+                  />
+                </Linework>
               </Stage>
               {modelOffset && (
                 <group position={modelOffset}>
-                  {[-1, 1].map((side) => (
-                    <React.Fragment key={side}>
-                      <SlidingDoors
-                        side={side}
-                        halfWidth={4}
-                        stories={1}
-                        animateIn
-                        animateDelay={ASSEMBLY.windows}
-                        hideHeader
-                      />
-                      {/* The header arrives with its side's parapet */}
-                      <AssembleIn
-                        from={[side * SIDE_OFFSET, 0, 0]}
-                        step={getWallStep(
-                          side < 0 ? WALL_ORDER.left : WALL_ORDER.right,
-                        )}
-                      >
-                        <DoorHeader side={side} halfWidth={4} stories={1} />
-                      </AssembleIn>
-                    </React.Fragment>
-                  ))}
+                  <Linework>
+                    {[-1, 1].map((side) => (
+                      <React.Fragment key={side}>
+                        <SlidingDoors
+                          side={side}
+                          halfWidth={4}
+                          stories={1}
+                          animateIn
+                          animateDelay={ASSEMBLY.windows}
+                          hideHeader
+                        />
+                        {/* The header arrives with its side's parapet */}
+                        <AssembleIn
+                          from={[side * SIDE_OFFSET, 0, 0]}
+                          step={getWallStep(
+                            side < 0 ? WALL_ORDER.left : WALL_ORDER.right,
+                          )}
+                        >
+                          <DoorHeader side={side} halfWidth={4} stories={1} />
+                        </AssembleIn>
+                      </React.Fragment>
+                    ))}
+                  </Linework>
                 </group>
               )}
             </Suspense>
