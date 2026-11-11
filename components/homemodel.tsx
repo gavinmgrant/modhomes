@@ -6,6 +6,7 @@ import Roof from "./roof";
 import SlidingDoors from "./slidingdoors";
 import Stair, { getStairLayout } from "./stair";
 import Services, { getSidedPanes } from "./services";
+import Rooms from "./rooms";
 import { COLORS } from "./colors";
 import type { FloorMaterial } from "./materials";
 import Deck, { DeckSide, Decks } from "./deck";
@@ -142,6 +143,7 @@ const HomeModel = ({
       ))}
       {twoStory && <Stair cols={cols} />}
       <Services cols={cols} tileColor={tileColor} />
+      <Rooms cols={cols} stories={stories} tileColor={tileColor} />
       {envelopeOn && (
         <EndWall
           position={[halfWidth - 0.5, 0, 0]}
