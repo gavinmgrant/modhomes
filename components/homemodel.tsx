@@ -139,6 +139,8 @@ const HomeModel = ({
             opening && story === 0 && i === 0 ? opening : undefined
           }
           floorOpening={opening && story === 1 && i === 0 ? opening : undefined}
+          storyAbove={story < stories - 1}
+          storyBelow={story > 0}
         />
       ))}
       {twoStory && <Stair cols={cols} />}
