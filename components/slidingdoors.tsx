@@ -79,6 +79,10 @@ export const getPaneJoints = () =>
     (_, i) => (i + 1) * (PANE_WIDTH - OVERLAP) + OVERLAP / 2,
   );
 
+// How far a wall inside reaches past the module's edge to meet the doors'
+// frames, which stand just outside it
+export const GLASS_REACH = 0.04;
+
 export type HeaderLayout = {
   position: [number, number, number];
   size: [number, number, number];

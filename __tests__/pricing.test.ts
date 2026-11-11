@@ -47,7 +47,8 @@ describe("getQuantities", () => {
 
   it("builds two-wide homes' closet and bath against cedar, not glass", () => {
     expect(getQuantities(2, 1).cedarPanes).toBe(2);
-    expect(getQuantities(2, 2).cedarPanes).toBe(2);
+    // and a 2x2's upstairs closet and bath, stacked over them
+    expect(getQuantities(2, 2).cedarPanes).toBe(4);
     expect(getQuantities(3, 1).cedarPanes).toBe(0);
   });
 
@@ -95,7 +96,28 @@ describe("getQuote", () => {
     expect(ids).not.toContain("stacking");
     expect(ids).not.toContain("decks");
     expect(ids).not.toContain("tile");
+    expect(ids).not.toContain("interiorWalls");
+    expect(ids).not.toContain("pocketDoors");
+    expect(ids).not.toContain("upperBath");
     expect(ids).toContain("modules");
+  });
+
+  it("prices each model's bedrooms and baths", () => {
+    MODELS.forEach(({ cols, stories, bedrooms = 0, baths = 0 }) => {
+      const q = getQuantities(cols, stories);
+      expect(q.bedrooms).toBe(bedrooms);
+      expect(q.baths).toBe(baths);
+      // a door into each bedroom, and one into each bath and closet
+      expect(q.pocketDoors).toBeGreaterThanOrEqual(bedrooms + baths);
+      expect(q.interiorWall > 0).toBe(bedrooms > 0);
+      expect(q.upperBath !== null).toBe(stories === 2);
+    });
+    expect(getQuantities(2, 2).upperBath).toBe("shower");
+    expect(getQuantities(3, 2).upperBath).toBe("hall");
+    const ids = getQuote(config(3, 2)).items.map(({ id }) => id);
+    expect(ids).toEqual(
+      expect.arrayContaining(["interiorWalls", "pocketDoors", "upperBath"]),
+    );
   });
 
   it("prices a 2x2 above a 4x1, for its glass, stair and stacking", () => {
@@ -131,15 +153,36 @@ describe("getQuote", () => {
 
     const copper = METAL_OPTIONS.find(({ name }) => name === "Copper")!;
     expect(priced({ metal: copper.value })).toBe(4 * FINISH_RATES.metal.Copper);
+    // the floor is priced outright, so a change is the difference in rate
     expect(priced({ floor: "concrete" })).toBe(
-      1280 * FINISH_RATES.floor.Concrete,
+      1280 * (FINISH_RATES.floor.Concrete - FINISH_RATES.floor.Walnut),
     );
     const espresso = WOOD_OPTIONS.find(({ name }) => name === "Espresso")!;
     expect(priced({ wood: espresso.value })).toBe(
-      2 * FINISH_RATES.woodSiding.Espresso + FINISH_RATES.woodDeck.Espresso,
+      4 * FINISH_RATES.woodSiding.Espresso + FINISH_RATES.woodDeck.Espresso,
     );
-    expect(priced({ floor: "carpet" })).toBe(0);
+    expect(priced({ floor: "carpet" })).toBeLessThan(0);
     expect(priced({ trim: TRIM_OPTIONS[0].value })).toBe(0);
+  });
+
+  it("prices each floor by the square foot, carpet least and concrete most", () => {
+    const floor = (material: (typeof DEFAULT_FINISHES)["floor"]) =>
+      total(3, 2, { finishes: { ...DEFAULT_FINISHES, floor: material } });
+    const prices = (["carpet", "bamboo", "walnut", "concrete"] as const).map(
+      floor,
+    );
+    prices
+      .slice(1)
+      .forEach((price, i) => expect(price).toBeGreaterThan(prices[i]));
+    // a small step between the two woods
+    expect(prices[2] - prices[1]).toBeLessThan(prices[1] - prices[0]);
+    const line = getQuote(config(3, 2)).items.find(({ id }) => id === "floor")!;
+    expect(line).toMatchObject({
+      label: "Walnut floor",
+      quantity: 1920,
+      unit: "sq ft",
+      rate: FINISH_RATES.floor.Walnut,
+    });
   });
 
   it("has a rate for every swatch in the dock", () => {
@@ -163,11 +206,11 @@ describe("getQuote", () => {
 });
 
 describe("getStartingPrice", () => {
-  it("is the price with the default finishes, which are all included", () => {
+  it("is the price with the default finishes, all included but the floor", () => {
     const model = findModel("mod3x2")!;
     expect(getStartingPrice(model)).toBe(total(3, 2));
     getQuote(config(3, 2))
-      .items.filter(({ group }) => group === "Finishes")
+      .items.filter(({ group, id }) => group === "Finishes" && id !== "floor")
       .forEach(({ amount }) => expect(amount).toBe(0));
   });
 });

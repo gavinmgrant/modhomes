@@ -9,7 +9,8 @@ import {
   RAIL_HEIGHT,
   UPSTAIRS_WALL,
 } from "../components/stair";
-import { getSlabPieces } from "../components/module";
+import { getSlabPieces, POST_SIZE } from "../components/module";
+import { getPaneJoints } from "../components/slidingdoors";
 
 describe("stair", () => {
   it("climbs 10 ft in 16 even risers of 7.5 inches", () => {
@@ -22,23 +23,26 @@ describe("stair", () => {
   });
 
   it.each([2, 3, 4])(
-    "is 3'-6\" wide and its opening fits inside the first module (%i modules wide)",
+    "is 3'-6\" wide, in an opening against the columns by the glass (%i modules wide)",
     (cols) => {
-      const { moduleX, footprint, opening } = getStairLayout(cols);
+      const { moduleX, footprint, opening, glass } = getStairLayout(cols);
       expect((footprint.x[1] - footprint.x[0]) * 12).toBeCloseTo(42);
-      // the opening is wider than the stair on both sides
-      expect(opening.x[0]).toBeLessThan(footprint.x[0]);
-      expect(opening.x[1]).toBeGreaterThan(footprint.x[1]);
-      // inside the module's floor, short of the columns at its edge
-      expect(opening.x[0]).toBeGreaterThan(moduleX - 3.875);
-      expect(opening.x[1]).toBeLessThanOrEqual(moduleX + COLUMN_FACE);
-      // clear of the middle column, with 6-7 ft between the bottom step and
-      // the end wall's inner face
-      expect(footprint.z[0]).toBeGreaterThan(0.25);
+      expect(glass).toBeLessThan(moduleX - 4);
+      // the opening is 3" wider than the stair on both sides, its glass side
+      // against the columns, and inside the module's floor
+      expect((footprint.x[0] - opening.x[0]) * 12).toBeCloseTo(3);
+      expect((opening.x[1] - footprint.x[1]) * 12).toBeCloseTo(3);
+      expect(opening.x[0]).toBeCloseTo(moduleX - COLUMN_FACE);
+      expect(opening.x[1]).toBeLessThan(moduleX + COLUMN_FACE);
+      // under 8" from the treads to the glass
+      expect((footprint.x[0] - glass) * 12).toBeLessThan(8.5);
+      // clear of the middle column on the glass side, with 6-7 ft between
+      // the bottom step and the end wall's inner face
+      expect(opening.z[0]).toBeGreaterThan(POST_SIZE / 2);
       const clearance = 19.5 - footprint.z[1];
       expect(clearance).toBeGreaterThanOrEqual(6);
       expect(clearance).toBeLessThanOrEqual(7);
-    }
+    },
   );
 
   it("lands every tread inside its footprint", () => {
@@ -51,8 +55,8 @@ describe("stair", () => {
 });
 
 describe("stair opening", () => {
-  const { opening } = getStairLayout(2);
-  const { lining, walls } = getOpeningParts(opening);
+  const { opening, glass } = getStairLayout(2);
+  const { lining, walls } = getOpeningParts(opening, glass);
   const span = (box: (typeof lining)[number], axis: number) => [
     box.position[axis] - box.size[axis] / 2,
     box.position[axis] + box.size[axis] / 2,
@@ -68,24 +72,33 @@ describe("stair opening", () => {
     });
   });
 
-  it("walls three sides upstairs at 42 inches, open where the stair arrives", () => {
-    expect(walls).toHaveLength(3);
+  it("walls its inside and far end upstairs to the ceiling, open where the stair arrives", () => {
+    expect(walls).toHaveLength(2);
     walls.forEach((wall) => {
-      expect(wall.size[1] * 12).toBeCloseTo(42);
       expect(span(wall, 1)[0]).toBeCloseTo(6.05);
+      // the upper story's ceiling, 10 ft over the ground floor's
+      expect(span(wall, 1)[1]).toBeCloseTo(13.85);
       // nothing crosses the top end of the opening, where the stair arrives
       expect(span(wall, 2)[0]).toBeGreaterThanOrEqual(opening.z[0] - 1e-9);
+      // or stands between the stair and the glass, along its length
+      const besideStair =
+        span(wall, 0)[0] < opening.x[1] - LINING - 1e-9 &&
+        span(wall, 2)[0] < opening.z[1] - LINING - 1e-9;
+      expect(besideStair).toBe(false);
     });
-    const crossing = walls.filter((wall) => wall.size[0] > 1);
-    expect(crossing).toHaveLength(1);
-    expect(crossing[0].position[2]).toBeGreaterThan(opening.z[1] - 1);
+  });
+
+  it("runs the far wall to the glass, centred on a joint between panes", () => {
+    const [, far] = walls;
+    expect(span(far, 0)[0]).toBeCloseTo(glass);
+    expect(far.position[2]).toBeCloseTo(getPaneJoints()[1]);
+    expect(span(far, 2)[0]).toBeCloseTo(opening.z[1] - LINING);
   });
 
   it("keeps the upstairs wall flush with the lining's inner face", () => {
-    const [left, right] = walls;
-    expect(span(left, 0)[1]).toBeCloseTo(opening.x[0] + LINING);
-    expect(span(right, 0)[0]).toBeCloseTo(opening.x[1] - LINING);
-    expect(left.size[0]).toBeCloseTo(UPSTAIRS_WALL.thickness);
+    const [inside] = walls;
+    expect(span(inside, 0)[0]).toBeCloseTo(opening.x[1] - LINING);
+    expect(inside.size[0]).toBeCloseTo(UPSTAIRS_WALL.thickness);
   });
 });
 
@@ -155,7 +168,7 @@ describe("cable railing", () => {
     }
     const reach = cables[0].size[2] * Math.cos(angle);
     const postSpan = Math.abs(
-      posts[0].position[2] - posts[posts.length - 1].position[2]
+      posts[0].position[2] - posts[posts.length - 1].position[2],
     );
     expect(reach).toBeCloseTo(postSpan);
   });
@@ -178,10 +191,10 @@ describe("cable railing", () => {
       const x = edge + (side === 0 ? 0.15 : -0.15);
       getRailing(x).posts.forEach((post) => {
         expect(post.position[0] - post.size[0] / 2).toBeGreaterThan(
-          footprint.x[0]
+          footprint.x[0],
         );
         expect(post.position[0] + post.size[0] / 2).toBeLessThan(
-          footprint.x[1]
+          footprint.x[1],
         );
       });
     });

@@ -4,12 +4,21 @@ import Card from "@mui/material/Card";
 import { CardContent } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import MODELS from "../lib/models";
+import MODELS, { Model } from "../lib/models";
 import { AnimatePresence, motion } from "framer-motion";
 import { PANEL, ink } from "./panel";
 import ModelPreviews from "./modelpreviews";
 import { saveInsideView } from "../lib/viewposition";
 import { getStartingPrice, PRICE_SHORT } from "../lib/pricing";
+
+// e.g. "1,280 sf · 2 bed · 2 bath", or "320 sf · Open plan"
+export const describeRooms = ({ area, bedrooms, baths }: Model) =>
+  [
+    `${new Intl.NumberFormat("en-US").format(area)} sf`,
+    ...(bedrooms === undefined
+      ? ["Open plan"]
+      : [`${bedrooms} bed`, `${baths} bath`]),
+  ].join(" · ");
 
 const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   const router = useRouter();
@@ -67,7 +76,7 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
                 marginTop="0.25rem"
                 sx={{ opacity: 0.7 }}
               >
-                Floor Area: {new Intl.NumberFormat().format(model.area)} sf
+                {describeRooms(model)}
               </Typography>
               <Typography variant="body2" fontWeight={600} marginTop="0.25rem">
                 From {PRICE_SHORT.format(getStartingPrice(model))}

@@ -5,10 +5,13 @@ import type { Model } from "./models";
 import { getPaneLayout } from "../components/slidingdoors";
 import {
   getApplianceSpots,
+  getGalleyLayout,
+  getServicesLayout,
   getSidedPanes,
   hasGalley,
   hasServices,
 } from "../components/services";
+import { getRoomPlan, getRoomsLayout } from "../components/rooms";
 import { FOUNDATION, getStemWalls } from "../components/foundation";
 import { Decks, DeckSide, isDeckUp } from "../components/deck";
 import {
@@ -26,8 +29,9 @@ import { FLOOR_OPTIONS, TILE_OPTIONS } from "../components/materials";
 // dollars, kept here in one place to tune
 
 export const RATES = {
-  // Steel frame, floor, ceiling, insulation and rough-in, per module
-  module: 62000,
+  // Steel frame, floor deck, ceiling, insulation and rough-in, per module.
+  // The floor's finish is priced on its own, by the square foot
+  module: 57520,
   // Heavier columns and connections under a module stacked on another
   stackedModule: 8000,
   // Each full-height sliding glass pane
@@ -48,12 +52,23 @@ export const RATES = {
   galley: 36000,
   // A covered deck, with its frame, roof and stem walls
   deck: 42000,
+  // Per linear foot of full-height bedroom and closet wall, door openings
+  // and all
+  interiorWall: 90,
+  // Each pocket door, frame and walnut leaf
+  pocketDoor: 1400,
+  // The bath stacked upstairs over the tub bath, and in a 2x2 the shower
+  // bath over the galley's, with the plumbing run up to it
+  upperBath: 42000,
+  upperShowerBath: 34000,
 };
 
 // What each finish adds, by the option's name, in the unit its line is
 // priced in: metal per module, trim per glass pane, wood per cedar pane and
-// per deck, floor per square foot and tile once per home. 0 is included.
-// Every swatch in the dock has an entry, which a test checks
+// per deck, and tile once per home. 0 is included. The floor is different:
+// every home has one, so each option is its full price per square foot,
+// laid, and the dock's default, walnut, is in the starting price. Every
+// swatch in the dock has an entry, which a test checks
 export const FINISH_RATES = {
   metal: { White: 0, Taupe: 0, Copper: 1500, Grey: 0 },
   trim: {
@@ -64,8 +79,9 @@ export const FINISH_RATES = {
   },
   woodSiding: { Natural: 0, Cedar: 0, Walnut: 400, Espresso: 400 },
   woodDeck: { Natural: 0, Cedar: 0, Walnut: 3000, Espresso: 3000 },
-  // A poured topping on the steel floor deck, heavier and slower than boards
-  floor: { Walnut: 0, Bamboo: 0, Concrete: 14, Carpet: 0 },
+  // Carpet the least, bamboo a little under walnut, and concrete, a poured
+  // topping on the steel floor deck, heavier and slower than boards, the most
+  floor: { Carpet: 6, Bamboo: 12, Walnut: 14, Concrete: 22 },
   tile: {
     "Arctic White": 0,
     "Urban Putty": 0,
@@ -90,6 +106,13 @@ export type Quantities = {
   kitchen: "services" | "galley" | null;
   appliances: ApplianceId[];
   decks: number;
+  bedrooms: number;
+  baths: number;
+  // The upstairs bath, if the home has one
+  upperBath: "hall" | "shower" | null;
+  // Linear feet of bedroom and closet wall
+  interiorWall: number;
+  pocketDoors: number;
 };
 
 export const getQuantities = (
@@ -107,6 +130,14 @@ export const getQuantities = (
     MODULE.length - 2 * inset,
   ).reduce((sum, { size: [x, , z] }) => sum + Math.max(x, z), 0);
   const appliances = getApplianceSpots(cols).map(({ appliance }) => appliance);
+  const kitchen = hasServices(cols)
+    ? "services"
+    : hasGalley(cols)
+      ? "galley"
+      : null;
+  const plan = getRoomPlan(cols, stories);
+  const rooms = getRoomsLayout(cols, stories);
+  const services = getServicesLayout(cols) ?? getGalleyLayout(cols);
   return {
     modules,
     stackedModules: cols * (stories - 1),
@@ -117,16 +148,29 @@ export const getQuantities = (
     floorArea: MODULE.width * MODULE.length * modules,
     stemWall,
     stair: stories > 1,
-    kitchen: hasServices(cols) ? "services" : hasGalley(cols) ? "galley" : null,
+    kitchen,
     appliances: appliances.filter((id, i) => appliances.indexOf(id) === i),
     decks: ([-1, 1] as DeckSide[]).filter((side) => isDeckUp(decks[side]))
       .length,
+    bedrooms: plan.bedrooms.length,
+    baths:
+      (kitchen === "services" ? 2 : kitchen === "galley" ? 1 : 0) +
+      (plan.upperBath ? 1 : 0),
+    upperBath: plan.upperBath,
+    interiorWall: rooms.reduce(
+      (sum, { runs }) => sum + runs.reduce((a, b) => a + b, 0),
+      0,
+    ),
+    pocketDoors:
+      (services?.leaves.length ?? 0) +
+      rooms.reduce((sum, { leaves }) => sum + leaves.length, 0),
   };
 };
 
 export type LineGroup =
   | "Structure"
   | "Envelope"
+  | "Interior"
   | "Kitchen and baths"
   | "Decks"
   | "Finishes"
@@ -238,6 +282,22 @@ export const getQuote = ({
   );
   line("roof", "Envelope", "Roof", q.roofArea, "sq ft", RATES.roof);
 
+  line(
+    "interiorWalls",
+    "Interior",
+    "Bedroom and closet walls",
+    Math.round(q.interiorWall),
+    "ft",
+    RATES.interiorWall,
+  );
+  line(
+    "pocketDoors",
+    "Interior",
+    "Pocket doors",
+    q.pocketDoors,
+    "door",
+    RATES.pocketDoor,
+  );
   if (q.kitchen === "services") {
     line(
       "services",
@@ -255,6 +315,25 @@ export const getQuote = ({
       1,
       "home",
       RATES.galley,
+    );
+  }
+  if (q.upperBath === "hall") {
+    line(
+      "upperBath",
+      "Kitchen and baths",
+      "Upstairs bath",
+      1,
+      "home",
+      RATES.upperBath,
+    );
+  } else if (q.upperBath === "shower") {
+    line(
+      "upperShowerBath",
+      "Kitchen and baths",
+      "Upstairs shower bath",
+      1,
+      "home",
+      RATES.upperShowerBath,
     );
   }
   q.appliances.forEach((id) => {
