@@ -39,8 +39,13 @@ const NavBar = ({ center }: NavBarProps) => {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+  // From one model to another, the finishes and decks picked come along,
+  // in the URL's query
   const handleItemClick = (home: string) => {
-    router.push(`/homes/${home}`);
+    const search = router.asPath.startsWith("/homes/")
+      ? router.asPath.split("?")[1]
+      : undefined;
+    router.push(`/homes/${home}${search ? `?${search}` : ""}`);
     setAnchorEl(null);
   };
 

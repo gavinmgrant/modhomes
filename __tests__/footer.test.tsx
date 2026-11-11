@@ -10,4 +10,11 @@ describe("Footer", () => {
     expect(getByTestId("GitHubIcon")).toBeInTheDocument();
     expect(getByText(/is a concept, not a real company/)).toBeInTheDocument();
   });
+
+  it("pins itself to the bottom unless it's told to follow the page", () => {
+    const { getByRole, rerender } = render(<Footer />);
+    expect(getByRole("contentinfo")).not.toHaveStyle({ position: "static" });
+    rerender(<Footer pinned={false} />);
+    expect(getByRole("contentinfo")).toHaveStyle({ position: "static" });
+  });
 });
