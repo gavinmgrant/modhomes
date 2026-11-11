@@ -1,7 +1,8 @@
 import React from "react";
 import { COLORS } from "./colors";
 import { POST_INSET, POST_SIZE } from "./module";
-import { FINISHED_FLOOR, STORY_HEIGHT } from "../lib/dimensions";
+import { getPaneJoints, GLASS_REACH } from "./slidingdoors";
+import { FINISHED_FLOOR, MODULE, STORY_HEIGHT } from "../lib/dimensions";
 
 // Units are feet. Floor-to-floor is 10 ft: 16 risers of 7.5" and 15 treads
 // with a 10" run, so the flight is 12.5 ft long
@@ -31,39 +32,50 @@ const RAIL = {
 };
 export const RAIL_HEIGHT = RAIL.height;
 const POSTS_PER_SIDE = 5;
-// Inner face of the columns where the first module meets the next
+// Inner face of a module's columns, out from its middle
 export const COLUMN_FACE = 4 - POST_INSET - POST_SIZE;
-// The flight climbs toward the middle of the home and stops 6" short of the
-// middle column at z = 0, leaving 6.5 ft between the bottom step and the end
-// wall's inner face
-const END_WALL_FACE = 19.5;
-export const BOTTOM_CLEARANCE = 6.5;
-const TOP_Z = END_WALL_FACE - BOTTOM_CLEARANCE - TREADS * RUN;
 // The opening between stories: from the ground floor ceiling's underside to
 // the upper floor's surface, lined with 1" boards to hide the slab edges
 const CEILING_UNDERSIDE = 3.85;
 const UPPER_FLOOR = LOWER_FLOOR + STORY_HEIGHT;
 export const LINING = 1 / 12;
-// A 42" wall around the opening upstairs, open at the end the stair arrives
-export const UPSTAIRS_WALL = { height: 3.5, thickness: 4 / 12 };
+// A wall around the opening upstairs, on its inside and at its far end, from
+// the upper floor to its ceiling, so the rooms beside it can share it. The
+// glass side is left open, so the whole stair shows through the glass
+export const UPSTAIRS_WALL = {
+  height: CEILING_UNDERSIDE + STORY_HEIGHT - UPPER_FLOOR,
+  thickness: 4 / 12,
+};
+// The flight climbs toward the middle of the home. Its far wall upstairs
+// meets the glass, so it's centred on the second joint in the glass doors,
+// which leaves about 6'-9" between the bottom step and the end wall's inner
+// face, and the top step just past the middle column at z = 0
+const END_WALL_FACE = 19.5;
+const BOTTOM_Z = getPaneJoints()[1] - (UPSTAIRS_WALL.thickness / 2 - LINING);
+const TOP_Z = BOTTOM_Z - TREADS * RUN;
+export const BOTTOM_CLEARANCE = END_WALL_FACE - BOTTOM_Z;
 
 export type Rect = { x: [number, number]; z: [number, number] };
 
-// The stair's opening sits in the first module, against the line where it
-// joins the next one, with the treads centred in it; in home coordinates
+// The stair runs along the glass on the first module's -x side, its opening
+// against the columns there, with the treads centred in it, so nothing but
+// the guard stands between the stair and the glass, and upstairs there's no
+// narrow strip of floor beside it. In home coordinates, with `glass` where a
+// wall meets the doors on that side
 export const getStairLayout = (cols: number) => {
-  const moduleX = -4 * cols + 4;
-  const z: [number, number] = [TOP_Z, TOP_Z + TREADS * RUN];
-  const openingRight = moduleX + COLUMN_FACE;
+  const moduleX = -(MODULE.width / 2) * cols + MODULE.width / 2;
+  const edge = moduleX - MODULE.width / 2;
+  const z: [number, number] = [TOP_Z, BOTTOM_Z];
+  const openingLeft = moduleX - COLUMN_FACE;
   const opening: Rect = {
-    x: [openingRight - WIDTH - 2 * OPENING_MARGIN, openingRight],
+    x: [openingLeft, openingLeft + WIDTH + 2 * OPENING_MARGIN],
     z,
   };
   const footprint: Rect = {
     x: [opening.x[0] + OPENING_MARGIN, opening.x[1] - OPENING_MARGIN],
     z,
   };
-  return { moduleX, footprint, opening };
+  return { moduleX, footprint, opening, glass: edge - GLASS_REACH };
 };
 
 export type Box = {
@@ -74,15 +86,16 @@ export type Box = {
 export const boxBetween = (
   [x0, x1]: [number, number],
   [y0, y1]: [number, number],
-  [z0, z1]: [number, number]
+  [z0, z1]: [number, number],
 ): Box => ({
   position: [(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2],
   size: [x1 - x0, y1 - y0, z1 - z0],
 });
 
-// Boards lining all four faces of the opening, and the upstairs wall on the
-// two long sides and the far end, flush with the lining's inner face
-export const getOpeningParts = (opening: Rect) => {
+// Boards lining all four faces of the opening, and the upstairs wall on its
+// inside and across its far end to the glass, flush with the lining's inner
+// face
+export const getOpeningParts = (opening: Rect, glass: number) => {
   const [x0, x1] = opening.x;
   const [topZ, bottomZ] = opening.z;
   const between: [number, number] = [CEILING_UNDERSIDE, UPPER_FLOOR];
@@ -97,15 +110,11 @@ export const getOpeningParts = (opening: Rect) => {
   const upstairs: [number, number] = [UPPER_FLOOR, UPPER_FLOOR + height];
   const reach = thickness - LINING;
   const walls = [
-    boxBetween([x0 + LINING - thickness, x0 + LINING], upstairs, [
-      topZ,
-      bottomZ + reach,
-    ]),
     boxBetween([x1 - LINING, x1 - LINING + thickness], upstairs, [
       topZ,
       bottomZ + reach,
     ]),
-    boxBetween([x0 - reach, x1 + reach], upstairs, [
+    boxBetween([glass, x1 + reach], upstairs, [
       bottomZ - LINING,
       bottomZ + reach,
     ]),
@@ -133,7 +142,7 @@ const nosingY = (z: number) => {
 // between, keeping each span under 4 ft
 export const getRailPostTreads = () =>
   Array.from({ length: POSTS_PER_SIDE }, (_, i) =>
-    Math.round((i * (TREADS - 1)) / (POSTS_PER_SIDE - 1))
+    Math.round((i * (TREADS - 1)) / (POSTS_PER_SIDE - 1)),
   );
 
 export type SlopedBox = Box & { rotation: [number, number, number] };
@@ -146,7 +155,7 @@ const alongStair = (
   zTo: number,
   offset: number,
   width: number,
-  height: number
+  height: number,
 ): SlopedBox => {
   const z = (zFrom + zTo) / 2;
   return {
@@ -174,7 +183,7 @@ export const getRailing = (x: number) => {
     topZ - RAIL.capOverhang,
     RAIL.height - RAIL.cap.depth / 2,
     RAIL.cap.width,
-    RAIL.cap.depth
+    RAIL.cap.depth,
   );
   const cables: SlopedBox[] = [];
   for (
@@ -225,11 +234,11 @@ interface StairProps {
 }
 
 // Open-riser stair: thick oak treads on a single steel stringer, with cable
-// railings either side, rising through a lined opening with a wall around it
-// upstairs
+// railings either side, rising along the glass through a lined opening, with
+// a wall on its inside and far end upstairs
 const Stair = ({ cols }: StairProps) => {
-  const { footprint, opening } = getStairLayout(cols);
-  const { lining, walls } = getOpeningParts(opening);
+  const { footprint, opening, glass } = getStairLayout(cols);
+  const { lining, walls } = getOpeningParts(opening, glass);
   const centerX = (footprint.x[0] + footprint.x[1]) / 2;
   const [topZ, bottomZ] = footprint.z;
   const length = Math.hypot(bottomZ - topZ, RISERS * RISE);

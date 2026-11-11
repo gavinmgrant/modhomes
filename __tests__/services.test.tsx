@@ -264,13 +264,15 @@ describe("galley module", () => {
   const galley = getGalleyLayout(2)!;
   const all = [...galley.walls, ...galley.fixtures];
 
-  it("sides the two ground floor panes the closet and bath stand against", () => {
-    [1, 2].forEach((stories) => {
-      expect(getSidedPanes(2, stories)).toEqual([
-        "right-0-back-0",
-        "right-0-back-1",
-      ]);
-    });
+  it("sides the two panes the closet and bath stand against, on each story", () => {
+    expect(getSidedPanes(2, 1)).toEqual(["right-0-back-0", "right-0-back-1"]);
+    // a 2x2's upstairs closet and bath stand over them
+    expect(getSidedPanes(2, 2)).toEqual([
+      "right-0-back-0",
+      "right-0-back-1",
+      "right-1-back-0",
+      "right-1-back-1",
+    ]);
     const sided = getPaneLayout(1, 8, 1).filter(({ id }) =>
       getSidedPanes(2, 1).includes(id),
     );

@@ -5,6 +5,7 @@ import {
   FLOOR,
   getFootprints,
   part,
+  pocketDoor,
   Part,
   Parts,
   tileColors,
@@ -49,7 +50,7 @@ export const getServicesModuleX = (cols: number) =>
 // module arrives with its walls built and the neighbours' posts stay exposed
 export const WALL = 4.5 / 12;
 export const SIDE_OUTER = 4 - POST_INSET + 1 / 48;
-const SIDE_INNER = SIDE_OUTER - WALL;
+export const SIDE_INNER = SIDE_OUTER - WALL;
 // The end wall lining's inner face
 export const END_FACE = 19.475;
 // The bathrooms take the back 17.6 ft, split between a tub bath at the end
@@ -75,7 +76,7 @@ export const ROOMS = {
 };
 
 // Where the walls on one side of the module stand, across x
-const sideX = (side: number) =>
+export const sideX = (side: number) =>
   [side * SIDE_INNER, side * SIDE_OUTER].sort((a, b) => a - b) as [
     number,
     number,
@@ -131,6 +132,10 @@ export const getServicesLayout = (cols: number) => {
     moduleX: getServicesModuleX(cols),
     doors,
     walls,
+    // Both slide back toward the end wall, into the side walls
+    leaves: doors.map(({ side, z }) =>
+      pocketDoor("z", z, side * (SIDE_OUTER - WALL / 2), -1, FLOOR + DOOR_HEIGHT),
+    ),
     fixtures: [
       ...tubBath.parts,
       ...showerBath.parts,
@@ -175,13 +180,18 @@ export const GALLEY_ROOMS = {
 };
 
 // A wall across the module, from the counter front to the glass, with a
-// doorway by the glass and a header over it
-const crossWall = (z: number, [d0, d1]: [number, number]): Part[] => {
+// doorway by the glass and a header over it. Upstairs, over the 2x2's
+// galley, the closet and bath take the module's whole width
+export const crossWall = (
+  z: number,
+  [d0, d1]: [number, number],
+  [x0, x1]: [number, number] = [-SIDE_OUTER, SIDE_INNER],
+): Part[] => {
   const across: [number, number] = [z - WALL / 2, z + WALL / 2];
   return [
-    part("gyp", [-SIDE_OUTER, d0], [FLOOR, CEILING], across),
+    part("gyp", [x0, d0], [FLOOR, CEILING], across),
     part("gyp", [d0, d1], [FLOOR + DOOR_HEIGHT, CEILING], across),
-    part("gyp", [d1, SIDE_INNER], [FLOOR, CEILING], across),
+    part("gyp", [d1, x1], [FLOOR, CEILING], across),
   ];
 };
 
@@ -211,6 +221,11 @@ export const getGalleyLayout = (cols: number) => {
     moduleX: getServicesModuleX(cols),
     doors: { closet: closetDoor, bath: bath.doorX },
     walls,
+    // Both slide away from the glass, into the walls over the counter
+    leaves: [
+      pocketDoor("x", closetDoor, GALLEY_END, -1, FLOOR + DOOR_HEIGHT),
+      pocketDoor("x", bath.doorX, 0, -1, FLOOR + DOOR_HEIGHT),
+    ],
     fixtures: [
       ...bath.parts,
       part(
@@ -233,13 +248,14 @@ export const getGalleyLayout = (cols: number) => {
 };
 
 // The glass panes the galley's closet and bath are built against, on the
-// home's +x side of the ground floor, which take siding instead
+// home's +x side, which take siding instead. A 2x2 stacks its upstairs
+// closet and bath over them, so its upper story's panes there take it too
 export const getSidedPanes = (cols: number, stories: number) =>
   hasGalley(cols)
     ? getPaneLayout(1, 4 * cols, stories)
-        .filter(({ position: [, y, z], width }) => {
+        .filter(({ position: [, , z], width }) => {
           const [z0, z1] = [z - width / 2, z + width / 2];
-          return y < CEILING && z0 > GALLEY_END - 0.1 && z1 < 0.1;
+          return z0 > GALLEY_END - 0.1 && z1 < 0.1;
         })
         .map(({ id }) => id)
     : [];
@@ -249,7 +265,10 @@ export const getServicesBlocks = (cols: number): Rect[] => {
   const layout = getServicesLayout(cols) ?? getGalleyLayout(cols);
   if (!layout) return [];
   return [
-    ...getFootprints([...layout.walls, ...layout.fixtures], layout.moduleX),
+    ...getFootprints(
+      [...layout.walls, ...layout.fixtures, ...layout.leaves],
+      layout.moduleX,
+    ),
     ...layout.stools.map((stool) =>
       getStoolFootprint({ ...stool, x: stool.x + layout.moduleX }),
     ),
@@ -286,6 +305,7 @@ const Services = ({ cols, tileColor }: ServicesProps) => {
   return (
     <group position={[layout.moduleX, 0, 0]}>
       <Parts parts={layout.walls} />
+      <Parts parts={layout.leaves} />
       <Parts parts={layout.fixtures} colors={colors} />
       <Parts parts={layout.floors} colors={colors} />
       {layout.stools.map((stool) => (

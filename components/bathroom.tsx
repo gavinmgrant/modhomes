@@ -229,3 +229,32 @@ export const getGalleyBath = (room: Rect) => {
     doorX: [x1 - DOOR_INSET - DOOR_WIDTH, x1 - DOOR_INSET] as [number, number],
   };
 };
+
+// The bath stacked over the tub bath upstairs, in the same module, opening
+// onto the upstairs hall: the tub across the end wall on the +x side, its
+// tiled end against the +x wall, with a full-height linen cabinet beside
+// it, then the toilet and vanity along the -x wall. The door is in the
+// front wall on the +x side, clear of them, as x across the doorway
+export const getHallBath = (room: Rect) => {
+  const [[x0, x1], [z0, z1]] = [room.x, room.z];
+  const linen: [number, number] = [x0, x1 - TUB.length];
+  const linenFront = z0 + TUB.width - 0.06;
+  const half = (linen[1] - linen[0]) / 2;
+  const toiletZ = z0 + TUB.width + 0.3 + TOILET.width / 2;
+  const vanityZ = toiletZ + TOILET.width / 2 + 0.4 + VANITY.width / 2;
+  return {
+    parts: [
+      ...tileFloor(room),
+      ...place(tub(), [x1 - TUB.length / 2, z0], "+z"),
+      part("walnut", linen, [FLOOR, FLOOR + 7], [z0, linenFront]),
+      ...place(
+        fronts([-half, half], [FLOOR + 0.05, FLOOR + 6.95], 0, 1),
+        [(linen[0] + linen[1]) / 2, linenFront],
+        "+z",
+      ),
+      ...place(toilet(), [x0, toiletZ], "+x"),
+      ...place(vanity(), [x0, vanityZ], "+x"),
+    ],
+    doorX: [x1 - DOOR_INSET - DOOR_WIDTH, x1 - DOOR_INSET] as [number, number],
+  };
+};

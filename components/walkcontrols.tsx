@@ -19,6 +19,7 @@ import {
 import { FOCUS_RING, INK, PANEL, PAPER, ink } from "./panel";
 import { getStairLayout, Rect } from "./stair";
 import { getServicesBlocks } from "./services";
+import { getRoomsBlocks } from "./rooms";
 
 export type WalkInput = {
   forward: boolean;
@@ -46,8 +47,8 @@ export type WalkBounds = {
   maxZ: number;
   // x centres of the column pairs where two modules meet (at z = 0)
   columns: number[];
-  // Solid footprints to walk around, like the stair, and the services
-  // module's walls and fixtures
+  // Solid footprints to walk around, like the stair, the services
+  // module's walls and fixtures, and the bedrooms' walls and wardrobes
   blocks: Rect[];
 };
 
@@ -70,6 +71,7 @@ export const getWalkBounds = (modulesWide: number, stories = 1): WalkBounds => {
   const blocks = [
     ...(stories === 2 ? [getStairLayout(modulesWide).opening] : []),
     ...getServicesBlocks(modulesWide),
+    ...getRoomsBlocks(modulesWide, stories),
   ];
   return { maxX: halfWidth - 1, maxZ: 18.5, columns, blocks };
 };

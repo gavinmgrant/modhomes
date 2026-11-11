@@ -8,6 +8,7 @@ import {
 import { parseModel } from "../components/homemodel";
 import { getStairLayout } from "../components/stair";
 import { getServicesBlocks, getServicesModuleX } from "../components/services";
+import { getRoomsBlocks } from "../components/rooms";
 import MODELS from "../lib/models";
 
 // Every spot reachable from `start` in small steps, on a 1/4 ft grid
@@ -56,7 +57,7 @@ describe("walkcontrols", () => {
       maxX: 11,
       maxZ: 18.5,
       columns: [-4, 4],
-      blocks: getServicesBlocks(3),
+      blocks: [...getServicesBlocks(3), ...getRoomsBlocks(3, 1)],
     });
   });
 

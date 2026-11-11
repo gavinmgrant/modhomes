@@ -90,6 +90,35 @@ export const part = (
   round = false,
 ): Part => ({ ...boxBetween(x, y, z), finish, ...(round && { round }) });
 
+// A pocket door, drawn open: its walnut leaf slid into the wall beside the
+// doorway, centred in the wall's thickness, with only its leading edge
+// showing, 2" into the opening. The wall runs along x or z, through
+// `across` on the other axis, and the leaf slides toward `pocket`: -1 or 1
+// along the wall. The wall needs a door's width of solid wall on that side
+export const POCKET = { thickness: 1.375 / 12, show: 2 / 12, lap: 1 / 12 };
+
+export const pocketDoor = (
+  along: "x" | "z",
+  [o0, o1]: Span,
+  across: number,
+  pocket: -1 | 1,
+  top: number,
+): Part => {
+  const length = o1 - o0 + POCKET.lap;
+  const leaf: Span =
+    pocket > 0
+      ? [o1 - POCKET.show, o1 - POCKET.show + length]
+      : [o0 + POCKET.show - length, o0 + POCKET.show];
+  const thickness: Span = [
+    across - POCKET.thickness / 2,
+    across + POCKET.thickness / 2,
+  ];
+  const y: Span = [FLOOR, top - 1 / 48];
+  return along === "x"
+    ? part("walnut", leaf, y, thickness)
+    : part("walnut", thickness, y, leaf);
+};
+
 // Fixtures are laid out against a wall: u runs along the wall, centred on
 // the fixture, and d runs out from the wall's face into the room
 export type LocalPart = {
