@@ -4,10 +4,17 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import { motion } from "framer-motion";
 import { Stack } from "@mui/material";
 
-const Footer = () => {
+interface FooterProps {
+  // Pinned to the bottom of the page's padding, as on the landing page, or
+  // else under whatever comes before it, as on the checkout
+  pinned?: boolean;
+}
+
+const Footer = ({ pinned = true }: FooterProps) => {
   return (
     <Stack
-      position={{ xs: "sticky", md: "absolute" }}
+      component="footer"
+      position={pinned ? { xs: "sticky", md: "absolute" } : "static"}
       left={16}
       right={16}
       bottom={32}

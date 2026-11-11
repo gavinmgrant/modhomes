@@ -51,6 +51,8 @@ export const INITIAL_VIEWER: ViewerState = {
 
 export type ViewerAction =
   | { type: "view"; inside: boolean }
+  // Sets the finishes and decks at once, e.g. from the page's URL
+  | { type: "load"; finishes: Finishes; decks: Decks }
   | {
       [K in keyof Finishes]: { type: "finish"; key: K; value: Finishes[K] };
     }[keyof Finishes]
@@ -72,6 +74,8 @@ export const viewerReducer = (
         decks: landDecks(state.decks),
         openAppliance: null,
       };
+    case "load":
+      return { ...state, finishes: action.finishes, decks: action.decks };
     case "finish":
       return {
         ...state,

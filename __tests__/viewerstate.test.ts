@@ -61,6 +61,17 @@ describe("viewerReducer", () => {
     expect(state.decks).toEqual({});
   });
 
+  it("loads the finishes and decks together, keeping the view", () => {
+    const finishes = { ...DEFAULT_FINISHES, floor: "concrete" as const };
+    const next = viewerReducer(
+      viewer({ isInside: true, decks: { 1: "landed" } }),
+      { type: "load", finishes, decks: { [-1]: "landed" } },
+    );
+    expect(next.finishes).toEqual(finishes);
+    expect(next.decks).toEqual({ [-1]: "landed" });
+    expect(next.isInside).toBe(true);
+  });
+
   it("opens and closes an appliance's card", () => {
     const open = viewerReducer(viewer(), {
       type: "openAppliance",

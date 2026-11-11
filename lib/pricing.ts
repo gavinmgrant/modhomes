@@ -129,7 +129,9 @@ export type LineGroup =
   | "Envelope"
   | "Kitchen and baths"
   | "Decks"
-  | "Finishes";
+  | "Finishes"
+  // Added at the checkout, from lib/delivery.ts
+  | "Delivery and set";
 
 export type LineItem = {
   id: string;

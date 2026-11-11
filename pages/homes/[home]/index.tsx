@@ -7,15 +7,16 @@ import React, {
   useState,
 } from "react";
 import type { GetStaticPaths, GetStaticProps } from "next";
-import HomeModel from "../../components/homemodel";
-import NavBar from "../../components/navbar";
+import { useRouter } from "next/router";
+import HomeModel from "../../../components/homemodel";
+import NavBar from "../../../components/navbar";
 import {
   getApplianceSpots,
   getSidedPanes,
   hasGalley,
   hasServices,
-} from "../../components/services";
-import { SpecsToggle } from "../../components/hotspots";
+} from "../../../components/services";
+import { SpecsToggle } from "../../../components/hotspots";
 import {
   createFacingStore,
   DeckSide,
@@ -23,39 +24,45 @@ import {
   getDecksLength,
   getDecksWidth,
   isDeckMoving,
-} from "../../components/deck";
-import Colors from "../../components/colors";
-import Materials from "../../components/materials";
-import ModelCard from "../../components/modelcard";
-import PageMeta from "../../components/pagemeta";
-import ControlDock from "../../components/controldock";
-import InsideScene from "../../components/insidescene";
-import OutsideScene from "../../components/outsidescene";
+} from "../../../components/deck";
+import Colors from "../../../components/colors";
+import Materials from "../../../components/materials";
+import ModelCard from "../../../components/modelcard";
+import PageMeta from "../../../components/pagemeta";
+import ControlDock from "../../../components/controldock";
+import InsideScene from "../../../components/insidescene";
+import OutsideScene from "../../../components/outsidescene";
 import {
   WalkPad,
   Joystick,
   WalkInput,
   IDLE_INPUT,
-} from "../../components/walkcontrols";
+} from "../../../components/walkcontrols";
 import {
   SiteAddress,
   SiteNotice,
   SiteToggle,
   useSiteView,
-} from "../../components/sitemap";
-import MODELS, { findModel, Model } from "../../lib/models";
-import { loadInsideView, saveInsideView } from "../../lib/viewposition";
-import { getQuote } from "../../lib/pricing";
-import { useIsMobile, useIsTouch } from "../../lib/media";
+} from "../../../components/sitemap";
+import MODELS, { findModel, Model } from "../../../lib/models";
+import { loadInsideView, saveInsideView } from "../../../lib/viewposition";
+import { getQuote } from "../../../lib/pricing";
+import { useIsMobile, useIsTouch } from "../../../lib/media";
 import {
   INITIAL_VIEWER,
   pickFinish,
   SetFinish,
   viewerReducer,
-} from "../../lib/viewerstate";
+} from "../../../lib/viewerstate";
+import {
+  getConfigPath,
+  parseConfig,
+  serializeConfig,
+  toQueryString,
+} from "../../../lib/homeconfig";
 
 const SiteCredits = dynamic(
-  () => import("../../components/sitetiles").then((m) => m.SiteCredits),
+  () => import("../../../components/sitetiles").then((m) => m.SiteCredits),
   { ssr: false },
 );
 
@@ -99,6 +106,42 @@ const Homes = ({ slug }: HomesProps) => {
   useEffect(() => {
     dispatch({ type: "view", inside: loadInsideView() });
   }, []);
+
+  // The URL's query carries the finishes and decks, so a configured home
+  // can be reloaded, shared and taken to the checkout. The page is
+  // prerendered without a query, which arrives once the router is ready
+  const router = useRouter();
+  const config = toQueryString(serializeConfig({ finishes, decks }));
+  const urlConfig = router.isReady
+    ? toQueryString(serializeConfig(parseConfig(router.query)))
+    : null;
+  const latest = useRef({ router, slug, urlConfig });
+  latest.current = { router, slug, urlConfig };
+
+  // Opens the home the URL asks for, and again whenever the URL changes
+  // other than by the effect below: going back, or to another model
+  useEffect(() => {
+    if (urlConfig === null || urlConfig === config) return;
+    const query = Object.fromEntries(new URLSearchParams(urlConfig));
+    dispatch({ type: "load", ...parseConfig(query) });
+    // Only the URL changing loads it; picking a finish changes the URL
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlConfig]);
+
+  // Writes each change to the URL in place, without adding to the history
+  // or fetching the page again. It skips its first run, when nothing's
+  // been picked yet
+  const lastConfig = useRef(config);
+  useEffect(() => {
+    if (config === lastConfig.current) return;
+    lastConfig.current = config;
+    const { router, slug, urlConfig } = latest.current;
+    if (urlConfig === null || config === urlConfig) return;
+    router.replace(`/homes/${slug}${config ? `?${config}` : ""}`, undefined, {
+      shallow: true,
+      scroll: false,
+    });
+  }, [config]);
 
   // The same function every render, so the memoized home only re-renders
   // when its own props change
@@ -170,6 +213,7 @@ const Homes = ({ slug }: HomesProps) => {
             // As configured, so it follows every finish and deck
             price: getQuote({ cols, stories, finishes, decks }).total,
           }}
+          reserveHref={getConfigPath(slug, { finishes, decks }, "checkout")}
         />
       </div>
       <div

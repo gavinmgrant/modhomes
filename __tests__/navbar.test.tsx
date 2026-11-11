@@ -25,9 +25,24 @@ describe("nav bar", () => {
     expect(getByText("ModHomes")).toBeTruthy();
   });
 
+  it("brings the finishes and decks picked along to another model", () => {
+    mockRouter.setCurrentUrl("/homes/mod3x2?metal=copper&decks=left");
+    render(<NavBar />);
+    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByText("Mod 2x2"));
+    expect(mockRouter.asPath).toBe("/homes/mod2x2?metal=copper&decks=left");
+  });
+
+  it("opens a plain model from the landing page", () => {
+    render(<NavBar />);
+    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByText("Mod 2x2"));
+    expect(mockRouter.asPath).toBe("/homes/mod2x2");
+  });
+
   it("opens menu on click", () => {
-    render(<NavBar />)
-    fireEvent.click(screen.getByRole("button"))
+    render(<NavBar />);
+    fireEvent.click(screen.getByRole("button"));
     expect(screen.getByText("Mod 1x1"));
     expect(screen.getByText("Mod 2x1"));
     expect(screen.getByText("Mod 3x1"));

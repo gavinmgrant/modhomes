@@ -12,6 +12,8 @@ interface PageMetaProps {
   // A 1200x630 card in public/og
   image: string;
   imageAlt: string;
+  // Keeps the page out of search results, e.g. the checkout
+  noindex?: boolean;
 }
 
 const PageMeta = ({
@@ -20,6 +22,7 @@ const PageMeta = ({
   path,
   image,
   imageAlt,
+  noindex = false,
 }: PageMetaProps) => {
   const url = `${SITE_URL}${path}`;
   const imageUrl = `${SITE_URL}${image}`;
@@ -28,6 +31,7 @@ const PageMeta = ({
     <Head>
       <title>{title}</title>
       <meta name="description" content={description} />
+      {noindex && <meta name="robots" content="noindex" />}
       <link rel="canonical" href={url} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content={SITE_NAME} />
