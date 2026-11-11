@@ -37,4 +37,11 @@ describe("ModelCard", () => {
     expect(getByText("16′ × 40′")).toBeInTheDocument();
     expect(getByText("price")).toBeInTheDocument();
   });
+
+  it("gives the price in full dollars, so a small upcharge still shows", () => {
+    const price = getSpecs({ name: "Mod 2x2", area: 1280, price: 525066 })
+      .find(({ label }) => label === "price")!;
+    expect(price.format!(525066)).toBe("$525,066");
+    expect(price.format!(526665.4)).toBe("$526,665");
+  });
 });

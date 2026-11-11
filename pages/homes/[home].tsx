@@ -45,6 +45,7 @@ import {
 } from "../../components/sitemap";
 import MODELS, { findModel, Model } from "../../lib/models";
 import { loadInsideView, saveInsideView } from "../../lib/viewposition";
+import { getQuote } from "../../lib/pricing";
 import { useIsMobile, useIsTouch } from "../../lib/media";
 import {
   INITIAL_VIEWER,
@@ -166,6 +167,8 @@ const Homes = ({ slug }: HomesProps) => {
               model.footprint[0] + getDecksWidth(decks),
               model.footprint[1] + getDecksLength(decks),
             ],
+            // As configured, so it follows every finish and deck
+            price: getQuote({ cols, stories, finishes, decks }).total,
           }}
         />
       </div>

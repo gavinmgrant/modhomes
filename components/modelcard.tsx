@@ -2,9 +2,11 @@ import React, { useEffect } from "react";
 import { useMediaQuery } from "@mui/material";
 import { motion, useSpring, useTransform } from "framer-motion";
 import { PANEL, PANEL_RADIUS } from "./panel";
+import { PRICE } from "../lib/pricing";
 
-// What the card knows about a model. Floor area is all every model has so
-// far; the rest show up on the card as lib/models.ts gains them.
+// What the card knows about a model. Floor area is all every model has;
+// the model page adds its footprint and its price as configured, and the
+// rest show up on the card as lib/models.ts gains them.
 export interface ModelFacts {
   name: string;
   area: number;
@@ -24,13 +26,6 @@ interface Spec {
 }
 
 const NUMBER = new Intl.NumberFormat("en-US");
-// e.g. $289K, $1.25M
-const PRICE = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: "compact",
-  maximumSignificantDigits: 3,
-});
 
 const plural = (count: number, word: string) =>
   count === 1 ? word : `${word}s`;
@@ -57,7 +52,8 @@ export const getSpecs = (model: ModelFacts): Spec[] => {
     specs.push({
       label: "price",
       value: model.price,
-      format: (value) => PRICE.format(value),
+      // In full, so every finish and deck moves it, counting up or down
+      format: (value) => PRICE.format(Math.round(value)),
     });
   }
   return specs;

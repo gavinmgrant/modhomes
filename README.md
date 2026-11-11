@@ -1,6 +1,6 @@
 # ModHomes
 
-ModHomes renders configurable modular homes in 3D in the browser, built with Next.js and React Three Fiber. Watch a home assemble on the landing page, orbit any model from outside, change its color, or walk through it in first person and try different floor finishes.
+ModHomes renders configurable modular homes in 3D in the browser, built with Next.js and React Three Fiber. Watch a home assemble on the landing page, orbit any model from outside, change its color, or walk through it in first person and try different floor finishes. Each home is priced as configured, from what it's built from and the finishes picked.
 
 ## Live App
 
