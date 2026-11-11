@@ -1,4 +1,4 @@
-import Wall from "./wall";
+import Wall, { WALL_Y } from "./wall";
 import { COLORS } from "./colors";
 import { FloorMaterial, useFloorTexture } from "./materials";
 import AssembleIn, {
@@ -67,6 +67,9 @@ interface ModuleProps {
   // Openings in module coordinates, e.g. where a stair passes between stories
   floorOpening?: Rect;
   ceilingOpening?: Rect;
+  // Whether another story stands on this one, or this one on another
+  storyAbove?: boolean;
+  storyBelow?: boolean;
   // Slide the end walls in and lower the finished floor and ceiling onto the
   // frame, as part of the landing hero's assembly
   animateIn?: boolean;
@@ -85,6 +88,8 @@ const Module = ({
   floorMaterial,
   floorOpening,
   ceilingOpening,
+  storyAbove,
+  storyBelow,
   animateIn = false,
 }: ModuleProps) => {
   const floorMaterialProps = useFloorTexture(floorMaterial);
@@ -102,7 +107,14 @@ const Module = ({
               : undefined
           }
         >
-          {envelopeOn && <Wall color={color} position={[0, 0.75, end * 20]} />}
+          {envelopeOn && (
+            <Wall
+              color={color}
+              position={[0, WALL_Y, end * 20]}
+              storyAbove={storyAbove}
+              storyBelow={storyBelow}
+            />
+          )}
           <mesh position={[0, -0.05, end * 19.5]} receiveShadow>
             <boxGeometry args={[8, 7.9, 0.05]} />
             <meshStandardMaterial
