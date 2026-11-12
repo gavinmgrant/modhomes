@@ -29,12 +29,13 @@
 
 ## Try these homes
 
-A configured home lives in its URL, so it can be shared. These open ready to look around. Pick **Inside** in the dock to walk through.
+A configured home lives in its URL, so it can be shared, and a link can open it outside or straight inside. These are ready to look around:
 
 * [Mod 3x2 in copper and walnut, with decks on both sides](https://modhomes.vercel.app/homes/mod3x2?metal=copper&wood=walnut&decks=left,right)
+* [Walk through a Mod 3x2 with concrete floors, starting in its kitchen](https://modhomes.vercel.app/homes/mod3x2?floor=concrete&decks=left,right&view=inside)
 * [Mod 5x1 in gray and charcoal, with concrete floors and a deck](https://modhomes.vercel.app/homes/mod5x1?metal=grey&trim=charcoal-gray&floor=concrete&tile=chalkboard&decks=right)
 * [Mod 2x2 in taupe, with bamboo floors](https://modhomes.vercel.app/homes/mod2x2?metal=taupe&floor=bamboo&decks=left)
-* [The checkout for the Mod 3x2 above](https://modhomes.vercel.app/homes/mod3x2/checkout?metal=copper&wood=walnut&decks=left,right)
+* [The checkout for the copper Mod 3x2](https://modhomes.vercel.app/homes/mod3x2/checkout?metal=copper&wood=walnut&decks=left,right)
 
 ## What it could do for your sales
 
