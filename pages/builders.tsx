@@ -109,6 +109,9 @@ const Builders = () => {
             <Link href={DEMO_HOME} style={secondary}>
               Try a home
             </Link>
+            <Link href="/homes" style={secondary}>
+              Browse the models
+            </Link>
           </div>
         </header>
 

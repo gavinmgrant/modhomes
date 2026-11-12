@@ -12,7 +12,7 @@ import {
   Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { IconLayoutGrid, IconX } from "@tabler/icons-react";
+import { IconArrowRight, IconLayoutGrid, IconX } from "@tabler/icons-react";
 import MODELS from "../lib/models";
 import { FOCUS_RING, INK, PANEL, PANEL_RADIUS, PAPER, ink } from "./panel";
 import { useIsMobile } from "../lib/media";
@@ -159,9 +159,17 @@ const NavBar = ({ center }: NavBarProps) => {
               padding: "4px 4px 12px 12px",
             }}
           >
-            <Typography fontWeight={600} fontSize={18}>
-              Models
-            </Typography>
+            {/* The heading opens the models page, with every model's card */}
+            <Link
+              href="/homes"
+              onClick={handleMenuClose}
+              style={{ display: "flex", alignItems: "center", gap: 4 }}
+            >
+              <Typography fontWeight={600} fontSize={18}>
+                Models
+              </Typography>
+              <IconArrowRight size={18} aria-hidden />
+            </Link>
             <IconButton
               aria-label="Close"
               onClick={handleMenuClose}

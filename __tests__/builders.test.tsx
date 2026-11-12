@@ -57,6 +57,12 @@ describe("builders page", () => {
     expect(FULL_VERSION_URL).toMatch(/docs\/FOR-BUILDERS\.md$/);
   });
 
+  it("links to every model", () => {
+    expect(
+      screen.getByRole("link", { name: "Browse the models" }),
+    ).toHaveAttribute("href", "/homes");
+  });
+
   it("offers a configured home to try", () => {
     expect(screen.getByRole("link", { name: "Try a home" })).toHaveAttribute(
       "href",

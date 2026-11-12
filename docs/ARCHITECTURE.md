@@ -21,6 +21,8 @@ It's a concept, not a builder's product. The factory, rates, delivery and schedu
 pages/
   index.tsx           Landing page: hero + model cards
   builders.tsx        For builders: a short pitch, e.g. /builders
+  homes/
+    index.tsx         Models page: every model's card, /homes
   homes/[home]/
     index.tsx         Model viewer, e.g. /homes/mod3x2?floor=concrete
     checkout.tsx      Checkout, e.g. /homes/mod3x2/checkout?floor=concrete
@@ -55,6 +57,8 @@ __tests__/            Jest tests, one file per component
 ## Pages
 
 **Landing page (`/`).** `LandingHero` shows a home assembling itself on its steel frame. Walls slide in, then the floor, ceiling and roof drop into place, and finally the sliding doors slide in. `assembly.tsx` sets the timing, and `AssembleIn` animates each piece. Below the hero, `LandingModels` lists every model as a card. `ModelPreviews` draws all of the spinning card previews with one shared, transparent `<Canvas>` laid over the cards, instead of one WebGL context per card. Each preview is scissored into its card by `PreviewView`, positioned against the canvas rather than the screen. The canvas scrolls with the page instead of being fixed, so the models stay put on phones, where scrolling runs ahead of rendering.
+
+**Models (`/homes`).** The same grid of cards as the landing page, as a page of its own, so the lineup has an address to link to. `LandingModels` takes a `page` prop for it: its heading becomes the page's `h1`, and it starts under the nav bar instead of filling the screen. The heading of the nav menu's list of models links here, and so does the For builders page. The landing page keeps its grid, so "Select a model" still scrolls straight to it.
 
 **Model viewer (`/homes/[slug]`).** This page has two views, and each one has its own `<Canvas>`:
 
