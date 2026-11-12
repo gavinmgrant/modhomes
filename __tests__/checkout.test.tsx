@@ -85,6 +85,11 @@ describe("checkout", () => {
     expect(
       within(dialog).getByRole("link", { name: "Back to your home" }),
     ).toHaveAttribute("href", "/homes/mod2x1");
+    expect(
+      within(dialog).getByRole("link", {
+        name: "See what this could do for yours",
+      }),
+    ).toHaveAttribute("href", "/builders");
 
     // closing it leaves the page reserved, with no second reservation
     fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));

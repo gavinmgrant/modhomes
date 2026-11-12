@@ -20,7 +20,16 @@ export const describeRooms = ({ area, bedrooms, baths }: Model) =>
       : [`${bedrooms} bed`, `${baths} bath`]),
   ].join(" · ");
 
-const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
+interface LandingModelsProps {
+  // On the models page the grid is the page itself: its heading is the
+  // page's, and it starts under the nav bar rather than filling the screen
+  page?: boolean;
+}
+
+// Every model as a card with its 3D preview, at the foot of the landing page
+// and as the models page, /homes
+const LandingModels = forwardRef<HTMLDivElement, LandingModelsProps>(
+  ({ page = false }, ref) => {
   const router = useRouter();
   const previews = useRef(
     MODELS.map(() => createRef<HTMLDivElement>())
@@ -91,23 +100,32 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
   return (
     <div
       ref={ref}
-      style={{
-        // The section fills the screen with its content centred, so
-        // "Select a model" scrolls to a framed view of the cards. svh is the
-        // screen's height with any mobile browser bars showing
-        minHeight: "100svh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "2rem 0",
-      }}
+      style={
+        page
+          ? { padding: "2rem 0 0" }
+          : {
+              // The section fills the screen with its content centered, so
+              // "Select a model" scrolls to a framed view of the cards. svh
+              // is the screen's height with any mobile browser bars showing
+              minHeight: "100svh",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              padding: "2rem 0",
+            }
+      }
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <Typography variant="h2" fontWeight={600} textAlign="center">
+        <Typography
+          variant="h2"
+          component={page ? "h1" : "h2"}
+          fontWeight={600}
+          textAlign="center"
+        >
           Models
         </Typography>
       </motion.div>
@@ -135,7 +153,8 @@ const LandingModels = forwardRef<HTMLDivElement>((props, ref) => {
       </div>
     </div>
   );
-});
+  },
+);
 
 LandingModels.displayName = "LandingModels";
 

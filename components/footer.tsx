@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import Typography from "@mui/material/Typography";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import { motion } from "framer-motion";
@@ -40,7 +41,10 @@ const Footer = ({ pinned = true }: FooterProps) => {
         </motion.div>
       </Stack>
       <Typography variant="body2" textAlign="center" sx={{ opacity: 0.7 }}>
-        ModHomes is a concept, not a real company.
+        ModHomes is a demo for a made-up builder.{" "}
+        <Link href="/builders" style={{ textDecoration: "underline" }}>
+          For builders
+        </Link>
         <br />
         Built with Next.js, React Three Fiber and MUI.
       </Typography>

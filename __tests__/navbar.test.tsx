@@ -3,6 +3,7 @@ import NavBar from "../components/navbar";
 import singletonRouter from "next/router";
 import { render, cleanup, fireEvent, screen } from "@testing-library/react";
 import mockRouter from "next-router-mock";
+import "@testing-library/jest-dom";
 
 jest.mock("next/router", () => require("next-router-mock"));
 jest.mock("next/dist/client/router", () => require("next-router-mock"));
@@ -38,6 +39,23 @@ describe("nav bar", () => {
     fireEvent.click(screen.getByRole("button"));
     fireEvent.click(screen.getByText("Mod 2x2"));
     expect(mockRouter.asPath).toBe("/homes/mod2x2");
+  });
+
+  it("opens the builders page from the menu", () => {
+    mockRouter.setCurrentUrl("/homes/mod3x2?metal=copper");
+    render(<NavBar />);
+    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByText("For builders"));
+    expect(mockRouter.asPath).toBe("/builders");
+  });
+
+  it("links the menu's heading to the models page", () => {
+    render(<NavBar />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByRole("link", { name: "Models" })).toHaveAttribute(
+      "href",
+      "/homes",
+    );
   });
 
   it("opens menu on click", () => {
