@@ -14,7 +14,10 @@ export const CONTACT_EMAIL = "gavin@gavingrant.com";
 const REPO = "https://github.com/gavinmgrant/modhomes";
 export const FULL_VERSION_URL = `${REPO}/blob/main/docs/FOR-BUILDERS.md`;
 export const HOW_ITS_BUILT_URL = `${REPO}/blob/main/docs/ARCHITECTURE.md`;
+// The README's tour of the hardest parts, for anyone weighing my work
+export const WHAT_IT_SHOWS_URL = `${REPO}#what-this-shows`;
 const PORTFOLIO_URL = "https://www.gavingrant.com";
+export const LINKEDIN_URL = "https://www.linkedin.com/in/gavinmgrant/";
 // The home in the README's first screenshot, to try from here
 export const DEMO_HOME = "/homes/mod3x2?wood=walnut&decks=left,right";
 
@@ -50,12 +53,24 @@ const secondary = {
   color: INK,
 };
 
-const Card = ({ title, children }: { title: string; children: ReactNode }) => (
-  <section aria-label={title} style={card}>
-    <h2 style={heading}>{title}</h2>
-    {children}
-  </section>
-);
+// A card under a section heading of its own takes the next level down
+const Card = ({
+  title,
+  children,
+  level = 2,
+}: {
+  title: string;
+  children: ReactNode;
+  level?: 2 | 3;
+}) => {
+  const Heading = level === 2 ? "h2" : "h3";
+  return (
+    <section aria-label={title} style={card}>
+      <Heading style={heading}>{title}</Heading>
+      {children}
+    </section>
+  );
+};
 
 const Builders = () => {
   const isMobile = useIsMobile();
@@ -64,7 +79,7 @@ const Builders = () => {
     <>
       <PageMeta
         title="For builders | ModHomes"
-        description="A demo of what modular home builders could offer online: homes configured in 3D, walked through, seen on a lot and priced as they're configured. Here's what it would take for your homes."
+        description="A demo of what modular home builders could offer online: homes configured in 3D, walked through, seen on a lot and priced as they're configured. Here's what it would take for your homes, and two ways to work together."
         path="/builders"
         image="/og/home.png"
         imageAlt="A ModHomes modular home beside the headline Modern, modular homes."
@@ -104,7 +119,8 @@ const Builders = () => {
           <p style={{ fontSize: 15, lineHeight: 1.6, marginTop: 12 }}>
             Built by Gavin Grant: an architect on Marmol Radziner&apos;s prefab
             team, then in sales at Connect Homes, and a web developer since
-            2020.
+            2020. I can build this for your homes, or join your team to build
+            and run it.
           </p>
           <div
             style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 24 }}
@@ -120,6 +136,42 @@ const Builders = () => {
             </Link>
           </div>
         </header>
+
+        <section aria-label="Two ways to work together" style={{ marginBottom: 24 }}>
+          <h2 style={{ ...heading, fontSize: 22 }}>Two ways to work together</h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+              gap: 24,
+            }}
+          >
+            <Card title="I build it for you" level={3}>
+              <p style={{ fontSize: 15, lineHeight: 1.6 }}>
+                A project for your homes, built in phases: your models and
+                prices first, then your buyers&apos; lots, your factory and the
+                whole purchase. Each phase is useful on its own, and it works
+                alongside the tools you already use.
+              </p>
+            </Card>
+            <Card title="I join your team" level={3}>
+              <p style={{ fontSize: 15, lineHeight: 1.6 }}>
+                Someone who has designed prefab homes, sold them, and builds
+                web software, to own your configurator and the tools your
+                buyers and sales team use online.{" "}
+                <a
+                  href={WHAT_IT_SHOWS_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontWeight: 600, textDecoration: "underline" }}
+                >
+                  See what this demo shows I can do
+                </a>
+                .
+              </p>
+            </Card>
+          </div>
+        </section>
 
         <div
           style={{
@@ -147,7 +199,7 @@ const Builders = () => {
               </li>
             </ul>
           </Card>
-          <Card title="What I'd need from you">
+          <Card title="What it would take">
             <ul style={list}>
               <li>Plans for your models, and how their modules are built.</li>
               <li>Your options, and which ones go together.</li>
@@ -228,6 +280,13 @@ const Builders = () => {
               development.
             </p>
             <p>
+              I build with AI coding tools like Claude Code, which you&apos;ll
+              see credited in the commit history. I decide what to build and
+              how it should work, and I own the result. The tools let me spend
+              more of my time on what they can&apos;t do: knowing how modular
+              homes are designed, sold and built.
+            </p>
+            <p>
               ModHomes brings those together: homes designed the way a factory
               builds them, priced the way buyers ask about them, in a browser.
             </p>
@@ -239,6 +298,15 @@ const Builders = () => {
                 style={{ textDecoration: "underline" }}
               >
                 More about me at gavingrant.com
+              </a>{" "}
+              ·{" "}
+              <a
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noreferrer"
+                style={{ textDecoration: "underline" }}
+              >
+                LinkedIn
               </a>
             </p>
           </div>
@@ -252,8 +320,8 @@ const Builders = () => {
             Let&apos;s talk
           </h2>
           <p style={{ fontSize: 15, lineHeight: 1.6, maxWidth: 620 }}>
-            If you build modular homes and want to see yours in the browser,
-            email me at{" "}
+            Whether you&apos;d like this built for your homes, or want someone
+            on your team who can build it, email me at{" "}
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               style={{ fontWeight: 600, textDecoration: "underline" }}

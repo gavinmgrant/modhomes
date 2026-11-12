@@ -1,10 +1,17 @@
 # Bringing your homes to the browser
 
-ModHomes is a demo I built for a made-up modular home builder. It shows what buying a modular home online could feel like: your buyers configure a home in 3D, walk through it, see it on a lot, watch its price change as they go, and reserve it. This page is for builders. It describes what it would take to do the same for your homes, what I'd need from you, and what to expect.
+ModHomes is a demo I built for a made-up modular home builder. It shows what buying a modular home online could feel like: your buyers configure a home in 3D, walk through it, see it on a lot, watch its price change as they go, and reserve it. This page is for builders. It describes the two ways we could work together, what it would take to do the same for your homes, and what to expect.
 
 Built by [Gavin Grant](https://www.gavingrant.com): an architect on Marmol Radziner's prefab team, then in sales at Connect Homes, and a web developer since 2020.
 
 Try the demo at [modhomes.vercel.app](https://modhomes.vercel.app/), and see the [README](../README.md) for what it does. The live site has a short version of this page at [modhomes.vercel.app/builders](https://modhomes.vercel.app/builders).
+
+## Two ways to work together
+
+- **I build it for you.** A project for your homes, in the [phases](#in-phases) below. Each phase is useful on its own, and it works alongside the tools you already use.
+- **I join your team.** You'd get someone who has designed prefab homes, sold them, and builds web software, to own your configurator and the tools your buyers and sales team use online. The README's [What this shows](../README.md#what-this-shows) points to the parts of this demo that show what I can do.
+
+Either way, the rest of this page applies: what it could do for your sales, what it would take, and its limits.
 
 ## Why it's worth doing
 
@@ -18,7 +25,9 @@ A configurator like ModHomes could help your sales in a few ways:
 - **A home on their lot.** Buyers see the home standing on their own land, and could be told whether it fits.
 - **A head start for the factory.** The same model that draws the home counts what it's built from, which could become the order's parts list.
 
-## What I'd need from you
+## What it would take
+
+Whoever builds it, in-house or not, would work from these:
 
 - **Your homes.** Plans and elevations for each model, and drawings or a model of how the modules are built: BIM, CAD or PDFs.
 - **Your options.** Every finish, upgrade and package a buyer can pick, which ones go together, and which ones your engineering rules out.
@@ -77,8 +86,10 @@ Beyond building it, the running costs are small and grow with your traffic:
 
 I started my career as an architect, designing prefab homes on Marmol Radziner's prefab team from 2004 to 2006. From 2015 to 2018 I worked in sales at Connect Homes, which was co-founded by members of that team, helping buyers understand what a modular home would cost and take to build. In 2020 I moved into web development.
 
-ModHomes brings those together: homes designed the way a factory builds them, priced the way buyers ask about them, in a browser. There's more about me at [gavingrant.com](https://www.gavingrant.com).
+I build with AI coding tools like Claude Code, which you'll see credited in the commit history. I decide what to build and how it should work, and I own the result. The tools let me spend more of my time on what they can't do: knowing how modular homes are designed, sold and built.
+
+ModHomes brings those together: homes designed the way a factory builds them, priced the way buyers ask about them, in a browser. There's more about me at [gavingrant.com](https://www.gavingrant.com) and on [LinkedIn](https://www.linkedin.com/in/gavinmgrant/).
 
 ## Get in touch
 
-If you build modular homes and want to see yours in the browser, email me at [gavin@gavingrant.com](mailto:gavin@gavingrant.com).
+Whether you'd like this built for your homes, or want someone on your team who can build it, email me at [gavin@gavingrant.com](mailto:gavin@gavingrant.com).

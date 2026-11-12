@@ -49,13 +49,23 @@ A configured home lives in its URL, so it can be shared, and a link can open it 
 
 ## Bring your homes to the browser
 
-To do this for your homes, I'd work from your plans, options, prices, factories and sales process. It can be built in phases: your homes and prices first, then your buyers' lots, then the hand-off to your factory, then the whole purchase. It sits in front of the tools you already use: your website, CRM, pricing and design models.
+There are two ways we could work together. I can build this for your homes as a project, or join your team to build and run it. Either way, it would start from your plans, options, prices, factories and sales process. It can be built in phases: your homes and prices first, then your buyers' lots, then the hand-off to your factory, then the whole purchase. It sits in front of the tools you already use: your website, CRM, pricing and design models.
 
-The live site has a short version at [modhomes.vercel.app/builders](https://modhomes.vercel.app/builders). [docs/FOR-BUILDERS.md](./docs/FOR-BUILDERS.md) covers what I'd need from you, how it fits your tools, each phase, its limits and what it costs to run.
+The live site has a short version at [modhomes.vercel.app/builders](https://modhomes.vercel.app/builders). [docs/FOR-BUILDERS.md](./docs/FOR-BUILDERS.md) covers both ways of working together, what it would take, how it fits your tools, each phase, its limits and what it costs to run.
 
-## How it's built
+## What this shows
 
-Every home is generated in code from steel-framed modules, with no imported 3D models, and drawn with architectural linework. The price is counted from the same geometry that draws the home, so every pane, wall and deck is priced. The 3D views draw only when something changes, so they stay light on phones. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) explains how it all works, and which parts would change for another builder's homes.
+If you're looking at ModHomes as an example of my work, these are the parts I'd point to:
+
+* **Every home is generated in code.** Modules, walls, glass, stair, kitchens, baths and bedrooms are all built from layout math, with no imported 3D models. The math lives in plain functions, so it's tested without a browser. See [how a home is generated](./docs/ARCHITECTURE.md#how-a-home-is-generated).
+* **The price follows the geometry.** The same functions that draw the home count what it's built from, so every pane, wall and deck is priced, and two homes with the same number of modules can cost different amounts. See [pricing](./docs/ARCHITECTURE.md#pricing).
+* **It's drawn like an architect's drawing.** Light lines trace every edge, and a custom shader finds the outline against the sky in screen space. See [linework](./docs/ARCHITECTURE.md#linework).
+* **It runs well on phones.** The 3D views draw only when something changes, the landing page's model cards share one WebGL canvas, and the kitchens' hundreds of parts are drawn in about a dozen draw calls. See the [performance notes](./docs/ARCHITECTURE.md#performance-notes).
+* **It stands on a real lot.** The Site view settles the home onto Google's photorealistic 3D tiles of a lot in Palm Springs, and keeps the camera above the hillside around it. See the [pages](./docs/ARCHITECTURE.md#pages).
+* **A configured home lives in its URL**, from the viewer to the checkout, so it can be shared or opened straight inside. See [configuration in the URL](./docs/ARCHITECTURE.md#configuration-in-the-url).
+* **It's tested and documented.** About 300 unit tests, and an [architecture doc](./docs/ARCHITECTURE.md) that explains how each part works and why. It also covers which parts would change for another builder's homes.
+
+It's built with:
 
 * TypeScript, React and Next.js
 * React Three Fiber, drei and three.js for the 3D scenes
@@ -68,11 +78,13 @@ Every home is generated in code from steel-framed modules, with no imported 3D m
 
 I started my career as an architect, designing prefab homes on Marmol Radziner's prefab team from 2004 to 2006. From 2015 to 2018 I worked in sales at Connect Homes, which was co-founded by members of that team, helping buyers understand what a modular home would cost and take to build. In 2020 I moved into web development.
 
-ModHomes brings those together: homes designed the way a factory builds them, priced the way buyers ask about them, in a browser. There's more about me at [gavingrant.com](https://www.gavingrant.com).
+I build with AI coding tools like Claude Code, which you'll see credited in the commit history. I decide what to build and how it should work, and I own the result. The tools let me spend more of my time on what they can't do: knowing how modular homes are designed, sold and built.
+
+ModHomes brings those together: homes designed the way a factory builds them, priced the way buyers ask about them, in a browser. There's more about me at [gavingrant.com](https://www.gavingrant.com) and on [LinkedIn](https://www.linkedin.com/in/gavinmgrant/).
 
 ## Get in touch
 
-If you build modular homes and want to see yours in the browser, email me at [gavin@gavingrant.com](mailto:gavin@gavingrant.com).
+Whether you'd like this built for your homes, or want someone on your team who can build it, email me at [gavin@gavingrant.com](mailto:gavin@gavingrant.com).
 
 ## Running it locally
 
