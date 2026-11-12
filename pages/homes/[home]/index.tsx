@@ -7,7 +7,7 @@ import React, {
   useState,
 } from "react";
 import type { GetStaticPaths, GetStaticProps } from "next";
-import { useRouter } from "next/router";
+import { NextRouter, useRouter } from "next/router";
 import HomeModel from "../../../components/homemodel";
 import NavBar from "../../../components/navbar";
 import {
@@ -46,7 +46,12 @@ import {
   useSiteView,
 } from "../../../components/sitemap";
 import MODELS, { findModel, Model } from "../../../lib/models";
-import { loadInsideView, saveInsideView } from "../../../lib/viewposition";
+import {
+  loadInsideView,
+  parseView,
+  saveInsideView,
+  toViewParam,
+} from "../../../lib/viewposition";
 import { getQuote } from "../../../lib/pricing";
 import { useIsMobile, useIsTouch } from "../../../lib/media";
 import {
@@ -61,6 +66,14 @@ import {
   serializeConfig,
   toQueryString,
 } from "../../../lib/homeconfig";
+
+// Writes the query in place, without adding to the history or fetching the
+// page again
+const replaceQuery = (router: NextRouter, slug: string, search: string) =>
+  router.replace(`/homes/${slug}${search ? `?${search}` : ""}`, undefined, {
+    shallow: true,
+    scroll: false,
+  });
 
 const SiteCredits = dynamic(
   () => import("../../../components/sitetiles").then((m) => m.SiteCredits),
@@ -104,8 +117,26 @@ const Homes = ({ slug }: HomesProps) => {
   const isMobile = useIsMobile();
   const isTouch = useIsTouch();
 
+  // Whether the URL still carries the view a link opened, e.g. ?view=inside.
+  // It stays through picking finishes, while it's still the view on screen,
+  // and switching views drops it (below), so the URL never names a view
+  // that isn't showing, and a reload then follows local storage again
+  const linkedView = useRef(false);
+
+  // Opens the view the URL names, or else the one used last. The query is
+  // read from the address bar rather than the router, which only has it a
+  // render later, so the page doesn't draw one view and then swap to the
+  // other. A linked view counts as used, so local storage keeps up with it
   useEffect(() => {
-    dispatch({ type: "view", inside: loadInsideView() });
+    const query = Object.fromEntries(
+      new URLSearchParams(window.location.search),
+    );
+    const inside = loadInsideView(query);
+    dispatch({ type: "view", inside });
+    if (parseView(query) !== undefined) {
+      linkedView.current = true;
+      saveInsideView(inside);
+    }
   }, []);
 
   // The URL's query carries the finishes and decks, so a configured home
@@ -116,8 +147,8 @@ const Homes = ({ slug }: HomesProps) => {
   const urlConfig = router.isReady
     ? toQueryString(serializeConfig(parseConfig(router.query)))
     : null;
-  const latest = useRef({ router, slug, urlConfig });
-  latest.current = { router, slug, urlConfig };
+  const latest = useRef({ router, slug, urlConfig, isInside });
+  latest.current = { router, slug, urlConfig, isInside };
 
   // Opens the home the URL asks for, and again whenever the URL changes
   // other than by the effect below: going back, or to another model
@@ -129,19 +160,16 @@ const Homes = ({ slug }: HomesProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlConfig]);
 
-  // Writes each change to the URL in place, without adding to the history
-  // or fetching the page again. It skips its first run, when nothing's
-  // been picked yet
+  // Writes each change to the URL, keeping a linked view, which is never
+  // added otherwise. It skips its first run, when nothing's been picked yet
   const lastConfig = useRef(config);
   useEffect(() => {
     if (config === lastConfig.current) return;
     lastConfig.current = config;
-    const { router, slug, urlConfig } = latest.current;
+    const { router, slug, urlConfig, isInside } = latest.current;
     if (urlConfig === null || config === urlConfig) return;
-    router.replace(`/homes/${slug}${config ? `?${config}` : ""}`, undefined, {
-      shallow: true,
-      scroll: false,
-    });
+    const view = linkedView.current ? toViewParam(isInside) : "";
+    replaceQuery(router, slug, [config, view].filter(Boolean).join("&"));
   }, [config]);
 
   // The checkout is rendered on the server, so it can take a moment to
@@ -182,6 +210,11 @@ const Homes = ({ slug }: HomesProps) => {
     dispatch({ type: "view", inside });
     walkInput.current = { ...IDLE_INPUT };
     saveInsideView(inside);
+    // The linked view is no longer the one showing, so it leaves the URL
+    if (linkedView.current) {
+      linkedView.current = false;
+      if (router.isReady) replaceQuery(router, slug, config);
+    }
   };
 
   const setFinish: SetFinish = (key, value) => dispatch(pickFinish(key, value));
