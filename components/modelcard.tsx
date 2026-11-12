@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useMediaQuery } from "@mui/material";
-import { motion, useSpring, useTransform } from "framer-motion";
+import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { INK, PANEL, PANEL_RADIUS, PAPER, ink } from "./panel";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -68,6 +68,9 @@ export const getSummary = (model: ModelFacts) =>
 // In full dollars, so every finish and deck moves it, counting up or down
 export const formatPrice = (value: number) => PRICE.format(Math.round(value));
 
+// How long the card's numbers take to count up
+const COUNT_SECONDS = 0.8;
+
 const CountUp = ({
   value,
   format = (value) => NUMBER.format(Math.floor(value)),
@@ -75,11 +78,18 @@ const CountUp = ({
   value: number;
   format?: (value: number) => string;
 }) => {
-  // starts at zero and eases to the value, slow and without overshoot (the
-  // stiffness and damping of React Spring's "molasses", which it used before)
-  const count = useSpring(0, { stiffness: 280, damping: 120 });
+  // starts at zero and eases out to the value, and from there to each new
+  // one. A set duration rather than a spring, so every number lands at the
+  // same moment however big it is, without a long tail of ticking digits
+  const count = useMotionValue(0);
   const text = useTransform(count, format);
-  useEffect(() => count.set(value), [count, value]);
+  useEffect(() => {
+    const controls = animate(count, value, {
+      duration: COUNT_SECONDS,
+      ease: "easeOut",
+    });
+    return () => controls.stop();
+  }, [count, value]);
   return <motion.span>{text}</motion.span>;
 };
 
