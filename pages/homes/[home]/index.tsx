@@ -29,6 +29,7 @@ import Colors from "../../../components/colors";
 import Materials from "../../../components/materials";
 import ModelCard from "../../../components/modelcard";
 import PageMeta from "../../../components/pagemeta";
+import ViewNotice from "../../../components/viewnotice";
 import ControlDock from "../../../components/controldock";
 import InsideScene from "../../../components/insidescene";
 import OutsideScene from "../../../components/outsidescene";
@@ -143,6 +144,26 @@ const Homes = ({ slug }: HomesProps) => {
     });
   }, [config]);
 
+  // The checkout is rendered on the server, so it can take a moment to
+  // arrive after Reserve is clicked. The view says so meanwhile, from the
+  // route change starting until it lands or fails
+  const [reserving, setReserving] = useState(false);
+  const { events } = router;
+  useEffect(() => {
+    const start = (url: string) => {
+      if (url.split("?")[0].endsWith("/checkout")) setReserving(true);
+    };
+    const stop = () => setReserving(false);
+    events.on("routeChangeStart", start);
+    events.on("routeChangeComplete", stop);
+    events.on("routeChangeError", stop);
+    return () => {
+      events.off("routeChangeStart", start);
+      events.off("routeChangeComplete", stop);
+      events.off("routeChangeError", stop);
+    };
+  }, [events]);
+
   // The same function every render, so the memoized home only re-renders
   // when its own props change
   const handleDeckSettled = useCallback(
@@ -226,8 +247,15 @@ const Homes = ({ slug }: HomesProps) => {
           isolation: "isolate",
         }}
       >
+        {reserving && (
+          <ViewNotice loading>Preparing your reservation…</ViewNotice>
+        )}
         {site.available && (
-          <SiteNotice status={site.status} shown={site.on && !isInside} />
+          // Gives way to the reservation's notice, in the same spot
+          <SiteNotice
+            status={site.status}
+            shown={site.on && !isInside && !reserving}
+          />
         )}
         {site.available && (
           <SiteCredits shown={site.ready && !isInside} dock={dock} />
