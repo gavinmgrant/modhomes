@@ -40,6 +40,14 @@ describe("nav bar", () => {
     expect(mockRouter.asPath).toBe("/homes/mod2x2");
   });
 
+  it("opens the builders page from the menu", () => {
+    mockRouter.setCurrentUrl("/homes/mod3x2?metal=copper");
+    render(<NavBar />);
+    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByText("For builders"));
+    expect(mockRouter.asPath).toBe("/builders");
+  });
+
   it("opens menu on click", () => {
     render(<NavBar />);
     fireEvent.click(screen.getByRole("button"));

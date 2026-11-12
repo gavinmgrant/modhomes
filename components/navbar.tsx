@@ -9,6 +9,7 @@ import {
   IconButton,
   MenuItem,
   Drawer,
+  Divider,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { IconLayoutGrid, IconX } from "@tabler/icons-react";
@@ -17,6 +18,26 @@ import { FOCUS_RING, INK, PANEL, PANEL_RADIUS, PAPER, ink } from "./panel";
 import { useIsMobile } from "../lib/media";
 
 const HOVER = { "&:hover": { background: ink(0.06) } };
+
+// The menu's rows, a model's or the builders page's
+const ITEM = {
+  justifyContent: "space-between",
+  // MenuItem resets min-height from sm up, so set both
+  minHeight: { xs: 44, sm: 44 },
+  marginBottom: "2px",
+  padding: "0 16px",
+  borderRadius: 999,
+  color: INK,
+  ...HOVER,
+  "&.Mui-selected, &.Mui-selected:hover": {
+    background: INK,
+    color: PAPER,
+  },
+  "&.Mui-focusVisible": {
+    outline: `2px solid ${INK}`,
+    outlineOffset: -2,
+  },
+};
 
 // The bar sits 1rem from the top of the page. Its height is MUI's toolbar
 // (56px on phones, 64px from sm up) plus the panel's 1px border top and bottom
@@ -157,24 +178,7 @@ const NavBar = ({ center }: NavBarProps) => {
                 key={model.slug}
                 selected={selected}
                 onClick={() => handleItemClick(model.slug)}
-                sx={{
-                  justifyContent: "space-between",
-                  // MenuItem resets min-height from sm up, so set both
-                  minHeight: { xs: 44, sm: 44 },
-                  marginBottom: "2px",
-                  padding: "0 16px",
-                  borderRadius: 999,
-                  color: INK,
-                  ...HOVER,
-                  "&.Mui-selected, &.Mui-selected:hover": {
-                    background: INK,
-                    color: PAPER,
-                  },
-                  "&.Mui-focusVisible": {
-                    outline: `2px solid ${INK}`,
-                    outlineOffset: -2,
-                  },
-                }}
+                sx={ITEM}
               >
                 <span>{model.name}</span>
                 <span style={{ fontSize: 14, opacity: 0.6 }}>
@@ -183,6 +187,17 @@ const NavBar = ({ center }: NavBarProps) => {
               </MenuItem>
             );
           })}
+          <Divider sx={{ margin: "10px 12px", borderColor: ink(0.12) }} />
+          <MenuItem
+            selected={router.pathname === "/builders"}
+            onClick={() => {
+              router.push("/builders");
+              setAnchorEl(null);
+            }}
+            sx={ITEM}
+          >
+            <span>For builders</span>
+          </MenuItem>
         </Drawer>
       </Toolbar>
     </AppBar>

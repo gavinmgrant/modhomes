@@ -316,6 +316,15 @@ const Checkout = ({ slug, config, schedule }: CheckoutProps) => {
         <p style={{ fontSize: 13, opacity: 0.6, marginTop: 12 }}>
           A concept only: in a real checkout, the payment would go through here.
         </p>
+        <p style={{ fontSize: 13, marginTop: 4 }}>
+          Build homes?{" "}
+          <Link
+            href="/builders"
+            style={{ fontWeight: 600, textDecoration: "underline" }}
+          >
+            See what this could do for yours
+          </Link>
+        </p>
         <div style={{ display: "grid", gap: 8, marginTop: 24 }}>
           <Link
             href={configured}

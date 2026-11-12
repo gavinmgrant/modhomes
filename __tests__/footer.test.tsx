@@ -8,7 +8,15 @@ describe("Footer", () => {
     const { getByText, getByTestId } = render(<Footer />);
     expect(getByText("Built by Gavin Grant")).toBeInTheDocument();
     expect(getByTestId("GitHubIcon")).toBeInTheDocument();
-    expect(getByText(/is a concept, not a real company/)).toBeInTheDocument();
+    expect(getByText(/is a demo for a made-up builder/)).toBeInTheDocument();
+  });
+
+  it("links builders to the page for them", () => {
+    const { getByRole } = render(<Footer />);
+    expect(getByRole("link", { name: "For builders" })).toHaveAttribute(
+      "href",
+      "/builders",
+    );
   });
 
   it("pins itself to the bottom unless it's told to follow the page", () => {
