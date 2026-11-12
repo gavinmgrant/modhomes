@@ -14,6 +14,7 @@ export const CONTACT_EMAIL = "gavin@gavingrant.com";
 const REPO = "https://github.com/gavinmgrant/modhomes";
 export const FULL_VERSION_URL = `${REPO}/blob/main/docs/FOR-BUILDERS.md`;
 export const HOW_ITS_BUILT_URL = `${REPO}/blob/main/docs/ARCHITECTURE.md`;
+const PORTFOLIO_URL = "https://www.gavingrant.com";
 // The home in the README's first screenshot, to try from here
 export const DEMO_HOME = "/homes/mod3x2?wood=walnut&decks=left,right";
 
@@ -99,6 +100,11 @@ const Builders = () => {
             shows what your buyers could do online: configure one of your homes
             in 3D, walk through it, see it on a lot, and reserve it, with a
             price that updates as they go.
+          </p>
+          <p style={{ fontSize: 15, lineHeight: 1.6, marginTop: 12 }}>
+            Built by Gavin Grant: an architect on Marmol Radziner&apos;s prefab
+            team, then in sales at Connect Homes, and a web developer since
+            2020.
           </p>
           <div
             style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 24 }}
@@ -196,6 +202,47 @@ const Builders = () => {
             </ul>
           </Card>
         </div>
+
+        <section
+          aria-label="About me"
+          style={{ ...card, marginTop: 24, padding: isMobile ? 24 : 32 }}
+        >
+          <h2 style={{ ...heading, fontSize: 22, marginBottom: 8 }}>
+            About me
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gap: 12,
+              fontSize: 15,
+              lineHeight: 1.6,
+              maxWidth: 680,
+            }}
+          >
+            <p>
+              I started my career as an architect, designing prefab homes on
+              Marmol Radziner&apos;s prefab team from 2004 to 2006. From 2015
+              to 2018 I worked in sales at Connect Homes, which was co-founded
+              by members of that team, helping buyers understand what a modular
+              home would cost and take to build. In 2020 I moved into web
+              development.
+            </p>
+            <p>
+              ModHomes brings those together: homes designed the way a factory
+              builds them, priced the way buyers ask about them, in a browser.
+            </p>
+            <p style={{ fontSize: 14 }}>
+              <a
+                href={PORTFOLIO_URL}
+                target="_blank"
+                rel="noreferrer"
+                style={{ textDecoration: "underline" }}
+              >
+                More about me at gavingrant.com
+              </a>
+            </p>
+          </div>
+        </section>
 
         <section
           aria-label="Get in touch"

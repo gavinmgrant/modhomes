@@ -36,6 +36,17 @@ describe("builders page", () => {
     }
   });
 
+  it("says who built it, and why that matters", () => {
+    expect(
+      screen.getByText(/an architect on Marmol Radziner's prefab team/),
+    ).toBeInTheDocument();
+    const about = screen.getByRole("region", { name: "About me" });
+    expect(about.textContent).toContain("Connect Homes");
+    expect(
+      within(about).getByRole("link", { name: /gavingrant\.com/ }),
+    ).toHaveAttribute("href", "https://www.gavingrant.com");
+  });
+
   it("asks builders to email, from the top and the end", () => {
     expect(screen.getByRole("link", { name: "Email me" })).toHaveAttribute(
       "href",

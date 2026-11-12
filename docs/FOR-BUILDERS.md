@@ -2,6 +2,8 @@
 
 ModHomes is a demo I built for a made-up modular home builder. It shows what buying a modular home online could feel like: your buyers configure a home in 3D, walk through it, see it on a lot, watch its price change as they go, and reserve it. This page is for builders. It describes what it would take to do the same for your homes, what I'd need from you, and what to expect.
 
+Built by [Gavin Grant](https://www.gavingrant.com): an architect on Marmol Radziner's prefab team, then in sales at Connect Homes, and a web developer since 2020.
+
 Try the demo at [modhomes.vercel.app](https://modhomes.vercel.app/), and see the [README](../README.md) for what it does. The live site has a short version of this page at [modhomes.vercel.app/builders](https://modhomes.vercel.app/builders).
 
 ## Why it's worth doing
@@ -70,6 +72,12 @@ Beyond building it, the running costs are small and grow with your traffic:
 - **The lot view:** Google's 3D imagery is [free for the first 1,000 visits a month](https://developers.google.com/maps/billing-and-pricing/pricing), then $6 per 1,000. Each visit covers up to three hours of viewing.
 - **Lot data:** parcel and zoning lookups are priced per lookup or by monthly plan, from providers like [Regrid](https://regrid.com/pricing) and [Zoneomics](https://www.zoneomics.com/pricing/api).
 - **Deposits:** [Stripe](https://stripe.com/pricing) charges 0.8% capped at $5 for a bank (ACH) payment, so a $10,000 deposit costs $5 to take.
+
+## About me
+
+I started my career as an architect, designing prefab homes on Marmol Radziner's prefab team from 2004 to 2006. From 2015 to 2018 I worked in sales at Connect Homes, which was co-founded by members of that team, helping buyers understand what a modular home would cost and take to build. In 2020 I moved into web development.
+
+ModHomes brings those together: homes designed the way a factory builds them, priced the way buyers ask about them, in a browser. There's more about me at [gavingrant.com](https://www.gavingrant.com).
 
 ## Get in touch
 

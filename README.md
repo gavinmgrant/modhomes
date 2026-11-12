@@ -5,6 +5,8 @@
 > [!IMPORTANT]
 > **ModHomes is a demo for a made-up builder.** I built it to show modular home builders what's possible online. No homes are for sale. The factory, prices, delivery costs and schedules are invented, and reserving a home takes no payment and saves nothing. Imagine it with your homes.
 
+Built by [Gavin Grant](https://www.gavingrant.com): an architect on Marmol Radziner's prefab team, then in sales at Connect Homes, and a web developer since 2020.
+
 **[Try the live demo →](https://modhomes.vercel.app/)**
 
 ![A two-story ModHomes home in white metal siding with dark trim and covered walnut decks, its model card showing its specs and price as configured](docs/images/outside.png)
@@ -61,6 +63,12 @@ Every home is generated in code from steel-framed modules, with no imported 3D m
 * Framer Motion for animation
 * Jest and React Testing Library for tests
 * Vercel for hosting
+
+## About me
+
+I started my career as an architect, designing prefab homes on Marmol Radziner's prefab team from 2004 to 2006. From 2015 to 2018 I worked in sales at Connect Homes, which was co-founded by members of that team, helping buyers understand what a modular home would cost and take to build. In 2020 I moved into web development.
+
+ModHomes brings those together: homes designed the way a factory builds them, priced the way buyers ask about them, in a browser. There's more about me at [gavingrant.com](https://www.gavingrant.com).
 
 ## Get in touch
 
