@@ -55,7 +55,7 @@ The live site has a short version at [modhomes.vercel.app/builders](https://modh
 
 ## What this shows
 
-If you're looking at ModHomes as an example of my work, these are the parts I'd point to:
+If you're looking at ModHomes as an example of my work, the [product case study](./docs/CASE-STUDY.md) covers the problem it takes on, who it's for, the decisions and trade-offs behind it, and what I'd measure. On the technical side, these are the parts I'd point to:
 
 * **Every home is generated in code.** Modules, walls, glass, stair, kitchens, baths and bedrooms are all built from layout math, with no imported 3D models. The math lives in plain functions, so it's tested without a browser. See [how a home is generated](./docs/ARCHITECTURE.md#how-a-home-is-generated).
 * **The price follows the geometry.** The same functions that draw the home count what it's built from, so every pane, wall and deck is priced, and two homes with the same number of modules can cost different amounts. See [pricing](./docs/ARCHITECTURE.md#pricing).
