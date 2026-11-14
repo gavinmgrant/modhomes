@@ -9,7 +9,7 @@ Try the demo at [modhomes.vercel.app](https://modhomes.vercel.app/), and see the
 ## Two ways to work together
 
 - **I build it for you.** A project for your homes, in the [phases](#in-phases) below. Each phase is useful on its own, and it works alongside the tools you already use.
-- **I join your team.** You'd get someone who has designed prefab homes, sold them, and builds web software, to own your configurator and the tools your buyers and sales team use online. The README's [What this shows](../README.md#what-this-shows) points to the parts of this demo that show what I can do.
+- **I join your team.** You'd get someone who has designed prefab homes, sold them, and builds web software, to own your configurator and the tools your buyers and sales team use online. The [product case study](./CASE-STUDY.md) explains the decisions behind this demo, and the README's [What this shows](../README.md#what-this-shows) points to its technical side.
 
 Either way, the rest of this page applies: what it could do for your sales, what it would take, and its limits.
 
