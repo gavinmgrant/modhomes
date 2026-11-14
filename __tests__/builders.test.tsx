@@ -5,6 +5,7 @@ import mockRouter from "next-router-mock";
 import Builders, {
   CONTACT_EMAIL,
   LINKEDIN_URL,
+  CASE_STUDY_URL,
   WHAT_IT_SHOWS_URL,
   DEMO_HOME,
   FULL_VERSION_URL,
@@ -63,9 +64,11 @@ describe("builders page", () => {
       ).toBeInTheDocument();
     }
     expect(
-      within(ways).getByRole("link", {
-        name: "See what this demo shows I can do",
-      }),
+      within(ways).getByRole("link", { name: "product case study" }),
+    ).toHaveAttribute("href", CASE_STUDY_URL);
+    expect(CASE_STUDY_URL).toMatch(/\/docs\/CASE-STUDY\.md$/);
+    expect(
+      within(ways).getByRole("link", { name: "what this demo shows" }),
     ).toHaveAttribute("href", WHAT_IT_SHOWS_URL);
     expect(WHAT_IT_SHOWS_URL).toMatch(/#what-this-shows$/);
   });

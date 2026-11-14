@@ -14,7 +14,9 @@ export const CONTACT_EMAIL = "gavin@gavingrant.com";
 const REPO = "https://github.com/gavinmgrant/modhomes";
 export const FULL_VERSION_URL = `${REPO}/blob/main/docs/FOR-BUILDERS.md`;
 export const HOW_ITS_BUILT_URL = `${REPO}/blob/main/docs/ARCHITECTURE.md`;
-// The README's tour of the hardest parts, for anyone weighing my work
+// For anyone weighing me as a hire: the decisions behind the demo, and the
+// README's tour of its hardest technical parts
+export const CASE_STUDY_URL = `${REPO}/blob/main/docs/CASE-STUDY.md`;
 export const WHAT_IT_SHOWS_URL = `${REPO}#what-this-shows`;
 const PORTFOLIO_URL = "https://www.gavingrant.com";
 export const LINKEDIN_URL = "https://www.linkedin.com/in/gavinmgrant/";
@@ -158,16 +160,25 @@ const Builders = () => {
               <p style={{ fontSize: 15, lineHeight: 1.6 }}>
                 Someone who has designed prefab homes, sold them, and builds
                 web software, to own your configurator and the tools your
-                buyers and sales team use online.{" "}
+                buyers and sales team use online. The{" "}
                 <a
-                  href={WHAT_IT_SHOWS_URL}
+                  href={CASE_STUDY_URL}
                   target="_blank"
                   rel="noreferrer"
                   style={{ fontWeight: 600, textDecoration: "underline" }}
                 >
-                  See what this demo shows I can do
-                </a>
-                .
+                  product case study
+                </a>{" "}
+                explains how I decided what to build, and{" "}
+                <a
+                  href={WHAT_IT_SHOWS_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ textDecoration: "underline" }}
+                >
+                  what this demo shows
+                </a>{" "}
+                covers the technical side.
               </p>
             </Card>
           </div>
