@@ -10,15 +10,16 @@ export type AssemblyStep = {
 };
 
 // The landing hero builds the home on its steel frame, in seconds from the
-// first frame: the walls slide in one after another, then the floor, ceiling
-// and roof drop in from the bottom of their stack up, then the sliding doors
-// slide in
+// first frame: the walls slide in one after another, then the floor,
+// ceiling, metal roof deck and sloped roof insulation drop in from the bottom
+// of their stack up, then the sliding doors slide in
 export const ASSEMBLY = {
   walls: { delay: 0.8, duration: 1, stagger: 0.3 },
   floor: { delay: 2.6, duration: 1.1 },
   ceiling: { delay: 3.4, duration: 0.9 },
-  roof: { delay: 4.1, duration: 0.9 },
-  windows: 5,
+  deck: { delay: 4.1, duration: 0.9 },
+  insulation: { delay: 4.8, duration: 0.9 },
+  windows: 5.7,
 };
 
 // Walls arrive in turn: front end, back end, then the left and right sides
@@ -31,25 +32,29 @@ export const getWallStep = (order: number): AssemblyStep => ({
 });
 
 // Where each piece starts, as an offset in feet from where it ends up. The
-// floor, ceiling and roof start stacked above the steel frame (its top beams
-// reach 6.5 ft) at 8, 10 and 12 ft
+// floor, ceiling, roof deck and roof insulation start stacked 2 ft apart
+// above the steel frame, at 8, 10, 12 and 14 ft (the deck's ribs and the
+// insulation's eaves) in the module's own frame
 export const WALL_OFFSET = 12;
 // Inside the 10 ft the doors wait at, so the two never cross
 export const SIDE_OFFSET = 6;
 export const FLOOR_OFFSET = 12;
 export const CEILING_OFFSET = 6.1;
-export const ROOF_OFFSET = 6.75;
+// The deck's ribs land at 4.875 ft and the insulation's eaves on the deck,
+// 1 1/2" higher
+export const DECK_OFFSET = 12 - 4.875;
+export const INSULATION_OFFSET = 14 - 5;
 
 // How far the hero camera sits from the home's centre so every piece stays in
 // frame as the home turns, whatever shape the canvas is. The piece reaching
 // furthest from the centre is an end wall at its start: its outer face is
 // 20.3 ft out plus WALL_OFFSET, and it's 8 ft wide. (The doors, 10 ft out
 // past the sides but no further than the module's ends, reach about 24 ft.)
-// Up the canvas, it's the roof's ridge (level with the 6.5 ft parapets once
-// it lands) at the head of its stack, which can swing up to half the roof's
-// 39 ft length towards the camera
+// Up the canvas, it's the insulation's ridge (level with the 6.5 ft parapets
+// once it lands) at the head of its stack, which can swing up to half the
+// roof's 39 ft length towards the camera
 const ASSEMBLY_REACH = Math.hypot(20.3 + WALL_OFFSET, 4);
-const ASSEMBLY_TOP = 6.5 + ROOF_OFFSET;
+const ASSEMBLY_TOP = 6.5 + INSULATION_OFFSET;
 const ROOF_HALF_LENGTH = 19.5;
 // Breathing room around the furthest pieces, as a share of the frame
 const FRAME_MARGIN = 1.05;

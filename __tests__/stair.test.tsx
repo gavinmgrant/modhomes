@@ -9,7 +9,11 @@ import {
   RAIL_HEIGHT,
   UPSTAIRS_WALL,
 } from "../components/stair";
-import { getSlabPieces, POST_SIZE } from "../components/module";
+import {
+  getRoofFrameOpening,
+  getSlabPieces,
+  POST_SIZE,
+} from "../components/module";
 import { getPaneJoints } from "../components/slidingdoors";
 
 describe("stair", () => {
@@ -123,6 +127,22 @@ describe("slab openings", () => {
       const coversZ = Math.abs(11.25 - p.z) < p.depth / 2;
       expect(coversX && coversZ).toBe(false);
     });
+  });
+
+  it("frames the roof with perimeter beams open to the 7 × 39 ft roof slab", () => {
+    const beams = getSlabPieces(7.75, 40, getRoofFrameOpening());
+    expect(beams).toHaveLength(4);
+    expect(area(beams)).toBeCloseTo(7.75 * 40 - 7 * 39);
+  });
+
+  it("widens the roof frame's opening to take in the stair opening", () => {
+    const { opening } = getStairLayout(1);
+    const frame = getRoofFrameOpening(opening);
+    expect(frame.x[0]).toBeLessThanOrEqual(opening.x[0]);
+    expect(frame.x[1]).toBeGreaterThanOrEqual(opening.x[1]);
+    expect(frame.z[0]).toBeLessThanOrEqual(opening.z[0]);
+    expect(frame.z[1]).toBeGreaterThanOrEqual(opening.z[1]);
+    expect(getSlabPieces(7.75, 40, frame)).toHaveLength(4);
   });
 });
 

@@ -13,7 +13,8 @@ import Loader from "./loader";
 import SlidingDoors, { DoorHeader } from "./slidingdoors";
 import AssembleIn, {
   ASSEMBLY,
-  ROOF_OFFSET,
+  DECK_OFFSET,
+  INSULATION_OFFSET,
   SIDE_OFFSET,
   WALL_ORDER,
   getWallStep,
@@ -170,18 +171,33 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
               >
                 {/* The pieces as they fly in, drawn with their lines */}
                 <Linework>
-                  <AssembleIn
-                    from={[0, ROOF_OFFSET, 0]}
-                    step={ASSEMBLY.roof}
-                    onDone={() => setShellBuilt(true)}
-                  >
-                    <Roof
-                      position={[0, 5.25, 0]}
-                      color={COLORS.roof}
-                      width={7}
-                      ridgeHeight={getParapetTop(1)}
-                    />
-                  </AssembleIn>
+                  {/* The metal deck, then the sloped insulation on it */}
+                  {(
+                    [
+                      ["deck", DECK_OFFSET, ASSEMBLY.deck],
+                      ["insulation", INSULATION_OFFSET, ASSEMBLY.insulation],
+                    ] as const
+                  ).map(([layer, offset, step]) => (
+                    <AssembleIn
+                      key={layer}
+                      from={[0, offset, 0]}
+                      step={step}
+                      onDone={
+                        layer === "insulation"
+                          ? () => setShellBuilt(true)
+                          : undefined
+                      }
+                    >
+                      <Roof
+                        position={[0, 5.25, 0]}
+                        color={COLORS.roof}
+                        width={7}
+                        ridgeHeight={getParapetTop(1)}
+                        deck
+                        layer={layer}
+                      />
+                    </AssembleIn>
+                  ))}
                   <EndWall
                     position={[-3.5, 0, 0]}
                     color={COLORS.grey}
