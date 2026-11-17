@@ -21,6 +21,8 @@ Built by [Gavin Grant](https://www.gavingrant.com): an architect on Marmol Radzi
 
 **See it on a real lot.** The Site view stands the home on Google's photorealistic 3D imagery of a lot in Palm Springs, among the neighbors' houses and trees.
 
+[**▶ Watch the home on its lot**](docs/images/site.mp4) (a 10-second clip, for promotional purposes only; imagery © Google)
+
 **Compare every model.** The landing page shows each model turning in 3D, with its size, beds, baths and starting price.
 
 ![The landing page's grid of eight models, from a one-module studio to a two-story, four-bedroom home](docs/images/models.png)

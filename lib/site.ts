@@ -78,6 +78,23 @@ export const getCameraHeight = (
       )
   );
 
+// How far, in feet, the ground under the orbiting camera can stand above
+// the lot's: a tall palm or a roof up close, and further out a hillside no
+// steeper than 0.6 ft up in every foot across. When the site first shows,
+// the tiles round the lot can still be coarse ones, whose flat faces stand
+// far above the real ground (one was 156 ft up, 85 ft from the home, on the
+// flat lot in Palm Springs). Raising the camera over that pushed it high
+// overhead, and the orbit kept it there, so ground higher than this isn't
+// trusted, and the camera is left where it is until finer tiles come in
+export const SITE_GROUND_RISE = { least: 50, perFoot: 0.6 };
+export const isCameraGroundPlausible = (
+  groundHit: number,
+  groundY: number,
+  distance: number
+) =>
+  groundHit - groundY <=
+  SITE_GROUND_RISE.least + distance * SITE_GROUND_RISE.perFoot;
+
 // The outside camera's clipping planes, in feet, while the site shows: out
 // to the mountains on the horizon, and no nearer than needed, since the
 // further the near plane is, the less the ground flickers in the distance
