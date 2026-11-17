@@ -16,7 +16,7 @@ import Foundation from "./foundation";
 import { getParapetTop } from "../lib/dimensions";
 import Linework, { LineworkRender } from "./linework";
 import Loader from "./loader";
-import SlidingDoors, { DoorHeader } from "./slidingdoors";
+import SlidingDoors, { DoorHeader, DoorSills } from "./slidingdoors";
 import AssembleIn, {
   ASSEMBLY,
   ASSEMBLY_END,
@@ -329,8 +329,10 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                               animateIn
                               animateDelay={ASSEMBLY.windows}
                               hideHeader
+                              hideSills
                             />
-                            {/* The header arrives with its side's parapet */}
+                            {/* The header and sill arrive with their side's parapet
+                                and bottom beam */}
                             <AssembleIn
                               from={[side * SIDE_OFFSET, 0, 0]}
                               step={getWallStep(
@@ -338,6 +340,11 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                               )}
                             >
                               <DoorHeader
+                                side={side}
+                                halfWidth={4}
+                                stories={1}
+                              />
+                              <DoorSills
                                 side={side}
                                 halfWidth={4}
                                 stories={1}

@@ -322,8 +322,10 @@ interface SlidingDoorsProps {
   animateIn?: boolean;
   // Seconds after mount before the first pane starts sliding in
   animateDelay?: number;
-  // Leave the header out, for when it's drawn (and animated) separately
+  // Leave the header and sills out, for when they're drawn (and animated)
+  // separately
   hideHeader?: boolean;
+  hideSills?: boolean;
   // Panes filled with siding instead of glass, by id, and its colour
   sided?: string[];
   sidingColor?: string;
@@ -371,6 +373,20 @@ export const DoorHeader = ({
   <Trim {...getHeaderLayout(side, halfWidth, stories)} color={trimColor} />
 );
 
+// The dark sills along the foot of each story's doors
+export const DoorSills = ({
+  side,
+  halfWidth,
+  stories,
+  trimColor,
+}: DoorHeaderProps) => (
+  <>
+    {getSillLayouts(side, halfWidth, stories).map((sill) => (
+      <Trim key={sill.position.join()} {...sill} color={trimColor} />
+    ))}
+  </>
+);
+
 // Floor-to-ceiling sliding glass doors filling one open side of a home,
 // with a dark header above them and a dark band at each floor line between
 const SlidingDoors = ({
@@ -380,6 +396,7 @@ const SlidingDoors = ({
   animateIn = false,
   animateDelay = 0,
   hideHeader = false,
+  hideSills = false,
   sided = [],
   sidingColor,
   trimColor,
@@ -411,9 +428,14 @@ const SlidingDoors = ({
         .map((piece) => (
           <Trim key={piece.position.join()} {...piece} color={trimColor} />
         ))}
-      {getSillLayouts(side, halfWidth, stories).map((sill) => (
-        <Trim key={sill.position.join()} {...sill} color={trimColor} />
-      ))}
+      {!hideSills && (
+        <DoorSills
+          side={side}
+          halfWidth={halfWidth}
+          stories={stories}
+          trimColor={trimColor}
+        />
+      )}
       {!hideHeader && (
         <DoorHeader
           side={side}

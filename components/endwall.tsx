@@ -5,8 +5,8 @@ interface EndWallProps {
   position: [number, number, number];
   rotate: boolean;
   twoStory: boolean;
-  // Slide the side strips and parapet in from outside on this step of the
-  // landing hero's assembly; the bottom beam stays with the steel frame
+  // Slide the whole wall, its side strips, parapet and bottom beam, in from
+  // outside on this step of the landing hero's assembly
   assembleStep?: AssemblyStep;
 }
 
@@ -38,11 +38,11 @@ const EndWall = ({
           <boxGeometry args={[0.68, 2, 38.5]} />
           <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
         </mesh>
+        <mesh position={[-0.71, -4.5, 0]}>
+          <boxGeometry args={[0.68, 1, 38.5]} />
+          <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
+        </mesh>
       </AssembleIn>
-      <mesh position={[-0.71, -4.5, 0]}>
-        <boxGeometry args={[0.68, 1, 38.5]} />
-        <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-      </mesh>
     </mesh>
   );
 };
