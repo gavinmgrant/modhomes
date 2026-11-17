@@ -59,6 +59,26 @@ export const getSlabPieces = (
   return pieces;
 };
 
+// The frame's top is a ring of perimeter beams around an opening the size of
+// the roof slab (7 × 39 ft), so in the landing hero the floor, ceiling and
+// roof drop down through it. A stair opening reaches 1" past it, to the
+// columns' inner face, so where there is one the opening widens to take it in
+export const ROOF_FRAME_OPENING: Rect = { x: [-3.5, 3.5], z: [-19.5, 19.5] };
+
+export const getRoofFrameOpening = (ceilingOpening?: Rect): Rect =>
+  ceilingOpening
+    ? {
+        x: [
+          Math.min(ROOF_FRAME_OPENING.x[0], ceilingOpening.x[0]),
+          Math.max(ROOF_FRAME_OPENING.x[1], ceilingOpening.x[1]),
+        ],
+        z: [
+          Math.min(ROOF_FRAME_OPENING.z[0], ceilingOpening.z[0]),
+          Math.max(ROOF_FRAME_OPENING.z[1], ceilingOpening.z[1]),
+        ],
+      }
+    : ROOF_FRAME_OPENING;
+
 interface ModuleProps {
   color: string;
   position: [number, number, number];
@@ -199,17 +219,23 @@ const Module = ({
         <boxGeometry args={[POST_SIZE, 7.9, POST_SIZE]} />
         <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
       </mesh>
-      {getSlabPieces(7.75, 40, ceilingOpening).map((piece) => (
-        <mesh
-          key={`roof-frame-${piece.x}-${piece.z}`}
-          position={[piece.x, 4.4, piece.z]}
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry args={[piece.width, 1, piece.depth]} />
-          <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-        </mesh>
-      ))}
+      {getSlabPieces(7.75, 40, getRoofFrameOpening(ceilingOpening)).map(
+        (piece) => (
+          <mesh
+            key={`roof-frame-${piece.x}-${piece.z}`}
+            position={[piece.x, 4.4, piece.z]}
+            castShadow
+            receiveShadow
+          >
+            <boxGeometry args={[piece.width, 1, piece.depth]} />
+            <meshStandardMaterial
+              color={color}
+              metalness={0.5}
+              roughness={0.5}
+            />
+          </mesh>
+        ),
+      )}
     </mesh>
   );
 };

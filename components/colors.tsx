@@ -13,6 +13,8 @@ export const COLORS = {
   ground: "#dbd9d9",
   gyp: "#faf9f6",
   frame: "#2b2c2c",
+  // Galvanized steel roof deck
+  deck: "#b9bcba",
   // Statuary Bronze, the default window and door trim
   trim: "#1c1b1a",
   // The inside of the floor band's reveal, which reads as a shadow line
