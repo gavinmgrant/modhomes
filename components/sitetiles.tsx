@@ -10,6 +10,7 @@ import { setSiteStatus } from "./sitemap";
 import {
   FT_TO_M,
   getCameraHeight,
+  isCameraGroundPlausible,
   getTilesLift,
   getTilesTurn,
   isTilesLiftPlausible,
@@ -86,6 +87,11 @@ const getTiles = (apiKey: string, site: SiteLocation) => {
       })
     );
     created.addEventListener("load-model", ({ scene }) => {
+      // Each tile that comes in may be a finer one at the lot, so the
+      // ground is looked for again. The renderer's own tiles-load-end only
+      // fires once nothing at all is loading, which, with tiles streaming
+      // out to the horizon, can be a long time after the lot's are in
+      groundStale = true;
       // The tiles are photographs, already lit and graded, so the home's
       // tone mapping is kept off them
       scene.traverse((object) => {
@@ -182,7 +188,9 @@ export const SiteTiles = ({ apiKey, groundY, site = SITE }: SiteTilesProps) => {
     const next = getTilesLift(hit.point.y, lift, groundY.current);
     // The first tiles in are coarse ones, whole regions at a time, whose
     // flat faces cut far under the real ground. Ground that far off isn't
-    // the lot's, so it's passed over until the detailed tiles come in
+    // the lot's, so it's passed over until the detailed tiles come in.
+    // Coarse ground within reach is used for now, and corrected as finer
+    // tiles load (one stood 160 ft above the lot's, for about a second)
     if (!isTilesLiftPlausible(next)) return;
     if (!groundFound || Math.abs(next - lift) > SETTLE) {
       lift = next;
@@ -205,7 +213,14 @@ export const SiteTiles = ({ apiKey, groundY, site = SITE }: SiteTilesProps) => {
     const [hit] = ray.intersectObject(tileSet.group, true);
     // The home stands at the origin
     const distance = Math.hypot(position.x, position.z);
-    if (hit) position.y = getCameraHeight(position.y, hit.point.y, distance);
+    if (hit) {
+      // A coarse tile's ground isn't trusted, and is looked for again on
+      // the next frame, by which time finer tiles may have come in
+      if (!isCameraGroundPlausible(hit.point.y, groundY.current, distance)) {
+        return;
+      }
+      position.y = getCameraHeight(position.y, hit.point.y, distance);
+    }
     lastCamera.current.copy(position);
   });
 

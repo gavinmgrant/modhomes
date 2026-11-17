@@ -2,6 +2,7 @@ import {
   DAILY_ROOT_REQUEST_CAP,
   formatCoordinates,
   getCameraHeight,
+  isCameraGroundPlausible,
   SITE_CAMERA_CLEARANCE,
   getTilesLift,
   getTilesTurn,
@@ -68,6 +69,20 @@ describe("the orbiting camera", () => {
   it("is kept higher over the ground the further out it is", () => {
     // 800 ft out, 120 ft over the ground
     expect(getCameraHeight(5, 30, 800)).toBeCloseTo(150);
+  });
+
+  it("trusts ground as high as a palm or a roof up close", () => {
+    expect(isCameraGroundPlausible(40, 0, 20)).toBe(true);
+    expect(isCameraGroundPlausible(-15, -12, 85)).toBe(true);
+  });
+
+  it("trusts a hillside rising further out", () => {
+    expect(isCameraGroundPlausible(400, 0, 800)).toBe(true);
+  });
+
+  it("doesn't trust a coarse tile standing far above the lot", () => {
+    // As the site first showed in Palm Springs: 156 ft up, 85 ft out
+    expect(isCameraGroundPlausible(144.4, -11.5, 84.9)).toBe(false);
   });
 });
 
