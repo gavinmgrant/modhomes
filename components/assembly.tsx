@@ -4,10 +4,14 @@ import { Group } from "three";
 import {
   END_WALL_BEAM_BOTTOM,
   ENTER_DISTANCE,
+  ENTER_DURATION,
+  ENTER_STAGGER,
   FLOOR,
+  PANES_PER_HALF,
   getEntranceProgress,
 } from "./slidingdoors";
 import { prefersReducedMotion } from "../lib/media";
+import { useAssemblySample } from "../lib/assemblyclock";
 import { MODEL_BASE, getParapetTop } from "../lib/dimensions";
 
 export type AssemblyStep = {
@@ -36,6 +40,25 @@ export const getWallStep = (order: number): AssemblyStep => ({
   delay: ASSEMBLY.walls.delay + order * ASSEMBLY.walls.stagger,
   duration: ASSEMBLY.walls.duration,
 });
+
+// Seconds into the assembly that the last piece lands: the last of each
+// side's doors, which slide in one after another
+const stepEnd = ({ delay, duration }: AssemblyStep) => delay + duration;
+export const ASSEMBLY_END = Math.max(
+  ...[
+    getWallStep(WALL_ORDER.right),
+    ASSEMBLY.floor,
+    ASSEMBLY.ceiling,
+    ASSEMBLY.deck,
+    ASSEMBLY.insulation,
+  ].map(stepEnd),
+  ASSEMBLY.windows + (2 * PANES_PER_HALF - 1) * ENTER_STAGGER + ENTER_DURATION,
+);
+
+// Clicking the hero's home sends every piece back to where it started, all
+// at once, over `duration` seconds. It stays apart for `hold` seconds, then
+// builds itself again
+export const EXPLODE = { duration: 1.2, hold: 5 };
 
 // Where each piece starts, as an offset in feet from where it ends up. The
 // floor, ceiling, roof deck and roof insulation start stacked 2 ft apart
@@ -147,37 +170,34 @@ interface AssembleInProps {
   from: [number, number, number];
   // Without a step the children are simply drawn in place
   step?: AssemblyStep;
-  // Called once the children have landed
+  // Called each time the children land
   onDone?: () => void;
   children: React.ReactNode;
 }
 
-// Moves its children into place from `from`. The group itself sits at the final position, so anything measuring
-// the scene on mount (like Stage's centring) sees the finished home
+// Moves its children into place from `from`, and back out again when the
+// assembly comes apart. The group itself sits at the final position, so
+// anything measuring the scene on mount (like Stage's centring) sees the
+// finished home
 const AssembleIn = ({ from, step, onDone, children }: AssembleInProps) => {
   const group = useRef<Group>(null);
-  const start = useRef<number | null>(null);
-  const done = useRef(false);
+  const getSample = useAssemblySample();
+  const reducedMotion = useRef<boolean | null>(null);
+  const landed = useRef(false);
 
   useFrame((state) => {
-    if (!step || done.current || !group.current) return;
-    const startedAt = (start.current ??= state.clock.elapsedTime);
-    const progress = prefersReducedMotion()
+    if (!step || !group.current) return;
+    const { time, apart } = getSample(state.clock.elapsedTime);
+    const progress = (reducedMotion.current ??= prefersReducedMotion())
       ? 1
-      : getEntranceProgress(
-          state.clock.elapsedTime - startedAt,
-          step.delay,
-          step.duration,
-        );
+      : getEntranceProgress(time, step.delay, step.duration) * (1 - apart);
     group.current.position.set(
       from[0] * (1 - progress),
       from[1] * (1 - progress),
       from[2] * (1 - progress),
     );
-    if (progress === 1) {
-      done.current = true;
-      onDone?.();
-    }
+    if (progress === 1 && !landed.current) onDone?.();
+    landed.current = progress === 1;
   });
 
   return <group ref={group}>{children}</group>;

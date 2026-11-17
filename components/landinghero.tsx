@@ -1,6 +1,12 @@
-import React, { Suspense, useLayoutEffect, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, Stage } from "@react-three/drei";
+import React, {
+  ReactNode,
+  Suspense,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Canvas, ThreeEvent, useThree } from "@react-three/fiber";
+import { OrbitControls, Stage, useCursor } from "@react-three/drei";
 import { PerspectiveCamera } from "three";
 import { Typography, Grid, Button } from "@mui/material";
 import Roof from "./roof";
@@ -13,6 +19,8 @@ import Loader from "./loader";
 import SlidingDoors, { DoorHeader } from "./slidingdoors";
 import AssembleIn, {
   ASSEMBLY,
+  ASSEMBLY_END,
+  EXPLODE,
   DECK_OFFSET,
   INSULATION_OFFSET,
   SIDE_OFFSET,
@@ -26,7 +34,54 @@ import { CITY_ENVIRONMENT } from "./materials";
 import { FOCUS_RING, PANEL, ink } from "./panel";
 import { NAVBAR_HEIGHT } from "./navbar";
 import { motion } from "framer-motion";
-import { useIsMobile } from "../lib/media";
+import { prefersReducedMotion, useIsMobile } from "../lib/media";
+import {
+  AssemblyClock,
+  AssemblyClockContext,
+  createAssemblyClock,
+} from "../lib/assemblyclock";
+
+// A press that moves further than this many pixels before it's let go is
+// turning the home, not clicking it
+const CLICK_SLOP = 5;
+
+type ExplodeOnClickProps = {
+  clock: AssemblyClock;
+  onExplode: () => void;
+  children: ReactNode;
+};
+
+// Clicking what it wraps takes the home apart, back to where every piece
+// started, then builds it again (see EXPLODE)
+const ExplodeOnClick = ({
+  clock,
+  onExplode,
+  children,
+}: ExplodeOnClickProps) => {
+  const frameClock = useThree((state) => state.clock);
+  const [hovered, setHovered] = useState(false);
+  useCursor(hovered);
+
+  const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    // Every piece under the pointer would otherwise get the click
+    event.stopPropagation();
+    if (event.delta > CLICK_SLOP || prefersReducedMotion()) return;
+    if (clock.explode(frameClock.elapsedTime)) onExplode();
+  };
+
+  return (
+    <group
+      onClick={handleClick}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => setHovered(false)}
+    >
+      {children}
+    </group>
+  );
+};
 
 // Keeps the camera on its bearing, CAMERA_HEIGHT above the home's centre
 // and looking down at it, far enough back to frame the whole assembly in
@@ -64,6 +119,21 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
   // Stage's ground shadow is baked from whatever is in the scene, so it waits
   // until the walls and roof have landed
   const [shellBuilt, setShellBuilt] = useState(false);
+  // One clock for every piece, so clicking the home can send them all back
+  // out together
+  const clock = useMemo(
+    () =>
+      createAssemblyClock({
+        start: ASSEMBLY.walls.delay,
+        end: ASSEMBLY_END,
+        explodeDuration: EXPLODE.duration,
+        hold: EXPLODE.hold,
+      }),
+    [],
+  );
+  // The shadow goes while the home is apart, and is baked again once its
+  // roof is back on
+  const handleExplode = () => setShellBuilt(false);
 
   // The hero runs from the page's 1rem top padding to the bottom of the
   // screen. The canvas fills it from the bottom of the navbar on desktop, and
@@ -155,115 +225,131 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
             shadows
           >
             <Suspense fallback={<Loader />}>
-              <LineworkRender />
-              <AssemblyCamera />
-              <OrbitControls
-                autoRotate
-                maxPolarAngle={Math.PI / 2}
-                enableZoom={false}
-              />
-              <ambientLight intensity={0.5} />
-              <pointLight position={[100, 100, 20]} />
-              <Stage
-                intensity={0.4}
-                environment={{ files: CITY_ENVIRONMENT }}
-                // AssemblyCamera frames the pieces still flying in, which
-                // Stage's fit to the finished home would leave out
-                adjustCamera={false}
-                center={{
-                  onCentered: ({ center }) =>
-                    setModelOffset([-center.x, -center.y, -center.z]),
-                }}
-                shadows={{
-                  type: "accumulative",
-                  color: COLORS.shadow,
-                  opacity: shellBuilt ? 0.3 : 0,
-                }}
-              >
-                {/* The pieces as they fly in, drawn with their lines */}
-                <Linework>
-                  {/* The metal deck, then the sloped insulation on it */}
-                  {(
-                    [
-                      ["deck", DECK_OFFSET, ASSEMBLY.deck],
-                      ["insulation", INSULATION_OFFSET, ASSEMBLY.insulation],
-                    ] as const
-                  ).map(([layer, offset, step]) => (
-                    <AssembleIn
-                      key={layer}
-                      from={[0, offset, 0]}
-                      step={step}
-                      onDone={
-                        layer === "insulation"
-                          ? () => setShellBuilt(true)
-                          : undefined
-                      }
-                    >
-                      <Roof
-                        position={[0, 5.25, 0]}
-                        color={COLORS.roof}
-                        width={7}
-                        ridgeHeight={getParapetTop(1)}
-                        deck
-                        layer={layer}
-                      />
-                    </AssembleIn>
-                  ))}
-                  <EndWall
-                    position={[-3.5, 0, 0]}
-                    color={COLORS.grey}
-                    rotate={false}
-                    twoStory={false}
-                    assembleStep={getWallStep(WALL_ORDER.left)}
-                  />
-                  <Module
-                    position={[0, 0, 0]}
-                    color={COLORS.grey}
-                    envelopeOn
-                    floorMaterial="walnut"
-                    animateIn
-                  ></Module>
-                  <EndWall
-                    position={[3.5, 0, 0]}
-                    color={COLORS.grey}
-                    rotate
-                    twoStory={false}
-                    assembleStep={getWallStep(WALL_ORDER.right)}
-                  />
-                  <Foundation
-                    position={[0, -5.7, 0]}
-                    color={COLORS.foundation}
-                    width={7}
-                  />
-                </Linework>
-              </Stage>
-              {modelOffset && (
-                <group position={modelOffset}>
-                  <Linework>
-                    {[-1, 1].map((side) => (
-                      <React.Fragment key={side}>
-                        <SlidingDoors
-                          side={side}
-                          halfWidth={4}
-                          stories={1}
-                          animateIn
-                          animateDelay={ASSEMBLY.windows}
-                          hideHeader
-                        />
-                        {/* The header arrives with its side's parapet */}
+              {/* R3F doesn't carry context into the Canvas, so it's provided
+                  inside it */}
+              <AssemblyClockContext.Provider value={clock}>
+                <LineworkRender />
+                <AssemblyCamera />
+                <OrbitControls
+                  autoRotate
+                  maxPolarAngle={Math.PI / 2}
+                  enableZoom={false}
+                />
+                <ambientLight intensity={0.5} />
+                <pointLight position={[100, 100, 20]} />
+                <Stage
+                  intensity={0.4}
+                  environment={{ files: CITY_ENVIRONMENT }}
+                  // AssemblyCamera frames the pieces still flying in, which
+                  // Stage's fit to the finished home would leave out
+                  adjustCamera={false}
+                  center={{
+                    onCentered: ({ center }) =>
+                      setModelOffset([-center.x, -center.y, -center.z]),
+                  }}
+                  shadows={{
+                    type: "accumulative",
+                    color: COLORS.shadow,
+                    opacity: shellBuilt ? 0.3 : 0,
+                  }}
+                >
+                  {/* The pieces as they fly in, drawn with their lines */}
+                  <ExplodeOnClick clock={clock} onExplode={handleExplode}>
+                    <Linework>
+                      {/* The metal deck, then the sloped insulation on it */}
+                      {(
+                        [
+                          ["deck", DECK_OFFSET, ASSEMBLY.deck],
+                          [
+                            "insulation",
+                            INSULATION_OFFSET,
+                            ASSEMBLY.insulation,
+                          ],
+                        ] as const
+                      ).map(([layer, offset, step]) => (
                         <AssembleIn
-                          from={[side * SIDE_OFFSET, 0, 0]}
-                          step={getWallStep(
-                            side < 0 ? WALL_ORDER.left : WALL_ORDER.right,
-                          )}
+                          key={layer}
+                          from={[0, offset, 0]}
+                          step={step}
+                          onDone={
+                            layer === "insulation"
+                              ? () => setShellBuilt(true)
+                              : undefined
+                          }
                         >
-                          <DoorHeader side={side} halfWidth={4} stories={1} />
+                          <Roof
+                            position={[0, 5.25, 0]}
+                            color={COLORS.roof}
+                            width={7}
+                            ridgeHeight={getParapetTop(1)}
+                            deck
+                            layer={layer}
+                          />
                         </AssembleIn>
-                      </React.Fragment>
-                    ))}
-                  </Linework>
-                </group>
-              )}
+                      ))}
+                      <EndWall
+                        position={[-3.5, 0, 0]}
+                        color={COLORS.grey}
+                        rotate={false}
+                        twoStory={false}
+                        assembleStep={getWallStep(WALL_ORDER.left)}
+                      />
+                      <Module
+                        position={[0, 0, 0]}
+                        color={COLORS.grey}
+                        envelopeOn
+                        floorMaterial="walnut"
+                        animateIn
+                      ></Module>
+                      <EndWall
+                        position={[3.5, 0, 0]}
+                        color={COLORS.grey}
+                        rotate
+                        twoStory={false}
+                        assembleStep={getWallStep(WALL_ORDER.right)}
+                      />
+                      <Foundation
+                        position={[0, -5.7, 0]}
+                        color={COLORS.foundation}
+                        width={7}
+                      />
+                    </Linework>
+                  </ExplodeOnClick>
+                </Stage>
+                {modelOffset && (
+                  <group position={modelOffset}>
+                    <ExplodeOnClick clock={clock} onExplode={handleExplode}>
+                      <Linework>
+                        {[-1, 1].map((side) => (
+                          <React.Fragment key={side}>
+                            <SlidingDoors
+                              side={side}
+                              halfWidth={4}
+                              stories={1}
+                              animateIn
+                              animateDelay={ASSEMBLY.windows}
+                              hideHeader
+                            />
+                            {/* The header arrives with its side's parapet */}
+                            <AssembleIn
+                              from={[side * SIDE_OFFSET, 0, 0]}
+                              step={getWallStep(
+                                side < 0 ? WALL_ORDER.left : WALL_ORDER.right,
+                              )}
+                            >
+                              <DoorHeader
+                                side={side}
+                                halfWidth={4}
+                                stories={1}
+                              />
+                            </AssembleIn>
+                          </React.Fragment>
+                        ))}
+                      </Linework>
+                    </ExplodeOnClick>
+                  </group>
+                )}
+              </AssemblyClockContext.Provider>
             </Suspense>
           </Canvas>
         </motion.div>

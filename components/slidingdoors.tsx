@@ -4,6 +4,7 @@ import { Group } from "three";
 import { COLORS } from "./colors";
 import { FINISHED_FLOOR, STORY_HEIGHT } from "../lib/dimensions";
 import { prefersReducedMotion } from "../lib/media";
+import { useAssemblySample } from "../lib/assemblyclock";
 
 export const PANES_PER_HALF = 3;
 // The opening runs from the middle column (z = 0) to the end wall column faces
@@ -247,16 +248,14 @@ export const GlassPane = ({
   trimColor = COLORS.trim,
 }: GlassPaneProps) => {
   const group = useRef<Group>(null);
-  const start = useRef<number | null>(null);
+  // Time from the first frame these panes were drawn, or on the assembly's
+  // own clock, which can also take them back out
+  const getSample = useAssemblySample();
 
   useFrame((state) => {
     if (!entrance || !group.current) return;
-    // Time from the first frame these panes were drawn
-    const startedAt = (start.current ??= state.clock.elapsedTime);
-    const progress = getEntranceProgress(
-      state.clock.elapsedTime - startedAt,
-      entrance.delay,
-    );
+    const { time, apart } = getSample(state.clock.elapsedTime);
+    const progress = getEntranceProgress(time, entrance.delay) * (1 - apart);
     group.current.position.x = position[0] + entrance.from * (1 - progress);
   });
 
