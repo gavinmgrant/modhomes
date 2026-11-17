@@ -18,7 +18,8 @@ import AssembleIn, {
   SIDE_OFFSET,
   WALL_ORDER,
   getWallStep,
-  getAssemblyDistance,
+  getAssemblyCamera,
+  CAMERA_HEIGHT,
 } from "./assembly";
 import { COLORS } from "./colors";
 import { CITY_ENVIRONMENT } from "./materials";
@@ -27,8 +28,9 @@ import { NAVBAR_HEIGHT } from "./navbar";
 import { motion } from "framer-motion";
 import { useIsMobile } from "../lib/media";
 
-// Keeps the camera on its starting line but far enough back to frame the
-// whole assembly in this canvas, refitting when the canvas changes shape
+// Keeps the camera on its bearing, CAMERA_HEIGHT above the home's centre
+// and looking down at it, far enough back to frame the whole assembly in
+// this canvas, refitting when the canvas changes shape
 const AssemblyCamera = () => {
   // R3F types the camera as perspective or orthographic; this canvas's
   // default is perspective
@@ -36,7 +38,13 @@ const AssemblyCamera = () => {
   const aspect = useThree((state) => state.size.width / state.size.height);
 
   useLayoutEffect(() => {
-    camera.position.setLength(getAssemblyDistance(aspect, camera.fov));
+    const { across, height } = getAssemblyCamera(aspect, camera.fov);
+    const bearing = Math.atan2(camera.position.x, camera.position.z);
+    camera.position.set(
+      Math.sin(bearing) * across,
+      height,
+      Math.cos(bearing) * across,
+    );
   }, [camera, aspect]);
 
   return null;
@@ -142,7 +150,10 @@ const LandingHero = ({ handleScroll }: LandingHeroProps) => {
                 }
           }
         >
-          <Canvas camera={{ position: [60, 0, 60], fov: 30 }} shadows>
+          <Canvas
+            camera={{ position: [60, CAMERA_HEIGHT, 60], fov: 30 }}
+            shadows
+          >
             <Suspense fallback={<Loader />}>
               <LineworkRender />
               <AssemblyCamera />

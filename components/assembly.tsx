@@ -1,8 +1,14 @@
 import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Group } from "three";
-import { getEntranceProgress } from "./slidingdoors";
+import {
+  END_WALL_BEAM_BOTTOM,
+  ENTER_DISTANCE,
+  FLOOR,
+  getEntranceProgress,
+} from "./slidingdoors";
 import { prefersReducedMotion } from "../lib/media";
+import { MODEL_BASE, getParapetTop } from "../lib/dimensions";
 
 export type AssemblyStep = {
   delay: number;
@@ -45,26 +51,96 @@ export const CEILING_OFFSET = 6.1;
 export const DECK_OFFSET = 12 - 4.875;
 export const INSULATION_OFFSET = 14 - 5;
 
-// How far the hero camera sits from the home's centre so every piece stays in
-// frame as the home turns, whatever shape the canvas is. The piece reaching
-// furthest from the centre is an end wall at its start: its outer face is
-// 20.3 ft out plus WALL_OFFSET, and it's 8 ft wide. (The doors, 10 ft out
-// past the sides but no further than the module's ends, reach about 24 ft.)
-// Up the canvas, it's the insulation's ridge (level with the 6.5 ft parapets
-// once it lands) at the head of its stack, which can swing up to half the
-// roof's 39 ft length towards the camera
-const ASSEMBLY_REACH = Math.hypot(20.3 + WALL_OFFSET, 4);
-const ASSEMBLY_TOP = 6.5 + INSULATION_OFFSET;
-const ROOF_HALF_LENGTH = 19.5;
+// The hero camera starts this far above the home's parapets, looking down at
+// the home's centre, where it stays as the camera turns
+export const CAMERA_RISE = 50;
+export const CAMERA_HEIGHT = getParapetTop(1) + CAMERA_RISE;
+
+type Span = [number, number];
+type Extent = { x: Span; y: Span; z: Span };
+const around = (half: number): Span => [-half, half];
+
+// What has to stay in frame as the home turns, at the furthest each piece
+// gets from the centre: the home itself, the floor, ceiling, deck and
+// insulation stacked over it, its end walls and side walls where they start
+// out, and the doors 10 ft out past its sides
+const PARAPET_TOP = getParapetTop(1);
+const SHELL = { halfWidth: 4.55, halfLength: 20.3 };
+export const ASSEMBLY_EXTENTS: Extent[] = [
+  {
+    x: around(SHELL.halfWidth),
+    y: [MODEL_BASE, PARAPET_TOP],
+    z: around(SHELL.halfLength),
+  },
+  {
+    x: around(3.5),
+    y: [PARAPET_TOP, PARAPET_TOP + INSULATION_OFFSET],
+    z: around(19.5),
+  },
+  {
+    x: around(4),
+    y: [MODEL_BASE, PARAPET_TOP],
+    z: around(SHELL.halfLength + WALL_OFFSET),
+  },
+  {
+    x: around(SHELL.halfWidth + SIDE_OFFSET),
+    y: [MODEL_BASE, PARAPET_TOP],
+    z: around(SHELL.halfLength),
+  },
+  {
+    x: around(4 + ENTER_DISTANCE),
+    y: [FLOOR, END_WALL_BEAM_BOTTOM],
+    z: around(20),
+  },
+];
+const CORNERS = ASSEMBLY_EXTENTS.flatMap(({ x, y, z }) =>
+  x.flatMap((cx) => y.flatMap((cy) => z.map((cz) => [cx, cy, cz]))),
+);
+// The home's turns checked, every 4 degrees
+const TURNS = Array.from({ length: 90 }, (_, i) => (i * Math.PI) / 45);
 // Breathing room around the furthest pieces, as a share of the frame
 const FRAME_MARGIN = 1.05;
 
-export const getAssemblyDistance = (aspect: number, fov: number) => {
-  const tan = Math.tan((fov * Math.PI) / 360) / FRAME_MARGIN;
-  // A point turning at radius r projects at most r / sqrt(d² - r²) across
-  const across = ASSEMBLY_REACH * Math.sqrt(1 + 1 / (tan * aspect) ** 2);
-  const up = ASSEMBLY_TOP / tan + ROOF_HALF_LENGTH;
-  return Math.max(across, up);
+// Whether every corner stays in the frame of a camera this far out across
+// the ground and this high, looking at the centre, however the home turns
+const fitsInFrame = (
+  across: number,
+  height: number,
+  tanUp: number,
+  tanAcross: number,
+) => {
+  const length = Math.hypot(across, height);
+  // The camera looks along -z, down: forward, right and up in the frame
+  const [fy, fz] = [-height / length, -across / length];
+  const [uy, uz] = [across / length, -height / length];
+  return TURNS.every((turn) => {
+    const [cos, sin] = [Math.cos(turn), Math.sin(turn)];
+    return CORNERS.every(([x, y, z]) => {
+      const [px, py, pz] = [x * cos - z * sin, y, x * sin + z * cos];
+      const [vy, vz] = [py - height, pz - across];
+      const depth = vy * fy + vz * fz;
+      return (
+        depth > 0 &&
+        Math.abs(px) <= tanAcross * depth &&
+        Math.abs(vy * uy + vz * uz) <= tanUp * depth
+      );
+    });
+  });
+};
+
+// Where the hero camera sits, CAMERA_HEIGHT above the centre and as near
+// across the ground as keeps every piece in frame as the home turns,
+// whatever shape the canvas is
+export const getAssemblyCamera = (aspect: number, fov: number) => {
+  const tanUp = Math.tan((fov * Math.PI) / 360) / FRAME_MARGIN;
+  const tanAcross = tanUp * aspect;
+  let [near, far] = [0, 1000];
+  while (far - near > 0.01) {
+    const mid = (near + far) / 2;
+    if (fitsInFrame(mid, CAMERA_HEIGHT, tanUp, tanAcross)) far = mid;
+    else near = mid;
+  }
+  return { across: far, height: CAMERA_HEIGHT };
 };
 
 interface AssembleInProps {
